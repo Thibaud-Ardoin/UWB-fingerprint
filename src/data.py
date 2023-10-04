@@ -19,7 +19,7 @@ import params
 
 def addSomeNoise(x):
     # Add some random noise to the data, 1/x of amount max
-    x = x + torch.rand(x.shape)/5
+    x = x + torch.rand(x.shape)*params.noise_amount
     return x
 
 def zeroPadding(x):

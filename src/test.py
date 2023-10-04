@@ -4,13 +4,18 @@
     Classification, clustering algorithms
 """
 
+import numpy as np
+import time
+
+from scipy.spatial import distance_matrix
+
 import params
 
 
 def encode_data(mymodel, dataloader):
     mymodel.eval()
     def loop_on_loader(loader):
-        loader.dataset.augmentation =False
+        loader.dataset.testset = True
         encs, labs = [], []
         for i, (batchX, batchY) in enumerate(loader):
             # Compute encoded version of the data by our embedding model
@@ -33,6 +38,37 @@ def encode_data(mymodel, dataloader):
     return myencodings, mylabels
 
 
+def reid_evaluation_test2train_NN(test_embeddings, train_embeddings, test_labels, train_labels, logger):
+    mat = distance_matrix(test_embeddings, train_embeddings)
+
+    # Nearest Neighbor accuracy
+    correct_classification = 0
+    wrong_classification = 0
+    nearest10_amt = 0
+    for i in range(len(mat)):
+        nearest_10id = np.argpartition(mat[i], 11)[1:11]
+        nearest_id = nearest_10id[0]
+        if train_labels[nearest_id] == test_labels[i]:
+            correct_classification +=1
+        else :
+            wrong_classification +=1
+        
+        nearest10_amt += len(np.where(np.array(train_labels)[nearest_10id] == test_labels[i])[0])
+
+    logger.log({
+        "NN test2train": 100*correct_classification/(correct_classification+wrong_classification),
+        "NN test2train 10th mean": 100*nearest10_amt/(10*len(mat)),
+    })
+
+    if params.verbose:
+        print("> Accuracy for positive classification according to the nearest neighbor from test in training set ")
+        print(100*correct_classification/(correct_classification+wrong_classification), "%")
+        
+        print("> Mean percentage of same class points in the 10th nearest elmts from test in training set ")
+        print(100*nearest10_amt/(10*len(mat)), "%")
+    
+
+
 
 
 
@@ -43,9 +79,9 @@ def reid_evaluation(embeddings, labels, logger):
     same_distances = []
     diff_distances = []
 
-    dev_ind = [np.where(np.array(labels)==i)[0] for i in range(num_dev)]
-    for i in range(num_dev):
-        for j in range(i, num_dev):
+    dev_ind = [np.where(np.array(labels)==i)[0] for i in range(params.num_dev)]
+    for i in range(params.num_dev):
+        for j in range(i, params.num_dev):
             sub_mat = mat[dev_ind[i]].T
             subsub_mat = sub_mat[dev_ind[j]]
             for ind_i in range(len(subsub_mat)):
@@ -68,8 +104,9 @@ def reid_evaluation(embeddings, labels, logger):
 #         threshold = threshold * threshold
         ta = len(np.where(np.array(same_distances) < threshold)[0])/len(same_distances)
         fa = len(np.where(np.array(diff_distances) < threshold)[0])/len(diff_distances)
-        roc_value.append([fa, ta, threshold])        
+        roc_value.append([fa, ta, threshold])
     roc_value = np.array(roc_value) 
+    area = np.trapz(roc_value[:, 1], roc_value[:, 0])
 
     # Get accuracy when fa=0.1% , 1%, 10%
     targets_fa = [0.001, 0.01, 0.1]
@@ -100,8 +137,12 @@ def reid_evaluation(embeddings, labels, logger):
         nearest10_amt += len(np.where(np.array(labels)[nearest_10id] == labels[i])[0])
 
 
-    logger.log_curve(roc_value, title="Clustering Metric")
-    logger.log()
+    logger.log_curve(roc_value[:, :2], title="Clustering Metric", column_names=["Positive", "Negative"])
+    logger.log({"Positive clustering at error rate 0.1%": 100*ta_accuracy[0],
+            "Positive clustering at error rate 1%": 100*ta_accuracy[1],
+            "Positive clustering at error rate 10%": 100*ta_accuracy[2],
+            "Trapz": area,
+            "NN classification on test data": 100*correct_classification/(correct_classification+wrong_classification)})
 
     
     if params.verbose:
@@ -112,6 +153,9 @@ def reid_evaluation(embeddings, labels, logger):
 
         print("> Amount of positive clustering when False accuracy reaches 0,1% 1% and 10%")
         print(list(100*np.array(ta_accuracy)), "%")
+
+        print("> Area size under the clustering curve")
+        print(area)
 
         print("> Accuracy for positive classification according to the nearest neighbor ")
         print(100*correct_classification/(correct_classification+wrong_classification), "%")
@@ -124,15 +168,35 @@ def reid_evaluation(embeddings, labels, logger):
         plt.plot([0, 1], [0, 1], linestyle="--")
         plt.show()
         
-# reid_evaluation(encoded_test[:1000], labels_test[:1000])
 
-def testing_model(training_loaders, validation_loader, model, logger ):
+def testing_model(training_loaders, validation_loader, model, logger):
+    start_time = time.time()
+
     encoded_train, labels_train = encode_data(model, training_loaders)
     encoded_test, labels_test = encode_data(model, validation_loader)
+    enc_time = time.time()
+    print("[Test]: time for encodding", enc_time - start_time)
 
     logger.log_scatter(encoded_train, labels_train, title="train_data")
     logger.log_scatter(encoded_test, labels_test, title="test_data")
+    scatter_time = time.time()
+    print("[Test]: time for plottingscatter", scatter_time - enc_time)
 
-    reid_evaluation(encoded_test, labels_test)
+    # Selecting a subset of size params.data_test_rate for reid evalution
+    mask = np.full(len(encoded_test), False)
+    mask[:int(len(encoded_test)*params.data_test_rate)] = True
+    np.random.shuffle(mask)
+    reid_evaluation(np.array(encoded_test)[mask], np.array(labels_test)[mask], logger)
+    reid_time = time.time()
+    print("[Test]: time for reid on test data", reid_time - scatter_time)
+
+    mask2 = np.full(len(labels_train), False)
+    mask2[:int(len(labels_train)*params.data_test_rate)] = True
+    np.random.shuffle(mask2)
+    reid_evaluation_test2train_NN(np.array(encoded_test)[mask], np.array(encoded_train)[mask2], np.array(labels_test)[mask], np.array(labels_train)[mask2], logger)
+    reid2_time = time.time()
+    print("[Test]: time for test 2 train reid", reid2_time - reid_time)
+
+    logger.step_test()
 
 

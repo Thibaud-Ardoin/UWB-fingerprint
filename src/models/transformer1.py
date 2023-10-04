@@ -1,51 +1,29 @@
-"""
-    Model.py
-    Links and agregate all the diferent model types and they specific architectures
-"""
 import math
-
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 import params
-
-
-class PositionalEncoding(nn.Module):
-
-    def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000):
-        super().__init__()
-        self.dropout = nn.Dropout(p=dropout)
-        self.d_model = d_model
-        position = torch.arange(max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
-        pe = torch.zeros(max_len, d_model)
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        self.register_buffer('pe', pe)
-
-    def forward(self, x):
-        """
-        Arguments:
-            x: Tensor, shape ``[seq_len, batch_size, embedding_dim]``
-        """
-        p = self.pe[:x.size(1)][None].expand(list(x.shape))
-        x = x + p
-        return self.dropout(x)
+import models
 
 
 #  LIL Encoding NETWORK
-class EncoderNet(nn.Module):
+class Transformer1(nn.Module):
+    """
+        Ecnoding of the input made as a individual values on 200 different encoded time steps
+    """
 
     def __init__(self, expender_multiplier=1, dropout_value=0):
-        super(EncoderNet, self).__init__()
+        super(Transformer1, self).__init__()
         self.expender_multiplier = expender_multiplier
+        self.use_extender = params.use_extender
         self.dropout_value = dropout_value
         self.dropout = nn.Dropout(self.dropout_value) 
+        self.embed_size = params.expender_out
         
         # ATTENTION
-        self.trans_embedding_size = params.trans_embedding_size
+        self.trans_embedding_size = params.trans_embedding_size * params.trans_head_nb # Divisibility needed
         self.trans_head_nb = params.trans_head_nb
         self.trans_layer_nb = params.trans_layer_nb
         self.trans_hidden_nb = params.trans_hidden_nb
@@ -55,7 +33,7 @@ class EncoderNet(nn.Module):
         
         
         self.trans_embeddings = nn.Linear(2, self.trans_embedding_size)
-        self.pos_encoder = PositionalEncoding(self.trans_embedding_size, self.dropout_value)
+        self.pos_encoder = models.PositionalEncoding(self.trans_embedding_size, self.dropout_value)
         encoder_layers = nn.TransformerEncoderLayer(self.trans_embedding_size, self.trans_head_nb, self.trans_hidden_nb, self.dropout_value, batch_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, self.trans_layer_nb)
 #         self.embedding = nn.Linear(2, d_model)
@@ -144,16 +122,11 @@ class EncoderNet(nn.Module):
     
     def forward(self, x):
         x = self.encoder(x)
-        if self.expender_multiplier:
+        if self.use_extender:
             x = self.expender(x)
         return x
     
 
-def load_model():
-	model = eval(params.model_name)().to(params.device)
-	return model
-
-
 if __name__ == "__main__":
-	model = load_model()
-	print(model)
+    model = Transformer1()
+    print(model)
