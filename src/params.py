@@ -17,12 +17,12 @@ data_spliting="all_split"
 augmentations=["addSomeNoise"]
 noise_amount = 0
 
-validation_pos = 6
-data_limit = 1000
+validation_pos = 0
+data_limit = 2000
 data_test_rate = 0.1    # Random % of data to run tests on (O(n**2))
 
-num_pos = 21
-num_dev = 13
+num_pos = 21    #21
+num_dev = 13    #13
 signal_length = 200
 
 
@@ -30,16 +30,16 @@ signal_length = 200
 ############
 #   Train
 ############
-batch_size = 50
+batch_size = 32
 nb_epochs = 10000
 patience = 100
-test_interval = 500
+test_interval = 50
 
 ############
 #   Optim
 ############
 optimizer = "AdamW"
-sheduler = "warmup"    #"warmup"
+sheduler = "warmup"    #"warmup" plateau
 warmup_steps = 50
 learning_rate = 1e-3
 lr_limit = 1e-4
@@ -47,26 +47,27 @@ lr_limit = 1e-4
 ###########
 #   Loss
 ###########
-lambda_distance = 14
-lambda_std = 1.2
-lambda_cov = 4
+loss = "triplet" #"triplet" #"vicreg"
+lambda_distance = 14    #14
+lambda_std = 1.2         #1.2
+lambda_cov = 4          #4
 
 
 ############
 #   Model
 ############
-model_name = "Transformer2"
-latent_dimention = 200
+model_name = "Transformer3"
+latent_dimention = 32
 expender_out = 128
-use_extender = True
+use_extender = False
 dropout = 0
 # embed_size = 8 #TODO no the right numba
 
 # Transformers
-trans_embedding_size = 0 #actually becomming the multiplier of the nb of heads
+trans_embedding_size = 32 #actually becomming the multiplier of the nb of heads
 trans_head_nb = 1
-trans_layer_nb = 5
-trans_hidden_nb = 64
+trans_layer_nb = 1
+trans_hidden_nb = 32
 
 # Transformer2
 window_size = 16

@@ -29,8 +29,6 @@ def main():
     model = load_model()
     logger.log_model(model)
 
-    fghdfgh
-
     training_model(trainDataloader, valDataloader, model, logger)
 
 

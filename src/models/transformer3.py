@@ -14,18 +14,18 @@ import models
 
 
 #  LIL Encoding NETWORK
-class Transformer2(nn.Module):
+class Transformer3(nn.Module):
 	"""
 		Slice the signal into different bins of values that are used as embedded values
 	"""
 	
 	def __init__(self, expender_multiplier=1, dropout_value=0):
-		super(Transformer2, self).__init__()
+		super(Transformer3, self).__init__()
 		self.expender_multiplier = expender_multiplier
 		self.use_extender = params.use_extender
 		self.dropout_value = params.dropout
-		self.dropout = nn.Dropout(self.dropout_value) 
-		self.embedding_size = params.expender_out
+		self.dropout = nn.Dropout(self.dropout_value)
+		self.embedding_size = params.trans_embedding_size
 
 		# ATTENTION
 		self.trans_embedding_size = params.trans_embedding_size * params.trans_head_nb # Divisibility needed
@@ -34,19 +34,21 @@ class Transformer2(nn.Module):
 		self.trans_hidden_nb = params.trans_hidden_nb
 		self.flatten = nn.Flatten()
 
-		self.window_size = params.window_size 
+		self.window_size = params.window_size
 		self.window_nb = math.ceil(params.signal_length/self.window_size)
 
-
-		encoder_layers = nn.TransformerEncoderLayer(self.window_size, self.trans_head_nb, self.trans_hidden_nb, self.dropout_value, batch_first=True)
+		encoder_layers = nn.TransformerEncoderLayer(self.embedding_size, self.trans_head_nb, self.trans_hidden_nb, self.dropout_value, batch_first=True)
 		self.transformer_encoder = nn.TransformerEncoder(encoder_layers, self.trans_layer_nb)
 
+		# PRE-PROCESS
+		self.fc0 = nn.Linear(self.window_size, self.embedding_size)
+
 		# MIDLE WORK
-		self.norm = nn.LayerNorm((self.window_nb, self.window_size))
+		self.norm = nn.LayerNorm((self.window_nb, self.embedding_size))
 		self.flatten = nn.Flatten()
 
 		# MLP
-		self.fc1 = nn.Linear(self.window_nb * self.window_size, params.latent_dimention*2)
+		self.fc1 = nn.Linear(self.embedding_size * self.window_nb, params.latent_dimention*2)
 		self.fc2 = nn.Linear(params.latent_dimention*2, params.latent_dimention)
 		self.softmax = nn.Softmax()
 		
@@ -79,6 +81,9 @@ class Transformer2(nn.Module):
 
 		x = torch.stack(l, dim=1)
 		# x = torch.reshape(x, (x.size(0), self.window_nb, self.window_size))
+
+		x = self.fc0(x)
+
 		return x
 
 
@@ -119,10 +124,11 @@ class Transformer2(nn.Module):
 
 if __name__ == "__main__":
 	
-	model = Transformer2()
+	model = Transformer3()
 
 	bsz = 256
 	sign_length = 200
 
 	dummy_data = torch.rand((bsz, sign_length))
 	out = model(dummy_data)
+	print(out.shape)

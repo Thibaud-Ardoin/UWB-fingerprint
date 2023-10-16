@@ -21,7 +21,7 @@ def off_diagonal(x):
 def training_model(t_loader, v_loader, mymodel, logger):
     encodded_validations = []
     optimizer = Optimizer(mymodel.parameters())
-    # tripletLoss = nn.TripletMarginLoss(p=1)
+    tripletLoss = nn.TripletMarginLoss(margin=1, p=2)
     
     min_size = None
     for pos in range(len(t_loader)) :
@@ -105,102 +105,155 @@ def training_model(t_loader, v_loader, mymodel, logger):
 #             )
 
 
+            if params.loss == "triplet":
+                p1 = np.random.choice(pos_amt)
+                p2 = np.random.choice([p for p in range(pos_amt) if p!=p1])
+                
+                # Two data batches, with same device and different position
+                batchX1 = [next(iter(t_loader[dev][p1]))[0] for dev in range(len(t_loader))]
+                batchX2 = [next(iter(t_loader[dev][p2]))[0] for dev in range(len(t_loader))]
+
+                dev1 = np.random.choice(params.num_dev)
+                dev2 = np.random.choice([d for d in range(params.num_dev) if d!=dev1])
+
+                x1 = [mymodel(batchX1[dev]) for dev in range(len(t_loader))]
+                x2 = [mymodel(batchX2[dev]) for dev in range(len(t_loader))]
+                
+    #             repr_loss = F.mse_loss(x, y)
+                repr_loss = torch.stack([F.mse_loss(x1[dev], x2[dev]) for dev in range(params.num_dev)]).mean()
+                
+                # Triplet loss
+                anchor = mymodel(batchX1[dev1])         # P1, D1 
+                positive = mymodel(batchX2[dev1])       # P2, D1
+                negative = mymodel(batchX1[dev2])       # P1, D2
+
+                trip_loss = tripletLoss(anchor, positive, negative)
+
+                loss = trip_loss + repr_loss
+
+                # Backprop
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+                dist_memory.append(repr_loss.item())
+                var_memory.append(trip_loss.item()) # Actually triplet loss hey
+
+                size_of_batch = anchor.size(0)
+
+                trainLoss += loss.item() * size_of_batch
+                samples += size_of_batch
+
             ####### SETUP WITH TWO RANDOM POSITIONS EVERY TIME
             
-            p1 = np.random.choice(pos_amt)
-            p2 = np.random.choice([p for p in range(pos_amt) if p!=p1])
-            
-                # Two data batches, with same device and different position
-            batchX1 = [next(iter(t_loader[dev][p1]))[0] for dev in range(len(t_loader))]
-            batchX2 = [next(iter(t_loader[dev][p2]))[0] for dev in range(len(t_loader))]
+            elif params.loss == "vicreg":
+                p1 = np.random.choice(pos_amt)
+                p2 = np.random.choice([p for p in range(pos_amt) if p!=p1])
+                
+                    # Two data batches, with same device and different position
+                batchX1 = [next(iter(t_loader[dev][p1]))[0] for dev in range(len(t_loader))]
+                batchX2 = [next(iter(t_loader[dev][p2]))[0] for dev in range(len(t_loader))]
 
-            c1 = torch.concatenate(batchX1)
-            c2 = torch.concatenate(batchX2)
-            z1 = mymodel(c1)
-            z2 = mymodel(c2)
+                c1 = torch.concatenate(batchX1)
+                c2 = torch.concatenate(batchX2)
+                z1 = mymodel(c1)
+                z2 = mymodel(c2)
 
-            x1 = [z1[dev*params.batch_size:(dev+1)*params.batch_size] for dev in range(len(t_loader))]
-            x2 = [z2[dev*params.batch_size:(dev+1)*params.batch_size] for dev in range(len(t_loader))]
+                x1 = [z1[dev*params.batch_size:(dev+1)*params.batch_size] for dev in range(len(t_loader))]
+                x2 = [z2[dev*params.batch_size:(dev+1)*params.batch_size] for dev in range(len(t_loader))]
 
-            # Same as z1, z2 ?
-            x = torch.cat(x1)
-            y = torch.cat(x2)
-            
-#             repr_loss = F.mse_loss(x, y)
-            repr_loss = torch.stack([F.mse_loss(x1[dev], x2[dev]) for dev in range(params.num_dev)]).mean()
-            
-            x = x - x.mean(dim=0)
-            y = y - y.mean(dim=0)
+                # Same as z1, z2 ?
+                x = torch.cat(x1)
+                y = torch.cat(x2)
+                
+    #             repr_loss = F.mse_loss(x, y)
+                repr_loss = torch.stack([F.mse_loss(x1[dev], x2[dev]) for dev in range(params.num_dev)]).sum()
+                
+                x = x - x.mean(dim=0)
+                y = y - y.mean(dim=0)
 
-            size_of_batch = x.size(0)
+                size_of_batch = x.size(0)
 
-            
-#             xt1 = torch.cat([x1[dev][None] for dev in range(num_dev)],  dim=0)
-#             xt2 = torch.cat([x2[dev][None] for dev in range(num_dev)],  dim=0)
-            xt1 = torch.stack([x1[dev] for dev in range(len(t_loader))],  dim=0)
-            xt2 = torch.stack([x2[dev] for dev in range(len(t_loader))],  dim=0)
-            
-#             xt1 = xt1 - xt1.mean(dim=0)
-#             xt2 = xt2 - xt2.mean(dim=0)
-            
-            std_x = torch.sqrt(xt1.var(dim=0) + 0.0001)
-            std_y = torch.sqrt(xt2.var(dim=0) + 0.0001)
-            std_loss = torch.mean(F.relu(1 - std_x)) / 2 + torch.mean(F.relu(1 - std_y)) / 2
+                
+    #             xt1 = torch.cat([x1[dev][None] for dev in range(num_dev)],  dim=0)
+    #             xt2 = torch.cat([x2[dev][None] for dev in range(num_dev)],  dim=0)
+                xt1 = torch.stack([x1[dev] for dev in range(len(t_loader))],  dim=0)
+                xt2 = torch.stack([x2[dev] for dev in range(len(t_loader))],  dim=0)
+                
+    #             xt1 = xt1 - xt1.mean(dim=0)
+    #             xt2 = xt2 - xt2.mean(dim=0)
+                
+                std_x = torch.sqrt(xt1.var(dim=0) + 0.0001)
+                std_y = torch.sqrt(xt2.var(dim=0) + 0.0001)
+                std_loss = torch.mean(F.relu(1 - std_x)) / 2 + torch.mean(F.relu(1 - std_y)) / 2
+                    
+                    
+                # Maximise the variance allong the batch
+                std_x2 = torch.sqrt(x.var(dim=0) + 0.0001)
+                std_y2 = torch.sqrt(y.var(dim=0) + 0.0001)
+                std_loss2 = torch.mean(F.relu(1 - std_x2)) / 2 + torch.mean(F.relu(1 - std_y2)) / 2
                 
                 
-            # Maximise the variance allong the batch
-            std_x2 = torch.sqrt(x.var(dim=0) + 0.0001)
-            std_y2 = torch.sqrt(y.var(dim=0) + 0.0001)
-            std_loss2 = torch.mean(F.relu(1 - std_x2)) / 2 + torch.mean(F.relu(1 - std_y2)) / 2
-            
-            
-            # Minimise the covariance along the encodded embeddings
-            cov_x = (x.T @ x) / (params.batch_size - 1)
-            cov_y = (y.T @ y) / (params.batch_size - 1)
-            cov_loss = off_diagonal(cov_x).pow_(2).sum().div(
-                mymodel.embedding_size
-            ) + off_diagonal(cov_y).pow_(2).sum().div(mymodel.embedding_size)
+                # Minimise the covariance along the encodded embeddings
+                cov_x = (x.T @ x) / (params.batch_size - 1)
+                cov_y = (y.T @ y) / (params.batch_size - 1)
+                cov_loss = off_diagonal(cov_x).pow_(2).sum().div(
+                    mymodel.embedding_size
+                ) + off_diagonal(cov_y).pow_(2).sum().div(mymodel.embedding_size)
+                # cov_loss = F.relu(1 - cov_loss)
 
-            # Paper's parameters 25, 25, 1
-            loss = (
-                params.lambda_distance * repr_loss
-                + params.lambda_std * std_loss
-                + params.lambda_cov * cov_loss
-#                 + 25 * std_loss2
-            ) / (params.lambda_distance + params.lambda_std + params.lambda_cov)
+                # Paper's parameters 25, 25, 1
+                loss = (
+                    params.lambda_distance * repr_loss
+                    + params.lambda_std * std_loss
+                    + params.lambda_cov * cov_loss
+    #                 + 25 * std_loss2
+                ) / (params.lambda_distance + params.lambda_std + params.lambda_cov)
 
-            # Keep track of the elements of the loss
-            dist_memory.append(repr_loss.item())
-            var_memory.append(std_loss.item())
-            var_memory2.append(std_loss2.item())
-            cov_memory.append(cov_loss.item())
+                # Keep track of the elements of the loss
+                dist_memory.append(repr_loss.item())
+                var_memory.append(std_loss.item())
+                var_memory2.append(std_loss2.item())
+                cov_memory.append(cov_loss.item())
 
-            # Backprop
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+                # Backprop
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
-            trainLoss += loss.item() * size_of_batch
-            samples += size_of_batch
-                
-#             if i == 1:
-#                 break
+                trainLoss += loss.item() * size_of_batch
+                samples += size_of_batch
+                    
+    #             if i == 1:
+    #                 break
 
         # Log
-        logger.log({"repr_loss": np.mean(dist_memory),
-        "std_loss": np.mean(var_memory),
-        "std_loss2": np.mean(var_memory2),
-        "cov_loss": np.mean(cov_memory),
-        "global_loss": trainLoss / samples,
-        "learning rate": optimizer.get_lr()})
-        logger.step_epoch()
+        if params.loss=="triplet":
+            logger.log({
+            "repr_loss": np.mean(dist_memory),
+            "triploss": np.mean(var_memory),
+            "global_loss": trainLoss / samples,
+            "learning rate": optimizer.get_lr()})
+            logger.step_epoch()
 
-        optimizer.scheduler.step(trainLoss / samples)
+        elif params.loss=="vicreg":
+            logger.log({"repr_loss": np.mean(dist_memory),
+            "std_loss": np.mean(var_memory),
+            "std_loss2": np.mean(var_memory2),
+            "cov_loss": np.mean(cov_memory),
+            "global_loss": trainLoss / samples,
+            "learning rate": optimizer.get_lr()})
+            logger.step_epoch()
+
+
         trainTemplate = "TRAIN - epoch: {} train loss: {:.6f} learning rate: {:.6f}"
         print(trainTemplate.format(epoch + 1, (trainLoss / samples),
             (optimizer.get_lr())))
         loss_memory.append(trainLoss / samples)
-        if optimizer.get_lr() < params.lr_limit :
+
+        # Optimizer
+        optimizer.epoch_routine(trainLoss / samples)
+        if optimizer.early_stopping() :
             break
         
         # From time to time let's see wehat that models output on validation data

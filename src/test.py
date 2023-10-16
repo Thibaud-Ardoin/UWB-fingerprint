@@ -7,6 +7,7 @@
 import numpy as np
 import time
 
+from sklearn.cluster import KMeans
 from scipy.spatial import distance_matrix
 
 import params
@@ -167,6 +168,25 @@ def reid_evaluation(embeddings, labels, logger):
         plt.plot(roc_value[:, 0], roc_value[:, 1])
         plt.plot([0, 1], [0, 1], linestyle="--")
         plt.show()
+
+def evaluate_Kmeans(test_set, test_labels, logger):
+    data_size = len(test_set)
+    kmeans = KMeans(n_clusters=params.num_dev, random_state=0, n_init="auto").fit(test_set)
+    dev_ids = [np.where(test_labels == i) for i in range(params.num_dev)]
+    accuracy = 0
+    for ids in dev_ids :
+        hist = np.histogram(kmeans.labels_[ids], bins=params.num_dev)
+        accuracy += np.max(hist[0])
+
+    accuracy = 100*accuracy / data_size
+
+    logger.log({"Kmeans cluster score %": accuracy})
+
+    if params.verbose:
+        print(" > Accuracy from Kmeans on clustering the test set: ", accuracy)
+
+    
+
         
 
 def testing_model(training_loaders, validation_loader, model, logger):
@@ -191,12 +211,25 @@ def testing_model(training_loaders, validation_loader, model, logger):
     print("[Test]: time for reid on test data", reid_time - scatter_time)
 
     mask2 = np.full(len(labels_train), False)
-    mask2[:int(len(labels_train)*params.data_test_rate)] = True
+    mask2[:int(len(labels_train)*params.data_test_rate*params.data_test_rate)] = True
     np.random.shuffle(mask2)
     reid_evaluation_test2train_NN(np.array(encoded_test)[mask], np.array(encoded_train)[mask2], np.array(labels_test)[mask], np.array(labels_train)[mask2], logger)
     reid2_time = time.time()
     print("[Test]: time for test 2 train reid", reid2_time - reid_time)
 
+    evaluate_Kmeans(np.array(encoded_test)[mask], np.array(labels_test)[mask], logger)
+    kmeans_time = time.time()
+    print("[Test]: time for test K_means evaluation", kmeans_time - reid2_time)
+    
+
     logger.step_test()
 
 
+if __name__ == "__main__":
+    logger = None
+    # Dummy data
+    test_set = np.random.rand(1000, 64)
+    test_labels = np.random.rand(1000)*13
+    test_labels = np.floor(test_labels)
+
+    evaluate_Kmeans(test_set, test_labels, logger)
