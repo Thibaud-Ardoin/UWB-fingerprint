@@ -12,10 +12,10 @@ import params
 
 
 #  LIL Encoding NETWORK
-class CNN1(nn.Module):
+class CNN2(nn.Module):
 
     def __init__(self, expender_multiplier=1, dropout_value=0):
-        super(CNN1, self).__init__()
+        super(CNN2, self).__init__()
         self.embedding_size = params.expender_out
         self.expender_multiplier = expender_multiplier
         self.dropout_value = params.dropout
@@ -31,13 +31,14 @@ class CNN1(nn.Module):
 
         self.flatten1 = nn.Flatten()
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(25*64, 64)
+        self.fc1 = nn.Linear(14*64, 64)
         self.fc2 = nn.Linear(64, params.latent_dimention)
         self.softmax = nn.Softmax()
         
-        self.expenderFc1 = nn.Linear(params.latent_dimention, int(params.expender_out/4))
-        self.expenderFc2 = nn.Linear(int(params.expender_out/4), int(params.expender_out/2))
-        self.expenderFc3 = nn.Linear(int(params.expender_out/2), params.expender_out)
+        if params.use_extender:
+            self.expenderFc1 = nn.Linear(params.latent_dimention, int(params.expender_out))
+            self.expenderFc2 = nn.Linear(int(params.expender_out), int(params.expender_out))
+            self.expenderFc3 = nn.Linear(int(params.expender_out), params.expender_out)
         
         
     def encoder(self, x): 
@@ -51,13 +52,13 @@ class CNN1(nn.Module):
         x = self.conv3(x)
         x = self.dropout(x)
         x = nn.ReLU()(x)
-#         x = self.conv4(x)
-#         x = self.dropout(x)
+        x = self.conv4(x)
+        x = self.dropout(x)
 #         x = nn.ReLU()(x)
         
 #         x = self.norm(x)
         x = self.flatten(x)
-        
+
         x = F.relu(self.fc1(x))
         x = self.dropout(x)
         x = self.fc2(x)
@@ -77,13 +78,13 @@ class CNN1(nn.Module):
     
     def forward(self, x):
         x = self.encoder(x)
-        if self.expender_multiplier:
+        if params.use_extender:
             x = self.expender(x)
         return x
 
 
 if __name__ == "__main__":
-	model = CNN1()
+	model = CNN2()
 	print(model)
 
 	bsz = 256

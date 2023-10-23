@@ -91,8 +91,7 @@ class Transformer3(nn.Module):
 		x = self.preprocess(x)
 
 		x = self.transformer_encoder(x)
-		# summing the last trensformers dimention to narrrow it down
-		x = self.norm(x)
+		# x = self.norm(x)
 
 		x = self.flatten(x)		
 

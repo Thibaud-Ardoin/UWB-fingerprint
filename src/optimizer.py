@@ -9,32 +9,60 @@ import pytorch_warmup as warmup
 import params
 
 
-class MyScheduler(LRScheduler):
-	def __init__(self, optimizer):
-		print(optimizer)
-		self.optimizer = optimizer
-		super().__init__(optimizer)
+# class MyScheduler(LRScheduler):
+# 	def __init__(self, optimizer):
+# 		print(optimizer)
+# 		self.optimizer = optimizer
+# 		super().__init__(optimizer)
+
+# 	def get_lr(self):
+# 		print("current_step", self.last_epoch)
+# 		training_steps = 1000
+# 		return 1
+# 		if self.last_epoch < params.warmup_steps:  # current_step / warmup_steps * base_lr
+# 			return float(self.last_epoch / params.warmup_steps)
+# 		else:                                 # (num_training_steps - current_step) / (num_training_steps - warmup_steps) * base_lr
+# 			return max(0.0, float(training_steps - self.last_epoch) / float(max(1, training_steps - params.warmup_steps)))
+
+# def mywarmup(current_step):
+# 	print("current_step", current_step)
+# 	training_steps = 1000
+# 	return 1
+# 	if current_step < params.warmup_steps:  # current_step / warmup_steps * base_lr
+# 		return float(current_step / params.warmup_steps)
+# 	else:                                 # (num_training_steps - current_step) / (num_training_steps - warmup_steps) * base_lr
+# 		return max(0.0, float(training_steps - current_step) / float(max(1, training_steps - params.warmup_steps)))
+
+
+class AdvOptimizer(Optimizer):
+	def __init__(self, dev_param, pos_param, encoder_param):
+		self.epoch = 0
+		self.dev_optim = eval(params.optimizer)(dev_param, lr=params.learning_rate)
+		self.pos_optim = eval(params.optimizer)(pos_param, lr=params.learning_rate)
+		self.encoder_optim = eval(params.optimizer)(encoder_param, lr=params.learning_rate)
+		self.scheduler = None
+
+	def step(self):
+		self.dev_optim.step()
+		self.pos_optim.step()
+		self.encoder_optim.step()
+
+	def zero_grad(self):
+		self.dev_optim.zero_grad()
+		self.pos_optim.zero_grad()
+		self.encoder_optim.zero_grad()
 
 	def get_lr(self):
-		print("current_step", self.last_epoch)
-		training_steps = 1000
-		return 1
-		if self.last_epoch < params.warmup_steps:  # current_step / warmup_steps * base_lr
-			return float(self.last_epoch / params.warmup_steps)
-		else:                                 # (num_training_steps - current_step) / (num_training_steps - warmup_steps) * base_lr
-			return max(0.0, float(training_steps - self.last_epoch) / float(max(1, training_steps - params.warmup_steps)))
+		# Arbitrary taking one Optim only
+		return self.dev_optim.param_groups[0]['lr']
+	
 
+	def epoch_routine(self, loss):
+		self.epoch += 1
 
+	def early_stopping(self):
+		return False
 
-
-def mywarmup(current_step):
-	print("current_step", current_step)
-	training_steps = 1000
-	return 1
-	if current_step < params.warmup_steps:  # current_step / warmup_steps * base_lr
-		return float(current_step / params.warmup_steps)
-	else:                                 # (num_training_steps - current_step) / (num_training_steps - warmup_steps) * base_lr
-		return max(0.0, float(training_steps - current_step) / float(max(1, training_steps - params.warmup_steps)))
 
 
 
@@ -44,15 +72,8 @@ class Optimizer():
 		self.optim = eval(params.optimizer)(parameters, lr=params.learning_rate)
 		self.scheduler = None
 		if params.sheduler == "warmup":
-			self.lr_scheduler = ExponentialLR(self.optim, gamma=0.999)			
-			# self.scheduler = create_lr_scheduler_with_warmup(lr_scheduler,
-			# 											warmup_start_value=0.0,
-			# 											warmup_end_value=params.learning_rate,
-			# 											warmup_duration=50)
+			self.lr_scheduler = ExponentialLR(self.optim, gamma=0.999)
 			self.warmup_scheduler = warmup.ExponentialWarmup(self.optim, warmup_period=int(params.warmup_steps/2))
-
-			# self.scheduler = MyScheduler(self.optim)
-			# LambdaLR(self.optim, mywarmup, last_epoch=1, verbose=True)
 		elif params.sheduler == "plateau":
 			self.scheduler = ReduceLROnPlateau(self.optim, 'min', patience=params.patience)
 

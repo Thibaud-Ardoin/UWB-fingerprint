@@ -40,8 +40,6 @@
 
 - Keep the best performing random seeds
 
-- Warmup
-
 - Cross validate on positions while training
 
 - Weight decay

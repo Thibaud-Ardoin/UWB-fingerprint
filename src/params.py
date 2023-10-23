@@ -18,6 +18,7 @@ augmentations=["addSomeNoise"]
 noise_amount = 0
 
 validation_pos = 0
+validation_dev = 0
 data_limit = 2000
 data_test_rate = 0.1    # Random % of data to run tests on (O(n**2))
 
@@ -30,38 +31,43 @@ signal_length = 200
 ############
 #   Train
 ############
-batch_size = 32
+batch_size = 64
 nb_epochs = 10000
-patience = 100
-test_interval = 50
+test_interval = 100
 
 ############
 #   Optim
 ############
-optimizer = "AdamW"
+optimizer = "Adam"
 sheduler = "warmup"    #"warmup" plateau
 warmup_steps = 50
 learning_rate = 1e-3
 lr_limit = 1e-4
+patience = 100
 
 ###########
 #   Loss
 ###########
-loss = "triplet" #"triplet" #"vicreg"
+loss = "adversarial" #"triplet3" #"triplet" #"vicreg"
+triplet_mmargin = 1
 lambda_distance = 14    #14
 lambda_std = 1.2         #1.2
-lambda_cov = 4          #4
+lambda_cov = 1          #4
+lambda_triplet = 10
 
 
 ############
 #   Model
 ############
-model_name = "Transformer3"
+model_name = "advCNN1" #"Transformer3"
 latent_dimention = 32
-expender_out = 128
+expender_out = 32
 use_extender = False
 dropout = 0
 # embed_size = 8 #TODO no the right numba
+
+# CNN
+
 
 # Transformers
 trans_embedding_size = 32 #actually becomming the multiplier of the nb of heads
@@ -77,7 +83,8 @@ window_size = 16
 ##############
 #   System
 ##############
-device = "cuda" if torch.cuda.is_available() else "cpu"
+use_gpu = False
+device = "cuda" if torch.cuda.is_available() and use_gpu else "cpu"
 verbose = True
 plotting = False
 use_wandb = True

@@ -140,6 +140,12 @@ class DataGatherer():
 
 
     def spliting_data(self, return_array=False):
+        if params.loss == "adversarial":
+            return self.positional_split(flattened=True)
+        else:
+            return self.positional_split(return_array)
+
+    def positional_split(self, return_array=False, flattened=False):
         """
             Separating the data such as the train and test data doesnt incorporate the same positions.
             This will enable us to test the generalisation of our model.
@@ -165,8 +171,15 @@ class DataGatherer():
             training_loaders.append([])
             for pos in range(params.num_pos) :
                 if not pos==params.validation_pos :
-                    training_set = MyDataset(all_data[dev][pos])
-                    training_loaders[dev].append(torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True))
+                    if flattened:
+                        # Dont divide in multi data loader for each class combination
+                        training_loaders.append(all_data[dev][pos])
+                    else :
+                        training_set = MyDataset(all_data[dev][pos])
+                        training_loaders[dev].append(torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True))
+        if flattened:
+            training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), batch_size=params.batch_size, shuffle=True)
+
 
         # Gather the unique validation position
         # TODO: Make it also a multi positional element
