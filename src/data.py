@@ -65,8 +65,15 @@ class MyDataset(torch.utils.data.Dataset):
         )
         
     def __getitem__(self, index):
-        x, y = self.data[index] 
+        try:
+            x, y = self.data[index]
+        except Exception as e:
+            print(e)
+            print(len(self.data), index)
+            print(self.data[index])
+            x, y = self.data[index-1]
         x = self.transforms(x).to(params.device)
+        y = torch.from_numpy(y).to(params.device)
             
         return x, y
     
@@ -140,12 +147,9 @@ class DataGatherer():
 
 
     def spliting_data(self, return_array=False):
-        if params.loss == "adversarial":
-            return self.positional_split(flattened=True)
-        else:
-            return self.positional_split(return_array)
+        return self.positional_split(return_array)
 
-    def positional_split(self, return_array=False, flattened=False):
+    def positional_split(self, return_array=False):
         """
             Separating the data such as the train and test data doesnt incorporate the same positions.
             This will enable us to test the generalisation of our model.
@@ -171,13 +175,17 @@ class DataGatherer():
             training_loaders.append([])
             for pos in range(params.num_pos) :
                 if not pos==params.validation_pos :
-                    if flattened:
+                    if params.flat_data:
                         # Dont divide in multi data loader for each class combination
-                        training_loaders.append(all_data[dev][pos])
+                        training_loaders = training_loaders + all_data[dev][pos]
                     else :
                         training_set = MyDataset(all_data[dev][pos])
                         training_loaders[dev].append(torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True))
-        if flattened:
+        if params.flat_data:
+            # Sanity check
+            for i in range(len(training_loaders)-1, -1, -1):
+                if len(training_loaders[i]) == 0:
+                    del training_loaders[i]
             training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), batch_size=params.batch_size, shuffle=True)
 
 

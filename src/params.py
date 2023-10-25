@@ -31,9 +31,9 @@ signal_length = 200
 ############
 #   Train
 ############
-batch_size = 64
+batch_size = 128
 nb_epochs = 10000
-test_interval = 100
+test_interval = 1
 
 ############
 #   Optim
@@ -48,7 +48,7 @@ patience = 100
 ###########
 #   Loss
 ###########
-loss = "adversarial" #"triplet3" #"triplet" #"vicreg"
+loss = "adversarial" #"adversarial" #"triplet3" #"triplet" #"vicreg"
 triplet_mmargin = 1
 lambda_distance = 14    #14
 lambda_std = 1.2         #1.2
@@ -59,11 +59,11 @@ lambda_triplet = 10
 ############
 #   Model
 ############
-model_name = "advCNN1" #"Transformer3"
+model_name = "advCNN1" #"advCNN1" #"Transformer3"
 latent_dimention = 32
 expender_out = 32
 use_extender = False
-dropout = 0
+dropout_value = 0
 # embed_size = 8 #TODO no the right numba
 
 # CNN
@@ -83,7 +83,7 @@ window_size = 16
 ##############
 #   System
 ##############
-use_gpu = False
+use_gpu = True
 device = "cuda" if torch.cuda.is_available() and use_gpu else "cpu"
 verbose = True
 plotting = False
@@ -91,9 +91,14 @@ use_wandb = True
 
 
 
+#########################
+#   Implied values
+#########################
+# These are variables that are concequences of some previous combinations
 
-
-
+flat_data = False
+if loss == "adversarial":
+    flat_data = True
 
 
 def __get_dict__():

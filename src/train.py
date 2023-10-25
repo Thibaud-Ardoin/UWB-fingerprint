@@ -1,5 +1,12 @@
 """
     Training script leading to the diferent optimisation, loss, epoch handler
+
+    Currently out of hand, but needs to be reorganised. The outline here beeing only 
+        - Load training tools
+        - loop on loader
+        - apply loss function
+            - Loss linnks to encapsulated classes for the different types
+        - Log it
 """
 import numpy as np
 
@@ -9,7 +16,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.distributed as dist
 
-from optimizer import Optimizer
+from optimizer import Optimizer, AdvOptimizer
 import params
 from test import testing_model
 
@@ -21,9 +28,20 @@ def off_diagonal(x):
 
 def training_model(t_loader, v_loader, mymodel, logger):
     encodded_validations = []
-    optimizer = Optimizer(mymodel.parameters())
-    tripletLoss = nn.TripletMarginLoss(margin=params.triplet_mmargin, p=2, reduce=True, reduction="mean")
-    
+
+    # Needs reorganisation, encapsulation PLS
+    if params.model_name == "advCNN1":
+        optimizer = AdvOptimizer(mymodel)
+    else:
+        optimizer = Optimizer(mymodel)
+
+    # Actually all this loss mess needs to be encapsulated too !
+    if params.loss.startswith("triplet"):
+        tripletLoss = nn.TripletMarginLoss(margin=params.triplet_mmargin, p=2, reduce=True, reduction="mean")
+    elif params.loss == "adversarial":
+        CEloss = nn.CrossEntropyLoss()
+
+
     if not params.flat_data :
         min_size = None
         for pos in range(len(t_loader)) :
@@ -49,19 +67,39 @@ def training_model(t_loader, v_loader, mymodel, logger):
         # loop over the current batch of data
         if params.flat_data:
             for data in t_loader:
-                x, y = data 
 
-                dev_pred, pos_pred = mymodel(x)
+                x, y = data
 
-                loss = (
-                    params.lambda_triplet * trip_loss / params.num_dev +
-                    params.lambda_cov * cov_loss
-                )
+                if params.loss == "adversarial":
 
-                # Backprop
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
+                    dev_pred, pos_pred = mymodel(x)
+
+                    devLoss = CEloss(dev_pred.double(), y[:,0])
+                    posLoss = CEloss(pos_pred.double(), y[:,1])
+
+                    encLoss = (
+                        devLoss - F.relu(1- posLoss)
+                    )
+
+                    # Backprop
+                    optimizer.zero_grad()
+
+                    devLoss.backward(retain_graph=True)
+                    posLoss.backward(retain_graph=True)
+                    encLoss.backward()
+
+                    optimizer.step()
+
+
+                    var_memory.append(devLoss.item())
+                    cov_memory.append(posLoss.item())
+                    # var_memory2.append(trip_loss.item())
+
+                    size_of_batch = x.size(0)
+
+                    trainLoss += encLoss.item() * size_of_batch
+                    samples += size_of_batch
+
 
 
         else :
@@ -124,18 +162,12 @@ def training_model(t_loader, v_loader, mymodel, logger):
     #                 + 1 * cov_loss
     #             )
 
-                if params.loss == "adversarial":
-                    batch = next(iter(t_loader))
-                    print(batch)
-                    fdhgd
 
-
-
-                elif params.loss == "triplet3":
+                if params.loss == "triplet3":
                     # Triplet with hard negative exemple mining
                     p1 = np.random.choice(pos_amt)
                     p2 = np.random.choice([p for p in range(pos_amt) if p!=p1])
-                    
+
                     # Two data batches, with same device and different position
                     batchX1 = [next(iter(t_loader[dev][p1]))[0] for dev in range(len(t_loader))]
                     batchX2 = [next(iter(t_loader[dev][p2]))[0] for dev in range(len(t_loader))]
@@ -395,7 +427,14 @@ def training_model(t_loader, v_loader, mymodel, logger):
         #                 break
 
         # Log
-        if params.loss=="triplet3":
+        if params.loss=="adversarial":
+            logger.log({
+            "Dev class loss": np.mean(var_memory),
+            "Pos class loss": np.mean(cov_memory),
+            "Encoder loss": trainLoss / samples,
+            "learning rate": optimizer.get_lr()})
+            logger.step_epoch()
+        elif params.loss=="triplet3":
             logger.log({
             "triploss": np.mean(var_memory2),
             "cov_loss": np.mean(cov_memory),

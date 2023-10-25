@@ -34,37 +34,6 @@ import params
 # 		return max(0.0, float(training_steps - current_step) / float(max(1, training_steps - params.warmup_steps)))
 
 
-class AdvOptimizer(Optimizer):
-	def __init__(self, dev_param, pos_param, encoder_param):
-		self.epoch = 0
-		self.dev_optim = eval(params.optimizer)(dev_param, lr=params.learning_rate)
-		self.pos_optim = eval(params.optimizer)(pos_param, lr=params.learning_rate)
-		self.encoder_optim = eval(params.optimizer)(encoder_param, lr=params.learning_rate)
-		self.scheduler = None
-
-	def step(self):
-		self.dev_optim.step()
-		self.pos_optim.step()
-		self.encoder_optim.step()
-
-	def zero_grad(self):
-		self.dev_optim.zero_grad()
-		self.pos_optim.zero_grad()
-		self.encoder_optim.zero_grad()
-
-	def get_lr(self):
-		# Arbitrary taking one Optim only
-		return self.dev_optim.param_groups[0]['lr']
-	
-
-	def epoch_routine(self, loss):
-		self.epoch += 1
-
-	def early_stopping(self):
-		return False
-
-
-
 
 class Optimizer():
 	def __init__(self, parameters):
@@ -103,6 +72,41 @@ class Optimizer():
 			if self.epoch > params.warmup_steps:
 				return self.get_lr() < params.lr_limit
 		return False
+
+
+
+class AdvOptimizer(Optimizer):
+	def __init__(self, model):
+		dev_param = model.devCls.parameters()
+		pos_param = model.posCls.parameters()
+		encoder_param = model.encoder.parameters()
+		self.epoch = 0
+		self.dev_optim = eval(params.optimizer)(dev_param, lr=params.learning_rate)
+		self.pos_optim = eval(params.optimizer)(pos_param, lr=params.learning_rate)
+		self.encoder_optim = eval(params.optimizer)(encoder_param, lr=params.learning_rate)
+		self.scheduler = None
+
+	def step(self):
+		self.dev_optim.step()
+		self.pos_optim.step()
+		self.encoder_optim.step()
+
+	def zero_grad(self):
+		self.dev_optim.zero_grad()
+		self.pos_optim.zero_grad()
+		self.encoder_optim.zero_grad()
+
+	def get_lr(self):
+		# Arbitrary taking one Optim only
+		return self.dev_optim.param_groups[0]['lr']
+	
+
+	def epoch_routine(self, loss):
+		self.epoch += 1
+
+	def early_stopping(self):
+		return False
+
 			
 
 

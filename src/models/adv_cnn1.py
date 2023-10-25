@@ -10,18 +10,11 @@ import torch.nn.functional as F
 
 import params
 
+class advEncoder(nn.Module):
+    def __init__(self):
+        super(advEncoder, self).__init__()
+        self.dropout = nn.Dropout(params.dropout_value)
 
-#  LIL Encoding NETWORK
-class advCNN1(nn.Module):
-
-    def __init__(self, expender_multiplier=1, dropout_value=0):
-        super(advCNN1, self).__init__()
-        self.embedding_size = params.expender_out
-        self.expender_multiplier = expender_multiplier
-        self.dropout_value = params.dropout
-        self.dropout = nn.Dropout(self.dropout_value) 
-        
-        # Fur conv encoder
         self.conv1 = nn.Conv1d(1, 32, kernel_size=5, stride=2, padding=2)
         self.conv2 = nn.Conv1d(32, 32, kernel_size=5, stride=2, padding=2)
         self.conv3 = nn.Conv1d(32, 64, kernel_size=5, stride=2, padding=2)
@@ -29,22 +22,11 @@ class advCNN1(nn.Module):
 
         self.norm = nn.BatchNorm1d(64)
 
-        self.flatten1 = nn.Flatten()
         self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(14*64, params.latent_dimention*2)
         self.fc2 = nn.Linear(params.latent_dimention*2, params.latent_dimention)
-        
-        self.posFc1 = nn.Linear(params.latent_dimention, int(params.expender_out))
-        self.posFc2 = nn.Linear(int(params.expender_out), int(params.num_pos))
-        # self.posFc3 = nn.Linear(int(params.expender_out), params.expender_out)
 
-        self.devFc1 = nn.Linear(params.latent_dimention, int(params.expender_out))
-        self.devFc2 = nn.Linear(int(params.expender_out), int(params.num_dev))
-
-        self.softmax = nn.Softmax()
-
-        
-    def encoder(self, x): 
+    def forward(self, x):
         x = x[:, None, :]        
         x = self.conv1(x)
         x = self.dropout(x)
@@ -66,32 +48,61 @@ class advCNN1(nn.Module):
         x = F.normalize(x, p=2, dim=1)
         
         return x
-    
-    def posCLS(self, x) :
+
+
+class advCls(nn.Module):
+    def __init__(self, output_size):
+        super(advCls, self).__init__()
+        self.dropout = nn.Dropout(params.dropout_value)
+        self.softmax = nn.Softmax(dim=1)
+
+        self.fc1 = nn.Linear(params.latent_dimention, int(params.expender_out))
+        self.fc2 = nn.Linear(int(params.expender_out), int(output_size))
+
+    def forward(self, x) :
         # Classifier to determine the position label
-        x = F.relu(self.posFc1(x))
+        x = F.relu(self.fc1(x))
         x = self.dropout(x)
-        x = self.posFc2(x)
-        x = self.softmax(x)
-        return x
-
-    def devCLS(self, x) :
-        # Classifier to determine the device label
-        x = F.relu(self.devFc1(x))
-        x = self.dropout(x)
-        x = self.devFc2(x)
+        x = self.fc2(x)
         x = self.softmax(x)
         return x
 
 
-    def forward(self, x):
+class advCNN1():
+
+    def __init__(self, expender_multiplier=1, dropout_value=0):
+        # super(advCNN1, self).__init__()
+
+        self.encoder = advEncoder()
+        self.posCls = advCls(params.num_pos)
+        self.devCls = advCls(params.num_dev)
+
+    def __call__(self, x):
         x = self.encoder(x)
 
-        dev_pred = self.devCLS(x)
+        dev_pred = self.devCls(x)
 
-        pos_pred = self.posCLS(x)
+        pos_pred = self.posCls(x)
 
         return dev_pred, pos_pred
+
+    def to(self, device):
+        self.encoder = self.encoder.to(device)
+        self.posCls = self.posCls.to(device)
+        self.devCls = self.devCls.to(device)
+        return self
+
+    def train(self):
+        # super(advCNN1, self).train()
+        self.encoder.train()
+        self.posCls.train()
+        self.devCls.train()
+
+    def eval(self):
+        # super(advCNN1, self).eval()
+        self.encoder.eval()
+        self.posCls.eval()
+        self.devCls.eval()
 
 
 if __name__ == "__main__":
