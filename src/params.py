@@ -17,9 +17,9 @@ data_spliting="all_split"
 augmentations=["addSomeNoise"]
 noise_amount = 0
 
-validation_pos = 0
+validation_pos = 5
 validation_dev = 0
-data_limit = 2000
+data_limit = 3000
 data_test_rate = 0.1    # Random % of data to run tests on (O(n**2))
 
 num_pos = 21    #21
@@ -31,19 +31,21 @@ signal_length = 200
 ############
 #   Train
 ############
-batch_size = 128
+batch_size = 32
 nb_epochs = 10000
 test_interval = 1
+
 
 ############
 #   Optim
 ############
 optimizer = "Adam"
-sheduler = "warmup"    #"warmup" plateau
+sheduler = "plateau"    #"warmup" plateau
 warmup_steps = 50
 learning_rate = 1e-3
 lr_limit = 1e-4
-patience = 100
+patience = 20
+
 
 ###########
 #   Loss

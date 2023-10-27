@@ -25,6 +25,13 @@ def off_diagonal(x):
     assert n == m
     return x.flatten()[:-1].view(n - 1, n + 1)[:, 1:].flatten()
 
+def accuracy(target, prediction):
+    predicted = torch.argmax(prediction, dim=1)
+    target_count = target.size(0)
+    correct_val = (target == predicted).sum().item()
+    val_acc = 100 * correct_val / target_count
+    return val_acc
+
 
 def training_model(t_loader, v_loader, mymodel, logger):
     encodded_validations = []
@@ -62,11 +69,11 @@ def training_model(t_loader, v_loader, mymodel, logger):
         valAcc = 0
         samples = 0
         mymodel.train()
-        loss_memory, cov_memory, dist_memory, var_memory, var_memory2 = [], [], [], [], []
+        loss_memory, cov_memory, dist_memory, var_memory, var_memory2, pos_accuracy, dev_accuracy = [], [], [], [], [], [], []
 
         # loop over the current batch of data
         if params.flat_data:
-            for data in t_loader:
+            for i, data in enumerate(t_loader):
 
                 x, y = data
 
@@ -78,7 +85,7 @@ def training_model(t_loader, v_loader, mymodel, logger):
                     posLoss = CEloss(pos_pred.double(), y[:,1])
 
                     encLoss = (
-                        devLoss - F.relu(1- posLoss)
+                        devLoss - posLoss
                     )
 
                     # Backprop
@@ -90,9 +97,13 @@ def training_model(t_loader, v_loader, mymodel, logger):
 
                     optimizer.step()
 
+                    devAcc = accuracy(y[:,0], dev_pred)
+                    posAcc = accuracy(y[:,1], pos_pred)
 
                     var_memory.append(devLoss.item())
                     cov_memory.append(posLoss.item())
+                    pos_accuracy.append(posAcc)
+                    dev_accuracy.append(devAcc)
                     # var_memory2.append(trip_loss.item())
 
                     size_of_batch = x.size(0)
@@ -431,6 +442,8 @@ def training_model(t_loader, v_loader, mymodel, logger):
             logger.log({
             "Dev class loss": np.mean(var_memory),
             "Pos class loss": np.mean(cov_memory),
+            "Pos class accuracy": np.mean(pos_accuracy), 
+            "Dev class accuracy": np.mean(dev_accuracy),
             "Encoder loss": trainLoss / samples,
             "learning rate": optimizer.get_lr()})
             logger.step_epoch()
