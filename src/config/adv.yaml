@@ -1,0 +1,4 @@
+loss: "adversarial"
+model_name: "advCNN1"
+latent_dimention: 32
+expender_out: 32

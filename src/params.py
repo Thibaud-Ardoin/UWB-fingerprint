@@ -50,7 +50,7 @@ patience = 20
 ###########
 #   Loss
 ###########
-loss = "adversarial" #"adversarial" #"triplet3" #"triplet" #"vicreg"
+loss = "triplet" #"adversarial" #"triplet3" #"triplet" #"vicreg"
 triplet_mmargin = 1
 lambda_distance = 14    #14
 lambda_std = 1.2         #1.2
@@ -83,7 +83,7 @@ window_size = 16
 
 
 ##############
-#   System
+#   System   #
 ##############
 use_gpu = True
 device = "cuda" if torch.cuda.is_available() and use_gpu else "cpu"
@@ -91,6 +91,17 @@ verbose = True
 plotting = False
 use_wandb = True
 
+
+
+###########################
+#   Include Yaml config   #
+###########################
+def __use_config__(file_name):
+    import yaml
+    with open(file_name, "r") as f:
+        __config = yaml.load(f, Loader=yaml.FullLoader)
+        for k in __config:
+            globals()[k] = __config[k]
 
 
 #########################
@@ -103,11 +114,12 @@ if loss == "adversarial":
     flat_data = True
 
 
+
 def __get_dict__():
     __output_dic={}
     __varnames = list(globals().keys())
     for v in __varnames:
-        if not v.startswith("_") and v!="torch" and v!="pprint":
+        if not v.startswith("_") and not v in ["torch", "yaml", "pprint"]:
             __output_dic[v] = globals()[v]
 
     pprint.pprint(__output_dic)
@@ -118,11 +130,14 @@ def set_parameters(args):
     for i in range(1, len(args)):
         name, value = args[i].split("=")
         name = name[2:]
-        if value.isdigit():
-            value = int(value)
-        elif value.replace('.','',1).isdigit() and value.count('.') < 2 :
-            value = float(value)
-        globals()[name] = value
+        if name == "config":
+            __use_config__(value)
+        else:
+            if value.isdigit():
+                value = int(value)
+            elif value.replace('.','',1).isdigit() and value.count('.') < 2 :
+                value = float(value)
+            globals()[name] = value
 
 
 

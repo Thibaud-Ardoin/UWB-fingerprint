@@ -19,11 +19,10 @@ class Transformer3(nn.Module):
 		Slice the signal into different bins of values that are used as embedded values
 	"""
 	
-	def __init__(self, expender_multiplier=1, dropout_value=0):
+	def __init__(self):
 		super(Transformer3, self).__init__()
-		self.expender_multiplier = expender_multiplier
 		self.use_extender = params.use_extender
-		self.dropout_value = params.dropout
+		self.dropout_value = params.dropout_value
 		self.dropout = nn.Dropout(self.dropout_value)
 		self.embedding_size = params.trans_embedding_size
 
