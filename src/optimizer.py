@@ -36,9 +36,9 @@ import params
 
 
 class Optimizer():
-	def __init__(self, parameters):
+	def __init__(self, model):
 		self.epoch = 0
-		self.optim = eval(params.optimizer)(parameters, lr=params.learning_rate)
+		self.optim = eval(params.optimizer)(model.parameters(), lr=params.learning_rate)
 		self.scheduler = None
 		if params.sheduler == "warmup":
 			self.lr_scheduler = ExponentialLR(self.optim, gamma=0.999)
