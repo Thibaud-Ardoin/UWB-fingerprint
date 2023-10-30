@@ -148,7 +148,34 @@ class DataGatherer():
 
 
     def spliting_data(self, return_array=False):
-        return self.positional_split(return_array)
+        if params.data_spliting == "random":
+            return self.random_split()
+        else :
+            return self.positional_split(return_array)
+
+    def random_split(self):
+        """
+            Just randomly separate the all data into test and train
+            enable to see performances in the case of learned position
+        """
+        z = list(zip(self.data, self.labels))
+        ind = np.arange(len(z))
+        np.random.shuffle(ind)
+        ind = np.random.choice(ind, min(len(ind), params.data_limit))
+        data_size = len(ind)
+
+        train_data = [z[ind[i]] for i in range(int(params.split_train_ratio*data_size))]
+        val_data = [z[ind[i]] for i in range(int(params.split_train_ratio*data_size), data_size)]
+
+        training_set = MyDataset(train_data, testset=False)
+        training_loader = torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True)
+
+        validation_set = MyDataset(val_data, testset=True)
+        validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=params.batch_size, shuffle=True)
+        
+        return training_loader, validation_loader
+
+
 
     def positional_split(self, return_array=False):
         """
