@@ -3,7 +3,7 @@ import sys
 import wandb
 
 import params
-from train import training_model
+from train import Trainer
 from test import testing_model
 from models import load_model
 from data import DataGatherer
@@ -29,8 +29,8 @@ def main():
     model = load_model()
     logger.log_model(model)
 
-    training_model(trainDataloader, valDataloader, model, logger)
-
+    trainier=Trainer(trainDataloader, valDataloader, model, logger)
+    trainier.train()
 
 
 
