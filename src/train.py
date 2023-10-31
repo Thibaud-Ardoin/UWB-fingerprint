@@ -45,7 +45,7 @@ def training_model(t_loader, v_loader, mymodel, logger):
     # Actually all this loss mess needs to be encapsulated too !
     if params.loss.startswith("triplet"):
         tripletLoss = nn.TripletMarginLoss(margin=params.triplet_mmargin, p=2, reduce=True, reduction="mean")
-    elif params.loss == "adversarial":
+    elif params.loss in ["adversarial", "crossentropy"] :
         CEloss = nn.CrossEntropyLoss()
 
 
@@ -111,7 +111,26 @@ def training_model(t_loader, v_loader, mymodel, logger):
                     trainLoss += encLoss.item() * size_of_batch
                     samples += size_of_batch
 
+                elif params.loss == "crossentropy":
 
+                    dev_pred = mymodel(x)
+
+                    devLoss = CEloss(dev_pred.double(), y[:,0])
+
+                    # Backprop
+                    optimizer.zero_grad()
+                    devLoss.backward()
+                    optimizer.step()
+
+                    devAcc = accuracy(y[:,0], dev_pred)
+
+                    var_memory.append(devLoss.item())
+                    dev_accuracy.append(devAcc)
+
+                    size_of_batch = x.size(0)
+
+                    trainLoss += devLoss.item() * size_of_batch
+                    samples += size_of_batch
 
         else :
             # Data divided in multi class
@@ -438,6 +457,14 @@ def training_model(t_loader, v_loader, mymodel, logger):
         #                 break
 
         # Log
+        
+        if params.loss=="crossentropy":
+            logger.log({
+            "Dev class loss": np.mean(var_memory),
+            "Dev class accuracy": np.mean(dev_accuracy),
+            "Encoder loss": trainLoss / samples,
+            "learning rate": optimizer.get_lr()})
+            logger.step_epoch()
         if params.loss=="adversarial":
             logger.log({
             "Dev class loss": np.mean(var_memory),

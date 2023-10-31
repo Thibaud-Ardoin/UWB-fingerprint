@@ -13,13 +13,14 @@ import torch
 datafile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_data.npy"
 labelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_labels.npy"
 
-data_spliting="all_split"
-augmentations=["addSomeNoise"]
+data_spliting = "random"  #"all_split"
+split_train_ratio = 0.80
+augmentations = ["addSomeNoise"]
 noise_amount = 0
 
-validation_pos = 5
-validation_dev = 0
 data_limit = 3000
+validation_pos = 5
+validation_dev = 0      # Not used yet ?
 data_test_rate = 0.1    # Random % of data to run tests on (O(n**2))
 
 num_pos = 21    #21
@@ -31,9 +32,9 @@ signal_length = 200
 ############
 #   Train
 ############
-batch_size = 32
+batch_size = 1024
 nb_epochs = 10000
-test_interval = 1
+test_interval = 50
 
 
 ############
@@ -44,13 +45,13 @@ sheduler = "plateau"    #"warmup" plateau
 warmup_steps = 50
 learning_rate = 1e-3
 lr_limit = 1e-4
-patience = 20
+patience = 50
 
 
 ###########
 #   Loss
 ###########
-loss = "triplet" #"adversarial" #"triplet3" #"triplet" #"vicreg"
+loss = "crossentropy" #"adversarial" #"triplet3" #"triplet" #"vicreg"
 triplet_mmargin = 1
 lambda_distance = 14    #14
 lambda_std = 1.2         #1.2
@@ -61,15 +62,27 @@ lambda_triplet = 10
 ############
 #   Model
 ############
-model_name = "advCNN1" #"advCNN1" #"Transformer3"
-latent_dimention = 32
-expender_out = 32
+model_name = "ClassCNN1" #"advCNN1" #"Transformer3"
+latent_dimention = 64
+expender_out = 64
 use_extender = False
 dropout_value = 0
 # embed_size = 8 #TODO no the right numba
 
 # CNN
+conv_layers_nb = 4
+conv_features1_nb = 32
+conv_kernel1_size = 5
+conv_features2_nb = 64
+conv_kernel2_size = 3
+stride_size = 1
+padding_size = 2
+tail_fc_layers_nb = 1
+feature_norm = "batch" #layer #none
 
+
+class_layers_nb = 3
+class_hidden_size = 64
 
 # Transformers
 trans_embedding_size = 32 #actually becomming the multiplier of the nb of heads
@@ -89,7 +102,7 @@ use_gpu = True
 device = "cuda" if torch.cuda.is_available() and use_gpu else "cpu"
 verbose = True
 plotting = False
-use_wandb = True
+use_wandb = False
 
 
 
@@ -110,7 +123,7 @@ def __use_config__(file_name):
 # These are variables that are concequences of some previous combinations
 
 flat_data = False
-if loss == "adversarial":
+if loss == "adversarial" or data_spliting=="random":
     flat_data = True
 
 

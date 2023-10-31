@@ -86,6 +86,10 @@ class advCNN1():
 
         return dev_pred, pos_pred
 
+    def classify(self, x):
+        return self.devCls(x)
+    
+
     def to(self, device):
         self.encoder = self.encoder.to(device)
         self.posCls = self.posCls.to(device)

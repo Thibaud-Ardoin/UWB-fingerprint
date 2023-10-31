@@ -8,11 +8,13 @@
 - Propose new architectures:
     - Adversarial position learning
     - Reset CNN model
+        - Use MaxPool dim reduction
     - 16x16 signals is worth a 1000 words
     - Sliding window
 
 - Change used optimizer:
     - Check Adamdffffff
+    - Check SGD the OG of optimizers
     - Warmup ?
 
 - Training process:

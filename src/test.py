@@ -7,8 +7,10 @@
 import numpy as np
 import time
 
+import torch
 from sklearn.cluster import KMeans
 from scipy.spatial import distance_matrix
+from sklearn.metrics import classification_report, confusion_matrix
 
 import params
 
@@ -185,7 +187,20 @@ def evaluate_Kmeans(test_set, test_labels, logger):
     if params.verbose:
         print(" > Accuracy from Kmeans on clustering the test set: ", accuracy)
 
+def accuracy_test(model, encoded_test, labels_test, logger):
+    encoded = torch.Tensor(encoded_test).to(params.device)
+    labels = torch.Tensor(labels_test).to(params.device)
+    output = model.classify(encoded)
+    predicted = torch.argmax(output, dim=1)
+    target_count = labels.size(0)
+    correct_val = (labels == predicted).sum().item()
+    val_acc = 100 * correct_val / target_count
     
+    logger.log({"Accuracy for dev classification on test data %": val_acc})
+    if params.verbose:
+        print("Accuracy for dev classification on test data %", val_acc)
+        print(classification_report(labels.cpu(), predicted.cpu()))
+        print(confusion_matrix(labels.cpu(), predicted.cpu()))
 
         
 
@@ -197,29 +212,32 @@ def testing_model(training_loaders, validation_loader, model, logger):
     enc_time = time.time()
     print("[Test]: time for encodding", enc_time - start_time)
 
-    logger.log_scatter(encoded_train, labels_train, title="train_data")
-    logger.log_scatter(encoded_test, labels_test, title="test_data")
-    scatter_time = time.time()
-    print("[Test]: time for plottingscatter", scatter_time - enc_time)
+    # logger.log_scatter(encoded_train, labels_train, title="train_data")
+    # logger.log_scatter(encoded_test, labels_test, title="test_data")
+    # scatter_time = time.time()
+    # print("[Test]: time for plottingscatter", scatter_time - enc_time)
 
-    # Selecting a subset of size params.data_test_rate for reid evalution
-    mask = np.full(len(encoded_test), False)
-    mask[:int(len(encoded_test)*params.data_test_rate)] = True
-    np.random.shuffle(mask)
-    reid_evaluation(np.array(encoded_test)[mask], np.array(labels_test)[mask], logger)
-    reid_time = time.time()
-    print("[Test]: time for reid on test data", reid_time - scatter_time)
+    # # Selecting a subset of size params.data_test_rate for reid evalution
+    # mask = np.full(len(encoded_test), False)
+    # mask[:int(len(encoded_test)*params.data_test_rate)] = True
+    # np.random.shuffle(mask)
+    # reid_evaluation(np.array(encoded_test)[mask], np.array(labels_test)[mask], logger)
+    # reid_time = time.time()
+    # print("[Test]: time for reid on test data", reid_time - scatter_time)
 
-    mask2 = np.full(len(labels_train), False)
-    mask2[:int(len(labels_train)*params.data_test_rate*params.data_test_rate)] = True
-    np.random.shuffle(mask2)
-    reid_evaluation_test2train_NN(np.array(encoded_test)[mask], np.array(encoded_train)[mask2], np.array(labels_test)[mask], np.array(labels_train)[mask2], logger)
-    reid2_time = time.time()
-    print("[Test]: time for test 2 train reid", reid2_time - reid_time)
+    # mask2 = np.full(len(labels_train), False)
+    # mask2[:int(len(labels_train)*params.data_test_rate*params.data_test_rate)] = True
+    # np.random.shuffle(mask2)
+    # reid_evaluation_test2train_NN(np.array(encoded_test)[mask], np.array(encoded_train)[mask2], np.array(labels_test)[mask], np.array(labels_train)[mask2], logger)
+    # reid2_time = time.time()
+    # print("[Test]: time for test 2 train reid", reid2_time - reid_time)
 
-    evaluate_Kmeans(np.array(encoded_test)[mask], np.array(labels_test)[mask], logger)
-    kmeans_time = time.time()
-    print("[Test]: time for test K_means evaluation", kmeans_time - reid2_time)
+    # evaluate_Kmeans(np.array(encoded_test)[mask], np.array(labels_test)[mask], logger)
+    # kmeans_time = time.time()
+    # print("[Test]: time for test K_means evaluation", kmeans_time - reid2_time)
+
+    if params.loss == "crossentropy":
+        accuracy_test(model, encoded_test, labels_test, logger)
     
 
     logger.step_test()
