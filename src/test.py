@@ -212,29 +212,29 @@ def testing_model(training_loaders, validation_loader, model, logger):
     enc_time = time.time()
     print("[Test]: time for encodding", enc_time - start_time)
 
-    # logger.log_scatter(encoded_train, labels_train, title="train_data")
-    # logger.log_scatter(encoded_test, labels_test, title="test_data")
-    # scatter_time = time.time()
-    # print("[Test]: time for plottingscatter", scatter_time - enc_time)
+    logger.log_scatter(encoded_train, labels_train, title="train_data")
+    logger.log_scatter(encoded_test, labels_test, title="test_data")
+    scatter_time = time.time()
+    print("[Test]: time for plottingscatter", scatter_time - enc_time)
 
-    # # Selecting a subset of size params.data_test_rate for reid evalution
-    # mask = np.full(len(encoded_test), False)
-    # mask[:int(len(encoded_test)*params.data_test_rate)] = True
-    # np.random.shuffle(mask)
-    # reid_evaluation(np.array(encoded_test)[mask], np.array(labels_test)[mask], logger)
-    # reid_time = time.time()
-    # print("[Test]: time for reid on test data", reid_time - scatter_time)
+    # Selecting a subset of size params.data_test_rate for reid evalution
+    mask = np.full(len(encoded_test), False)
+    mask[:int(len(encoded_test)*params.data_test_rate)] = True
+    np.random.shuffle(mask)
+    reid_evaluation(np.array(encoded_test)[mask], np.array(labels_test)[mask], logger)
+    reid_time = time.time()
+    print("[Test]: time for reid on test data", reid_time - scatter_time)
 
-    # mask2 = np.full(len(labels_train), False)
-    # mask2[:int(len(labels_train)*params.data_test_rate*params.data_test_rate)] = True
-    # np.random.shuffle(mask2)
-    # reid_evaluation_test2train_NN(np.array(encoded_test)[mask], np.array(encoded_train)[mask2], np.array(labels_test)[mask], np.array(labels_train)[mask2], logger)
-    # reid2_time = time.time()
-    # print("[Test]: time for test 2 train reid", reid2_time - reid_time)
+    mask2 = np.full(len(labels_train), False)
+    mask2[:int(len(labels_train)*params.data_test_rate*params.data_test_rate)] = True
+    np.random.shuffle(mask2)
+    reid_evaluation_test2train_NN(np.array(encoded_test)[mask], np.array(encoded_train)[mask2], np.array(labels_test)[mask], np.array(labels_train)[mask2], logger)
+    reid2_time = time.time()
+    print("[Test]: time for test 2 train reid", reid2_time - reid_time)
 
-    # evaluate_Kmeans(np.array(encoded_test)[mask], np.array(labels_test)[mask], logger)
-    # kmeans_time = time.time()
-    # print("[Test]: time for test K_means evaluation", kmeans_time - reid2_time)
+    evaluate_Kmeans(np.array(encoded_test)[mask], np.array(labels_test)[mask], logger)
+    kmeans_time = time.time()
+    print("[Test]: time for test K_means evaluation", kmeans_time - reid2_time)
 
     if params.loss == "crossentropy":
         accuracy_test(model, encoded_test, labels_test, logger)

@@ -23,15 +23,19 @@ class ClassCNN1(nn.Module):
         
         # Fur conv encoder
         self.convs = []
+        out_size = params.signal_length
         feature_sizes = [1, params.conv_features1_nb, params.conv_features1_nb, params.conv_features2_nb, params.conv_features2_nb, params.conv_features2_nb, params.conv_features2_nb]
-        kernel_sizes = [params.conv_kernel1_size, params.conv_kernel1_size, params.conv_kernel1_size, params.conv_kernel1_size, params.conv_kernel2_size, params.conv_kernel2_size]
+        kernel_sizes = [params.conv_kernel1_size, params.conv_kernel1_size, params.conv_kernel1_size, params.conv_kernel2_size, params.conv_kernel2_size, params.conv_kernel2_size]
         for i in range(params.conv_layers_nb):
+#            print(kernel_sizes[i])
             self.convs.append(nn.Conv1d(
                 feature_sizes[i],
                 feature_sizes[i+1], 
                 kernel_size=kernel_sizes[i], 
                 stride=params.stride_size, 
                 padding=params.padding_size))
+            out_size = math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)
+#            print(out_size)
         self.convs = nn.ModuleList(self.convs)
 
         # self.conv2 = nn.Conv1d(32, 32, kernel_size=5, stride=2, padding=2)
@@ -39,21 +43,22 @@ class ClassCNN1(nn.Module):
         # self.conv4 = nn.Conv1d(64, 64, kernel_size=3, stride=2, padding=2)
 
         if params.feature_norm == "batch":
-            self.norm = nn.BatchNorm1d(64)
+            self.norm = nn.BatchNorm1d(feature_sizes[params.conv_layers_nb+1])
         elif params.feature_norm == "layer":
-            self.norm = nn.LayerNorm(14)
+            self.norm = nn.LayerNorm(out_size)
         else:
             self.norm = nn.Identity()
 
         # TAIL FC
         self.flatten = nn.Flatten()
         self.fcs = []
-        d1 = feature_sizes[params.conv_layers_nb+1] * params.signal_length // ((params.stride_size)**params.conv_layers_nb)
+        d1 = feature_sizes[params.conv_layers_nb+1] * out_size
+#feature_sizes[params.conv_layers_nb+1] * math.ceil(params.signal_length / ((params.stride_size)**params.conv_layers_nb))
+ #       print(d1)
         dim_size = [d1, params.latent_dimention, params.latent_dimention, params.latent_dimention]
         if params.tail_fc_layers_nb>1:
              dim_size[1] = dim_size[1]*2
         # 14*64
-        print(dim_size)
         for i in range(params.tail_fc_layers_nb):
             self.fcs.append( nn.Linear(dim_size[i], dim_size[i+1]) )
 
@@ -77,9 +82,9 @@ class ClassCNN1(nn.Module):
             x = self.dropout(x)
             if i < params.conv_layers_nb -1:
                 x = nn.ReLU()(x)
-    
         x = self.norm(x)
         x = self.flatten(x)
+
 
         # Tail fc
         for i in range(params.tail_fc_layers_nb):

@@ -75,9 +75,9 @@ conv_features1_nb = 32
 conv_kernel1_size = 5
 conv_features2_nb = 64
 conv_kernel2_size = 3
-stride_size = 1
+stride_size = 2
 padding_size = 2
-tail_fc_layers_nb = 1
+tail_fc_layers_nb = 2
 feature_norm = "batch" #layer #none
 
 
@@ -102,7 +102,7 @@ use_gpu = True
 device = "cuda" if torch.cuda.is_available() and use_gpu else "cpu"
 verbose = True
 plotting = False
-use_wandb = False
+use_wandb = True
 
 
 
