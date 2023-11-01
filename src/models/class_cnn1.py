@@ -92,7 +92,6 @@ class ClassCNN1(nn.Module):
             x = self.dropout(x)
             x = F.relu(x)
     
-        # x = self.fc2(x)
         x = F.normalize(x, p=2, dim=1)        
         return x
     
