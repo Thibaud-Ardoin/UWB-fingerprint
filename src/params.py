@@ -18,7 +18,7 @@ split_train_ratio = 0.80
 augmentations = ["addSomeNoise"]
 noise_amount = 0
 
-data_limit = 3000
+data_limit = 500000
 validation_pos = 5
 validation_dev = 0      # Not used yet ?
 data_test_rate = 0.1    # Random % of data to run tests on (O(n**2))
@@ -34,7 +34,7 @@ signal_length = 200
 ############
 batch_size = 1024
 nb_epochs = 10000
-test_interval = 50
+test_interval = 1000
 
 
 ############
