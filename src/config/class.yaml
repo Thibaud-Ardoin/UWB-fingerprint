@@ -1,0 +1,5 @@
+data_spliting: "random"
+loss: "crossentropy"
+model_name: "ClassCNN1"
+latent_dimention: 32
+expender_out: 32
