@@ -29,8 +29,8 @@ def main():
     model = load_model()
     logger.log_model(model)
 
-    trainier=Trainer(trainDataloader, valDataloader, model, logger)
-    trainier.train()
+    trainer=Trainer(trainDataloader, valDataloader, model, logger)
+    trainer.train()
 
 
 
