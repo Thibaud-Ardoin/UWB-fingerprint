@@ -236,7 +236,7 @@ def testing_model(training_loaders, validation_loader, model, logger):
     kmeans_time = time.time()
     print("[Test]: time for test K_means evaluation", kmeans_time - reid2_time)
 
-    if params.loss == "crossentropy":
+    if params.loss in ["crossentropy", "triplet+crossentropy"]:
         accuracy_test(model, encoded_test, labels_test, logger)
     
 

@@ -75,7 +75,15 @@ class ClassCNN1(nn.Module):
         for i in range(params.class_layers_nb):
             self.clsFcs.append( nn.Linear(cls_layer_sizes[i], cls_layer_sizes[i+1]) )
         self.clsFcs = nn.ModuleList(self.clsFcs)
-        
+
+        # Expender
+        exp_layer_sizes = [params.latent_dimention]
+        exp_layer_sizes = exp_layer_sizes + [int(params.expender_hidden_size) for _ in range(params.expender_layers_nb -1 )]
+        exp_layer_sizes.append(params.expender_out)
+        self.expFcs = []
+        for i in range(params.expender_layers_nb):
+            self.expFcs.append( nn.Linear(exp_layer_sizes[i], exp_layer_sizes[i+1]))
+        self.expFcs = nn.ModuleList(self.expFcs)
         
     def encoder(self, x): 
         x = x[:, None, :]
@@ -101,7 +109,6 @@ class ClassCNN1(nn.Module):
         return x
     
     def classifier(self, x) :
-        # Just two Fc layers with augmenting size
         for i in range(params.class_layers_nb):
             x = self.clsFcs[i](x)
             x = self.dropout(x)
@@ -111,8 +118,25 @@ class ClassCNN1(nn.Module):
         x = self.softmax(x)
         return x
 
+    def expander(self, x) :
+        if params.use_extender and params.expender_layers_nb > 0:
+            for i in range(params.expender_layers_nb):
+                x = self.expFcs[i](x)
+                x = self.dropout(x)
+                if i < params.expender_layers_nb - 1:
+                    x = F.relu(x)
+        
+            x = self.softmax(x)
+        return x
+
     def classify(self, x):
         return self.classifier(x)
+
+    def encode(self, x):
+        return self.encoder(x)
+
+    def expand(self, x):
+        return self.expander(x)
 
     def forward(self, x):
         x = self.encoder(x)

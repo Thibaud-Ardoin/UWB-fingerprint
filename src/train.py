@@ -33,6 +33,14 @@ class Trainer:
             "Encoder loss": self.trainLoss / self.samples,
             "learning rate": self.optimizer.get_lr()})
             self.logger.step_epoch()
+        elif params.loss=="triplet+crossentropy":
+            self.logger.log({
+            "Triplet loss": np.mean(self.var_memory2),
+            "Dev class loss": np.mean(self.var_memory),
+            "Dev class accuracy": np.mean(self.dev_accuracy),
+            "Encoder loss": self.trainLoss / self.samples,
+            "learning rate": self.optimizer.get_lr()})
+            self.logger.step_epoch()
         elif params.loss=="adversarial":
             self.logger.log({
             "Dev class loss": np.mean(self.var_memory),

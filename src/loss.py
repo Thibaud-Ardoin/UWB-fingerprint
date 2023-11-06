@@ -82,9 +82,95 @@ class Loss():
                 return devLoss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy
 
     def per_epoch(self, epoch):
-        tripletLoss = nn.TripletMarginLoss(margin=params.triplet_mmargin, p=2, reduce=True, reduction="mean")
+        self.tripletLoss = nn.TripletMarginLoss(margin=params.triplet_mmargin, p=2, reduce=True, reduction="mean")
 
-        if params.loss == "triplet3":
+        if params.loss == "triplet+crossentropy":
+            ce_loss = nn.CrossEntropyLoss()
+
+            # Triplet with hard negative exemple mining
+            p1 = np.random.choice(self.pos_amt)
+            p2 = np.random.choice([p for p in range(self.pos_amt) if p!=p1])
+
+            # Two data batches, with same device and different position
+            batchX1 = [next(iter(self.trainDataloader[dev][p1])) for dev in range(len(self.trainDataloader))]
+            batchX2 = [next(iter(self.trainDataloader[dev][p2])) for dev in range(len(self.trainDataloader))]
+
+            encoded1 = [self.my_model.encode(batchX1[dev][0]) for dev in range(len(self.trainDataloader))]
+            encoded2 = [self.my_model.encode(batchX2[dev][0]) for dev in range(len(self.trainDataloader))]
+
+            cls_pred1 = [self.my_model.classify(enc) for enc in encoded1]
+            cls_pred2 = [self.my_model.classify(enc) for enc in encoded2]
+
+            x1 = [self.my_model.expand(enc) for enc in encoded1]
+            x2 = [self.my_model.expand(enc) for enc in encoded2]
+
+            cls_pred1 = torch.cat(cls_pred1)
+
+            label_dev1 = torch.arange(start=0, end=len(batchX1)).to(params.device)
+            label_dev1 = label_dev1.unsqueeze(1)
+            label_dev1 = label_dev1.expand((len(batchX1), params.batch_size))
+            label_dev1 = label_dev1.flatten()
+
+            crossentropy = ce_loss(cls_pred1.double(), label_dev1)
+
+            devAcc = accuracy(label_dev1, cls_pred1)
+
+            self.var_memory.append(crossentropy.item())
+            self.dev_accuracy.append(devAcc)
+
+            # # Covariance
+            # x = torch.cat(x1)
+            # y = torch.cat(x2)
+            # x = x - x.mean(dim=0)
+            # y = y - y.mean(dim=0)
+
+            # cov_x = (x.T @ x) / (params.batch_size - 1)
+            # cov_y = (y.T @ y) / (params.batch_size - 1)
+            # cov_loss = off_diagonal(cov_x).pow_(2).sum().div(
+            #     self.my_model.embedding_size
+            # ) + off_diagonal(cov_y).pow_(2).sum().div(self.my_model.embedding_size)
+
+
+            # # TRIPLET LOSS
+            # distance_mat = distance_matrix(
+            #     np.array([torch.flatten(xx1).cpu().detach().numpy() for xx1 in x1]),
+            #     np.array([torch.flatten(xx2).cpu().detach().numpy() for xx2 in x2])
+            # )
+            
+            # # Triplet loss
+            trip_loss = 0
+            for dev1 in range(params.num_dev):
+                if epoch > 100 and np.random.rand() > 0.05:
+                    neighbors = np.argpartition(distance_mat[dev1], 2)
+                    dev2 = neighbors[1]
+                    if dev2==dev1:
+                        dev2 = neighbors[0]
+                else :
+                    dev2 = np.random.choice([d for d in range(params.num_dev) if d!=dev1])
+
+                anchor = x1[dev1]         # P1, D1 
+                positive = x2[dev1]       # P2, D1
+                negative = x1[dev2]       # P1, D2
+
+                trip_loss += self.tripletLoss(anchor, positive, negative)
+
+            loss = (
+                params.lambda_triplet * trip_loss / params.num_dev +
+                params.lambda_class * crossentropy 
+            )
+
+            self.var_memory2.append(trip_loss.item()) # Actually triplet loss hey
+            # self.cov_memory.append(cov_loss.item()) # Actually triplet loss hey
+            self.var_memory.append(crossentropy.item())
+            self.dev_accuracy.append(devAcc)
+
+
+            size_of_batch = anchor.size(0)
+
+            self.trainLoss += loss.item() * size_of_batch
+            self.samples += size_of_batch
+
+        elif params.loss == "triplet3":
             # Triplet with hard negative exemple mining
             p1 = np.random.choice(self.pos_amt)
             p2 = np.random.choice([p for p in range(self.pos_amt) if p!=p1])

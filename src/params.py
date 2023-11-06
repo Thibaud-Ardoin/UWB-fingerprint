@@ -80,6 +80,8 @@ padding_size = 2
 tail_fc_layers_nb = 2
 feature_norm = "batch" #layer #none
 
+expender_layers_nb = 1
+expender_hidden_size = 256
 class_layers_nb = 3
 class_hidden_size = 64
 
