@@ -13,18 +13,18 @@ import torch
 datafile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_data.npy"
 labelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_labels.npy"
 
-data_spliting = "random"  #"all_split"
+data_spliting = "pos_test"  #"all_split"
 split_train_ratio = 0.80
 augmentations = ["addSomeNoise"]
 noise_amount = 0
 
-data_limit = 500000
+data_limit = -1
 validation_pos = 5
 validation_dev = 0      # Not used yet ?
 data_test_rate = 0.1    # Random % of data to run tests on (O(n**2))
 
 num_pos = 21    #21
-num_dev = 13    #13
+num_dev = 3    #13
 signal_length = 200
 
 
@@ -32,9 +32,9 @@ signal_length = 200
 ############
 #   Train
 ############
-batch_size = 1024
+batch_size = 64
 nb_epochs = 10000
-test_interval = 1000
+test_interval = 200
 
 
 ############
@@ -51,45 +51,45 @@ patience = 50
 ###########
 #   Loss
 ###########
-loss = "crossentropy" #"adversarial" #"triplet3" #"triplet" #"vicreg"
-triplet_mmargin = 1
-lambda_distance = 14    #14
-lambda_std = 1.2         #1.2
-lambda_cov = 1          #4
+loss = "vicreg" #"adversarial" #"triplet3" #"triplet" #"vicreg"
 lambda_triplet = 10
+triplet_mmargin = 1
+lambda_distance = 11    #14
+lambda_std = 1.2         #1.2
+lambda_cov = 4          #4
 
 
 ############
 #   Model
 ############
-model_name = "ClassCNN1" #"advCNN1" #"Transformer3"
-latent_dimention = 64
-expender_out = 64
-use_extender = False
+model_name = "Transformer3" #"advCNN1" #"Transformer3"
+latent_dimention = 256
+expender_out = 512
+use_extender = True
 dropout_value = 0
 # embed_size = 8 #TODO no the right numba
 
 # CNN
 conv_layers_nb = 4
-conv_features1_nb = 32
-conv_kernel1_size = 5
-conv_features2_nb = 64
-conv_kernel2_size = 3
-stride_size = 2
-padding_size = 2
+conv_features1_nb = 80
+conv_kernel1_size = 15
+conv_features2_nb = 30
+conv_kernel2_size = 5
+stride_size = 1
+padding_size = 1
 tail_fc_layers_nb = 2
-feature_norm = "batch" #layer #none
+feature_norm = "layer" #layer #none
 
 expender_layers_nb = 1
 expender_hidden_size = 256
-class_layers_nb = 3
-class_hidden_size = 64
+class_layers_nb = 1
+class_hidden_size = 256
 
 # Transformers
 trans_embedding_size = 32 #actually becomming the multiplier of the nb of heads
-trans_head_nb = 1
+trans_head_nb = 4
 trans_layer_nb = 1
-trans_hidden_nb = 32
+trans_hidden_nb = 256
 
 # Transformer2
 window_size = 16

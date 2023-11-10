@@ -132,12 +132,12 @@ class Loss():
 
 
             # # TRIPLET LOSS
-            # distance_mat = distance_matrix(
-            #     np.array([torch.flatten(xx1).cpu().detach().numpy() for xx1 in x1]),
-            #     np.array([torch.flatten(xx2).cpu().detach().numpy() for xx2 in x2])
-            # )
+            distance_mat = distance_matrix(
+                np.array([torch.flatten(xx1).cpu().detach().numpy() for xx1 in x1]),
+                np.array([torch.flatten(xx2).cpu().detach().numpy() for xx2 in x2])
+            )
             
-            # # Triplet loss
+            # Triplet loss
             trip_loss = 0
             for dev1 in range(params.num_dev):
                 if epoch > 100 and np.random.rand() > 0.05:
@@ -165,7 +165,7 @@ class Loss():
             self.dev_accuracy.append(devAcc)
 
 
-            size_of_batch = anchor.size(0)
+            size_of_batch = params.batch_size
 
             self.trainLoss += loss.item() * size_of_batch
             self.samples += size_of_batch

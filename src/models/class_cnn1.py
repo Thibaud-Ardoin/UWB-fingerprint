@@ -140,7 +140,10 @@ class ClassCNN1(nn.Module):
 
     def forward(self, x):
         x = self.encoder(x)
-        x = self.classifier(x)
+        if params.loss=="vicreg":
+            x = self.expander(x)
+        else:
+            x = self.classify(x)
         return x
 
 

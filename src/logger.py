@@ -75,8 +75,13 @@ class Logger():
             dimentions = [[2*i, i*2+1] for i in range(1)] #len(X[0])//2)]
             colors_base = cm.rainbow(np.linspace(0, 1, params.num_dev))
             plt.rcParams["figure.figsize"] = (20,20)
-            colors = [colors_base[l] for l in labels]
-            cmap, norm = matplotlib.colors.from_levels_and_colors(np.arange(1, params.num_dev+2), colors_base)
+            # colors = [colors_base[l] for l in labels]
+            # print(colors_base)
+            # print(np.arange(0, params.num_dev+1))
+            cmap, norm = matplotlib.colors.from_levels_and_colors(np.arange(0, params.num_dev+1)- 0.5, colors_base)
+
+            # print(cmap)
+            # print(norm)
             
             for i in range(len(dimentions)):
                 fig, ax = plt.subplots()

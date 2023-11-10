@@ -24,7 +24,7 @@ class Transformer3(nn.Module):
 		self.use_extender = params.use_extender
 		self.dropout_value = params.dropout_value
 		self.dropout = nn.Dropout(self.dropout_value)
-		self.embedding_size = params.trans_embedding_size
+		self.embedding_size = params.trans_embedding_size * params.trans_head_nb
 
 		# ATTENTION
 		self.trans_embedding_size = params.trans_embedding_size * params.trans_head_nb # Divisibility needed

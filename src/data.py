@@ -161,7 +161,8 @@ class DataGatherer():
         z = list(zip(self.data, self.labels))
         ind = np.arange(len(z))
         np.random.shuffle(ind)
-        ind = np.random.choice(ind, min(len(ind), params.data_limit))
+        if params.data_limit > 0:
+            ind = np.random.choice(ind, min(len(ind), params.data_limit))
         data_size = len(ind)
 
         train_data = [z[ind[i]] for i in range(int(params.split_train_ratio*data_size))]
@@ -195,7 +196,8 @@ class DataGatherer():
             for k in range(params.num_pos) :
                 # Make the union between dev and pos befor getting the time separation
                 inter_ids = list(set(dev_ids[i][0]) & set(pos_ids[k][0]))
-                inter_ids = np.random.choice(inter_ids, min(len(inter_ids), params.data_limit))
+                if params.data_limit > 0:
+                    inter_ids = np.random.choice(inter_ids, min(len(inter_ids), params.data_limit))
                 all_data[i].append([z[inter_ids[j]] for j in range(len(inter_ids))])
 
         # Gather the training elements
