@@ -9,7 +9,7 @@
         - Log it
 """
 import numpy as np
-
+from datetime import datetime
 from optimizer import Optimizer, AdvOptimizer
 import params
 from test import testing_model
@@ -27,6 +27,13 @@ class Trainer:
         self.Loss = Loss(self.trainDataloader, self.my_model, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy)
     def loss_logging(self):
         if params.loss=="crossentropy":
+            self.logger.log({
+            "Dev class loss": np.mean(self.var_memory),
+            "Dev class accuracy": np.mean(self.dev_accuracy),
+            "Encoder loss": self.trainLoss / self.samples,
+            "learning rate": self.optimizer.get_lr()})
+            self.logger.step_epoch()
+        elif params.loss=="complex_crossentropy":
             self.logger.log({
             "Dev class loss": np.mean(self.var_memory),
             "Dev class accuracy": np.mean(self.dev_accuracy),
@@ -99,6 +106,8 @@ class Trainer:
         return epoch_size 
 
     def train(self):
+        start_time = datetime.now()
+
         encodded_validations = []
 
         if not params.flat_data :
@@ -115,6 +124,11 @@ class Trainer:
             # loop over the current batch of data
             if params.flat_data:
                 if params.loss=="crossentropy":
+                    devLoss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy = self.Loss.process_flat_data()
+                    self.optimizer.zero_grad()
+                    devLoss.backward()
+                    self.optimizer.step()
+                if params.loss=="complex_crossentropy":
                     devLoss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy = self.Loss.process_flat_data()
                     self.optimizer.zero_grad()
                     devLoss.backward()
@@ -151,7 +165,8 @@ class Trainer:
             # From time to time let's see wehat that models output on validation data
             if (epoch+1)%params.test_interval==0:
                 testing_model(self.trainDataloader, self.valDataloader, self.my_model, self.logger)
-
+        time = datetime.now() - start_time
+        print("Training time: ", time)
         testing_model(self.trainDataloader, self.valDataloader, self.my_model, self.logger)
 
         #end

@@ -42,8 +42,16 @@ class Logger():
         )
 
     def log_model(self, model):
-        if not params.model_name.startswith("adv"): 
-            x = torch.rand(params.batch_size, params.signal_length)
+        if not params.model_name.startswith("adv"):
+            if params.input_type == "fft_complex":
+                x = torch.rand(params.batch_size, (params.additional_samples+1)*100+1, dtype=torch.complex64) # for complex rfft
+                model = model.to(dtype=torch.complex64) # complex
+            elif params.input_type == "fft":
+                x = torch.rand(params.batch_size, (params.additional_samples+1)*200) # for fft
+            elif params.input_type == "spectrogram":
+                x = torch.rand(params.batch_size, params.signal_length, params.signal_length)
+            else:
+                x = torch.rand(params.batch_size, (params.additional_samples+1)*200)
             y = model(x.to(params.device))
             make_dot(y, params=dict(list(model.named_parameters()))).render("data/torchviz_test", format="jpg")
 

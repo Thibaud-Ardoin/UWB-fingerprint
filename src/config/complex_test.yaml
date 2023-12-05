@@ -1,16 +1,16 @@
 data_spliting: "pos_exlus"
-loss: "crossentropy"
-model_name: "ClassCNN1"
-input_type: "raw"
-additional_samples: 0 # only additional ones
-multiple_test_measurements: false
-multiple_train_positions: false
-batch_size: 838
+loss: "complex_crossentropy"
+model_name: "ComplexClassCNN1"
+input_type: "fft_complex"
+additional_samples: 2
+multiple_test_measurements: true
+multiple_train_positions: true
+batch_size: 256
 class_hidden_size: 253
 class_layers_nb: 1
 conv_features1_nb: 82
 conv_features2_nb: 33
-conv_kernel1_size: 15
+conv_kernel1_size: 10
 conv_kernel2_size: 6
 conv_layers_nb: 3
 pooling_kernel_size: 4
@@ -37,9 +37,9 @@ patience: 50
 plotting: false
 set_parameters: "params.set_parameters"
 sheduler: "plateau"
-signal_length: 200
+signal_length: 301 # 41
 split_train_ratio: 0.8
-stride_size: 1
+stride_size: 1 # 2
 tail_fc_layers_nb: 2
 test_interval: 1000
 use_extender: false

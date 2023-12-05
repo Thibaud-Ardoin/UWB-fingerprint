@@ -80,7 +80,25 @@ class Loss():
                 self.samples += size_of_batch
             
                 return devLoss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy
+            
+            elif params.loss == "complex_crossentropy":
 
+                dev_pred = self.my_model(x)
+                devLoss_real = ce_loss(dev_pred.real, y[:,0])
+                devLoss_imag = ce_loss(dev_pred.imag, y[:,0])
+                devLoss = (devLoss_real + devLoss_imag)/2
+                devAcc = accuracy(y[:,0], dev_pred.real+dev_pred.imag)
+
+                self.var_memory.append(devLoss.item())
+                self.dev_accuracy.append(devAcc)
+
+                size_of_batch = x.size(0)
+
+                self.trainLoss += devLoss.item() * size_of_batch
+                self.samples += size_of_batch
+            
+                return devLoss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy
+            
     def per_epoch(self, epoch):
         self.tripletLoss = nn.TripletMarginLoss(margin=params.triplet_mmargin, p=2, reduce=True, reduction="mean")
 

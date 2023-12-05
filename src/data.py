@@ -10,8 +10,8 @@ import torch
 import torchvision.transforms as transforms
 
 import params
-
-
+import torchaudio
+import librosa
 
 ############################
 #   Processing functions
@@ -47,12 +47,36 @@ def normdata(x):
 # Own dataset type, specially to take my data
 class MyDataset(torch.utils.data.Dataset):
     def __init__(self, data, testset=False):
+        spectrogram = torchaudio.transforms.Spectrogram(n_fft=100, hop_length=12)
+
         self.testset = testset
         self.data = data
-        self.transform_list = [
-            lambda x: torch.from_numpy(x),
-            lambda x: x.to(torch.float32)
-        ]
+
+        if params.input_type == "fft":
+            self.transform_list = [
+                lambda x: np.fft.fft(x),
+                lambda x: normdata(x),
+                lambda x: torch.from_numpy(x),
+                lambda x: x.to(torch.float32)
+            ]
+        elif params.input_type == "spectrogram":
+            self.transform_list = [
+                lambda x: torch.from_numpy(x),
+                lambda x: spectrogram(x),
+                lambda x: x.to(torch.float32)
+            ]
+        elif params.input_type == "raw":
+            self.transform_list = [
+                lambda x: torch.from_numpy(x),
+                lambda x: x.to(torch.float32)
+            ]
+        elif params.input_type == "fft_complex":
+            self.transform_list = [
+                lambda x: torch.from_numpy(x),
+                lambda x: torch.fft.rfft(x),
+                lambda x: x.to(torch.complex64)
+            ]
+
         self.augmentations = [
             eval(function_name) for function_name in params.augmentations
         ] 
@@ -75,7 +99,7 @@ class MyDataset(torch.utils.data.Dataset):
             x, y = self.data[index-1]
         x = self.transforms(x).to(params.device)
         y = torch.from_numpy(y).to(params.device)
-            
+
         return x, y
     
     def __len__(self):
@@ -86,6 +110,13 @@ class MyDataset(torch.utils.data.Dataset):
 #   DataGatherer collect from source and format the data
 ###########################################################
 
+def plot_spectrogram(specgram, title=None, ylabel="freq_bin", ax=None):
+    if ax is None:
+        _, ax = plt.subplots(1, 1)
+    if title is not None:
+        ax.set_title(title)
+    ax.set_ylabel(ylabel)
+    ax.imshow(librosa.power_to_db(specgram), origin="lower", aspect="auto", interpolation="nearest")
 class DataGatherer():
     def __init__(self):
 
@@ -203,14 +234,47 @@ class DataGatherer():
         # Gather the training elements
         training_loaders = []
         for dev in range(params.num_dev) :
-            training_loaders.append([])
+            training_loaders.append([]) # for flat data we add an empty list?
             for pos in range(params.num_pos) :
                 if not pos==params.validation_pos :
                     if params.flat_data:
+                        # TODO: make it cleaner
+                        # list of potential positions of the additional measurements
+                        choices = [x for x in range(params.num_pos) if x != params.validation_pos]
+                        for i in range(len(all_data[dev][pos])):
+                            positions = np.array([])
+                            if params.multiple_train_positions:
+                                # randomly select the additional positions
+                                positions = np.random.choice(choices, params.additional_samples, replace=False)
+                            else:
+                                positions = np.tile([pos], params.additional_samples)
+                            concatenated_data = np.array(all_data[dev][pos][i][0])
+                            if not positions.size == 0: 
+                                for y in positions:
+                                    # randomly select the indexes of the additional measurements
+                                    random = list(np.random.choice(len(all_data[dev][y]), 1, replace=False))
+                                    # concatenate the samples
+                                    concatenated_data = np.append(concatenated_data, all_data[dev][y][random[0]][0])
+                            training_loaders.append([concatenated_data, all_data[dev][pos][i][1]])
+
+                        # old way
                         # Dont divide in multi data loader for each class combination
-                        training_loaders = training_loaders + all_data[dev][pos]
+                        #training_loaders = training_loaders + all_data[dev][pos]
+
                     else :
-                        training_set = MyDataset(all_data[dev][pos])
+                        training_set_helper = []
+                        for i in range(len(all_data[dev][pos])):  
+                            concatenated_data = np.array(all_data[dev][pos][i][0])
+                            random = np.array([])
+                            random = np.random.choice(len(all_data[dev][pos]), params.additional_samples, replace=False)
+                            if not random.size == 0:
+                                for y in random:
+                                    concatenated_data = np.append(concatenated_data, all_data[dev][pos][y][0])
+                            training_set_helper.append([concatenated_data, all_data[dev][pos][i][1]]) 
+                        training_set = MyDataset(training_set_helper)
+
+                        # old way
+                        #training_set = MyDataset(all_data[dev][pos])
                         training_loaders[dev].append(torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True))
         if params.flat_data:
             # Sanity check
@@ -224,7 +288,22 @@ class DataGatherer():
         # TODO: Make it also a multi positional element
         val_data = []
         for dev in range(params.num_dev) :
-            val_data = val_data + all_data[dev][params.validation_pos]
+            #val_data = val_data + all_data[dev][params.validation_pos]
+            for i in range(len(all_data[dev][params.validation_pos])):
+                concatenated_data = np.array(all_data[dev][params.validation_pos][i][0])
+                if params.multiple_test_measurements:
+                    mes = np.array([])
+                    # randomly select the indexes of the additional measurements
+                    mes = np.random.choice(len(all_data[dev][params.validation_pos]), params.additional_samples, replace=False)
+                    if not mes.size == 0:
+                        for y in mes:
+                            # concatenate the samples
+                            concatenated_data = np.append(concatenated_data, all_data[dev][params.validation_pos][y][0])
+                else:
+                    if params.additional_samples > 0:
+                        for _ in range(params.additional_samples):
+                            concatenated_data = np.append(concatenated_data, all_data[dev][params.validation_pos][i][0])
+                val_data.append([concatenated_data, all_data[dev][params.validation_pos][i][1]])
         validation_set = MyDataset(val_data, testset=True)
         validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=params.batch_size, shuffle=True)
         self.training_loaders = training_loaders
@@ -243,7 +322,7 @@ if __name__ == "__main__":
     # Testing the dataloading with visualisation ect
     dg = DataGatherer()
     training_loaders, validation_loader, data_array = dg.spliting_data(return_array=True)
-
+    spectrogram = torchaudio.transforms.Spectrogram(n_fft=100, hop_length=12)
     print("** Dataset characterisation **", "\n")
 
     print("Number of devices:", len(data_array))

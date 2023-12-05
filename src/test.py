@@ -209,6 +209,9 @@ def testing_model(training_loaders, validation_loader, model, logger):
 
     encoded_train, labels_train = encode_data(model, training_loaders)
     encoded_test, labels_test = encode_data(model, validation_loader)
+    # abs to work for complex data (wip)
+    #encoded_train = np.abs(encoded_train)
+    #encoded_test = np.abs(encoded_test)
     enc_time = time.time()
     print("[Test]: time for encodding", enc_time - start_time)
 
