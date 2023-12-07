@@ -14,13 +14,13 @@ import models
 
 
 #  LIL Encoding NETWORK
-class Transformer3(nn.Module):
+class Transformer4(nn.Module):
 	"""
 		Slice the signal into different bins of values that are used as embedded values
 	"""
 	
 	def __init__(self):
-		super(Transformer3, self).__init__()
+		super(Transformer4, self).__init__()
 		self.use_extender = params.use_extender
 		self.dropout_value = params.dropout_value
 		self.dropout = nn.Dropout(self.dropout_value)
@@ -51,14 +51,24 @@ class Transformer3(nn.Module):
 		self.fc2 = nn.Linear(params.latent_dimention*2, params.latent_dimention)
 		self.softmax = nn.Softmax()
 		
-		# EXPENDER
-		self.batchnorm1 = nn.BatchNorm1d(params.latent_dimention)
-		self.batchnorm2 = nn.BatchNorm1d(params.latent_dimention*4)
-		self.expenderFc1 = nn.Linear(params.latent_dimention, params.latent_dimention*4)
-		# self.expenderFc2 = nn.Linear(params.latent_dimention + int(params.expender_out/4), params.latent_dimention + int(params.expender_out/2))
-		self.expenderFc2 = nn.Linear(params.latent_dimention*4, params.latent_dimention*4)
-		# self.expenderFc3 = nn.Linear(params.latent_dimention + int(params.expender_out/2), params.expender_out)
-		self.expenderFc3 = nn.Linear(params.latent_dimention*4, params.latent_dimention*4)
+		# CLS
+		cls_layer_sizes = [params.latent_dimention]
+		cls_layer_sizes = cls_layer_sizes + [int(params.class_hidden_size) for _ in range(params.class_layers_nb -1 )]
+		cls_layer_sizes.append(params.num_dev)
+		self.clsFcs = []
+		for i in range(params.class_layers_nb):
+			self.clsFcs.append( nn.Linear(cls_layer_sizes[i], cls_layer_sizes[i+1]) )
+		self.clsFcs = nn.ModuleList(self.clsFcs)
+
+		# Expender
+		exp_layer_sizes = [params.latent_dimention]
+		exp_layer_sizes = exp_layer_sizes + [int(params.expender_hidden_size) for _ in range(params.expender_layers_nb -1 )]
+		exp_layer_sizes.append(params.expender_out)
+		self.expFcs = []
+		for i in range(params.expender_layers_nb):
+			self.expFcs.append( nn.Linear(exp_layer_sizes[i], exp_layer_sizes[i+1]))
+		self.expFcs = nn.ModuleList(self.expFcs)
+		
 
 	def preprocess(self, x):
 		# Can be double-1 so we overlap half of it, 10 values
@@ -92,7 +102,7 @@ class Transformer3(nn.Module):
 		x = self.transformer_encoder(x)
 		# x = self.norm(x)
 
-		x = self.flatten(x)		
+		x = self.flatten(x)
 
 		x = F.relu(self.fc1(x))
 		x = self.dropout(x)
@@ -102,33 +112,46 @@ class Transformer3(nn.Module):
 		
 		return x
 	
-	def expender(self, x) :
-		# Just two Fc layers with augmenting size
-		x = F.relu(self.expenderFc1(self.batchnorm1(x)))
-		x = self.dropout(x)
+	def classifier(self, x) :
+		for i in range(params.class_layers_nb):
+			x = self.clsFcs[i](x)
+			x = self.dropout(x)
+			if i < params.class_layers_nb - 1:
+				x = F.relu(x)
+	
+		x = self.softmax(x)
+		return x
 
-		# x = self.batchnorm2(F.relu(self.expenderFc2(x)))
-		# x = self.dropout(x)
-
-		x = self.expenderFc3(x)
+	def expander(self, x) :
+		if params.use_extender and params.expender_layers_nb > 0:
+			for i in range(params.expender_layers_nb):
+				x = self.expFcs[i](x)
+				x = self.dropout(x)
+				if i < params.expender_layers_nb - 1:
+					x = F.relu(x)
+		
+			x = self.softmax(x)
 		return x
 
 	def encode(self, x):
 		return self.encoder(x)		
 
+	def expand(self, x):
+		return self.expander(x)	
+
 	def classify(self, x):
-		return self.expender(x)		
+		return self.classifier(x)		
 	
 	def forward(self, x):
 		x = self.encoder(x)
 		if self.use_extender:
-			x = self.expender(x)
+			x = self.expand(x)
 		return x
 	
 
 if __name__ == "__main__":
 	
-	model = Transformer3()
+	model = Transformer4()
 
 	bsz = 256
 	sign_length = 200

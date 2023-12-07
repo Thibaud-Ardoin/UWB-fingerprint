@@ -1,6 +1,6 @@
 data_spliting: "pos_test"
-loss: "triplet3"
-model_name: "Transformer3"
+loss: "triplet+crossentropy"
+model_name: "Transformer4"
 augmentations: 
   - "addSomeNoise"
 batch_size: 200
@@ -29,7 +29,7 @@ lambda_triplet: 1
 lambda_class: 10
 nb_epochs: 10000
 noise_amount: 0
-num_dev: 3
+num_dev: 13
 num_pos: 21
 optimizer: "Adam"
 padding_size: 1

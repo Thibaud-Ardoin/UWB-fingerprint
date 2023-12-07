@@ -32,6 +32,8 @@ def main():
     trainer=Trainer(trainDataloader, valDataloader, model, logger)
     trainer.train()
 
+    logger.finish()
+
 
 
 if __name__ == "__main__":

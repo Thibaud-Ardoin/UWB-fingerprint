@@ -51,7 +51,7 @@ patience = 50
 ###########
 #   Loss
 ###########
-loss = "vicreg" #"adversarial" #"triplet3" #"triplet" #"vicreg"
+loss = "crossentropy" #"adversarial" #"triplet3" #"triplet" #"vicreg"
 lambda_triplet = 10
 triplet_mmargin = 1
 lambda_distance = 11    #14
@@ -124,7 +124,7 @@ def __use_config__(file_name):
 # These are variables that are concequences of some previous combinations
 
 flat_data = False
-if loss == "adversarial" or data_spliting=="random":
+if loss == "adversarial" or loss == "crossentropy" or data_spliting=="random":
     flat_data = True
 
 
