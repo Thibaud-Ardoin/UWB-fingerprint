@@ -4,6 +4,7 @@ model_name: "Transformer4"
 augmentations: 
   - "addSomeNoise"
 batch_size: 200
+input_type: "raw"
 additional_samples: 0 # count of additional concatenated samples
 multiple_test_measurements: false # true if you want to test on concatenated different measurements of the same device and position
 multiple_train_positions: false # true if you want to train on concatenated different positions of the same device

@@ -60,8 +60,8 @@ class MyDataset(torch.utils.data.Dataset):
         if params.input_type == "fft":
             self.transform_list = [
                 lambda x: np.fft.fft(x),
-                lambda x: normdata(x),
                 lambda x: torch.from_numpy(x),
+                lambda x: normdata(x),
                 lambda x: x.to(torch.float32)
             ]
         elif params.input_type == "spectrogram":
