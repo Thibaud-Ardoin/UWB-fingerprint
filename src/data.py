@@ -38,6 +38,11 @@ def normdata(x):
     x = (x - x.min())/(x.max() - x.min())
     return x
 
+def fourier(x):
+    x = torch.fft.fft(x)
+    x = torch.abs(x)
+    return x
+
 
 #################################################
 #   Dataset definition for the training process

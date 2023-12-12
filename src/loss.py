@@ -189,7 +189,7 @@ class Loss():
             self.samples += size_of_batch
 
         elif params.loss == "triplet3":
-            # Triplet with hard negative exemple mining
+            # Triplet with hard negative exemple mining and covariance regularizer
             p1 = np.random.choice(self.pos_amt)
             p2 = np.random.choice([p for p in range(self.pos_amt) if p!=p1])
 
