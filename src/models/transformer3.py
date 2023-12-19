@@ -39,6 +39,10 @@ class Transformer3(nn.Module):
 		encoder_layers = nn.TransformerEncoderLayer(self.embedding_size, self.trans_head_nb, self.trans_hidden_nb, self.dropout_value, batch_first=True)
 		self.transformer_encoder = nn.TransformerEncoder(encoder_layers, self.trans_layer_nb)
 
+		# POSITIONAL ENCODE
+		self.fc_p1 = nn.Linear(4, 10)
+		self.fc_p2 = nn.Linear(10, 1)
+
 		# PRE-PROCESS
 		self.fc0 = nn.Linear(self.window_size, self.embedding_size)
 
@@ -59,6 +63,16 @@ class Transformer3(nn.Module):
 		self.expenderFc2 = nn.Linear(params.latent_dimention*4, params.latent_dimention*4)
 		# self.expenderFc3 = nn.Linear(params.latent_dimention + int(params.expender_out/2), params.expender_out)
 		self.expenderFc3 = nn.Linear(params.latent_dimention*4, params.latent_dimention*4)
+
+	def positional_encoder(self, x):
+		# INPUT: (4, 250) with real, imag, cos, sin
+		return torch.sum(x[:, 0:2], axis=1)
+		x = x.transpose(1, 2)
+		x = F.relu(self.fc_p1(x))
+		x = self.dropout(x)
+		x = self.fc_p2(x).squeeze()
+		return x
+
 
 	def preprocess(self, x):
 		# Can be double-1 so we overlap half of it, 10 values
@@ -114,13 +128,15 @@ class Transformer3(nn.Module):
 		return x
 
 	def encode(self, x):
+		if params.data_use_position:
+			x = self.positional_encoder(x)
 		return self.encoder(x)		
 
 	def classify(self, x):
 		return self.expender(x)		
 	
 	def forward(self, x):
-		x = self.encoder(x)
+		x = self.encode(x)
 		if self.use_extender:
 			x = self.expender(x)
 		return x

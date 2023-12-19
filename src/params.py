@@ -3,19 +3,20 @@
     Shoud use a synthax that allows grid search parametrisation too
 """
 import pprint
-
 import torch
 
 
 ##########
 #   Data
 ##########
-datafile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_data.npy"
-labelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_labels.npy"
+datafile = "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2_data.npy"
+labelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2_labels.npy"
 
+data_type = "not_complex"
+data_use_position = False
 data_spliting = "pos_test"  #"all_split"
 split_train_ratio = 0.80
-augmentations = ["addSomeNoise"]
+augmentations = ["addSomeNoise"] #fourrier
 noise_amount = 0
 
 data_limit = -1
@@ -23,7 +24,7 @@ validation_pos = 5
 validation_dev = 0      # Not used yet ?
 data_test_rate = 0.1    # Random % of data to run tests on (O(n**2))
 
-num_pos = 21    #21
+num_pos = 48    #21
 num_dev = 3    #13
 signal_length = 200
 
@@ -32,9 +33,9 @@ signal_length = 200
 ############
 #   Train
 ############
-batch_size = 64
+batch_size = 256
 nb_epochs = 10000
-test_interval = 200
+test_interval = 50
 
 
 ############
@@ -51,7 +52,7 @@ patience = 50
 ###########
 #   Loss
 ###########
-loss = "crossentropy" #"adversarial" #"triplet3" #"triplet" #"vicreg"
+loss = "vicreg" #"adversarial" #"triplet3" #"triplet" #"vicreg"
 lambda_triplet = 10
 triplet_mmargin = 1
 lambda_distance = 11    #14
@@ -63,8 +64,8 @@ lambda_cov = 4          #4
 #   Model
 ############
 model_name = "Transformer3" #"advCNN1" #"Transformer3"
-latent_dimention = 256
-expender_out = 512
+latent_dimention = 32
+expender_out = 32
 use_extender = True
 dropout_value = 0
 # embed_size = 8 #TODO no the right numba
@@ -86,10 +87,10 @@ class_layers_nb = 1
 class_hidden_size = 256
 
 # Transformers
-trans_embedding_size = 32 #actually becomming the multiplier of the nb of heads
-trans_head_nb = 4
-trans_layer_nb = 1
-trans_hidden_nb = 256
+trans_embedding_size = 64 #actually becomming the multiplier of the nb of heads
+trans_head_nb = 2
+trans_layer_nb = 3
+trans_hidden_nb= 32
 
 # Transformer2
 window_size = 16

@@ -1,5 +1,5 @@
 data_spliting: "pos_test"
-loss: "crossentropy" 
+loss: "vicreg" 
 model_name: "Transformer3"
 batch_size: 200
 class_hidden_size: 256
@@ -11,15 +11,15 @@ conv_kernel2_size: 5
 conv_layers_nb: 1
 data_limit: -1
 data_test_rate: 0.1
-datafile: "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.raw_data.npy"
+datafile: "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_data.npy"
 device: "cuda"
 dropout_value: 0
 expender_out: 64
 expender_layers_nb: 1
 expender_hidden_size: 256
 feature_norm: "layer"
-flat_data: true
-labelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.raw_labels.npy"
+flat_data: false
+labelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_labels.npy"
 latent_dimention: 32
 learning_rate: 0.001
 lr_limit: 0.0001
@@ -39,7 +39,7 @@ signal_length: 200
 split_train_ratio: 0.8
 stride_size: 1
 tail_fc_layers_nb: 2
-test_interval: 200
+test_interval: 50
 trans_embedding_size: 64
 trans_head_nb: 2
 trans_layer_nb: 3

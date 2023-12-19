@@ -22,7 +22,7 @@ def encode_data(mymodel, dataloader):
         encs, labs = [], []
         for i, (batchX, batchY) in enumerate(loader):
             # Compute encoded version of the data by our embedding model
-            encs = encs + mymodel.encoder(batchX).tolist()
+            encs = encs + mymodel.encode(batchX).tolist()
             # Gather device labels accordingly (eventually randomly enumerated)
             labs = labs + batchY[:, 0].tolist()
         return encs, labs

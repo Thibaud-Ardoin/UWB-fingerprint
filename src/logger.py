@@ -43,7 +43,10 @@ class Logger():
 
     def log_model(self, model):
         if not params.model_name.startswith("adv"): 
-            x = torch.rand(params.batch_size, params.signal_length)
+            if params.data_use_position:
+                x = torch.rand(params.batch_size, 4, params.signal_length)
+            else :
+                x = torch.rand(params.batch_size, params.signal_length)
             y = model(x.to(params.device))
             make_dot(y, params=dict(list(model.named_parameters()))).render("data/torchviz_test", format="jpg")
 

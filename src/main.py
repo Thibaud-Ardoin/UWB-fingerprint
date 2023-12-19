@@ -27,7 +27,7 @@ def main():
     trainDataloader, valDataloader = dg.spliting_data()
 
     model = load_model()
-    logger.log_model(model)
+    # logger.log_model(model)
 
     trainer=Trainer(trainDataloader, valDataloader, model, logger)
     trainer.train()

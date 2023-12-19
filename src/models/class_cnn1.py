@@ -35,7 +35,6 @@ class ClassCNN1(nn.Module):
                 stride=params.stride_size, 
                 padding=params.padding_size))
             out_size = math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)
-#            print(out_size)
         self.convs = nn.ModuleList(self.convs)
 
         # self.conv2 = nn.Conv1d(32, 32, kernel_size=5, stride=2, padding=2)
@@ -84,6 +83,23 @@ class ClassCNN1(nn.Module):
         for i in range(params.expender_layers_nb):
             self.expFcs.append( nn.Linear(exp_layer_sizes[i], exp_layer_sizes[i+1]))
         self.expFcs = nn.ModuleList(self.expFcs)
+
+        # # POSITIONAL ENCODE
+        self.fc_p1 = nn.Linear(4, 128)
+        self.fc_p2 = nn.Linear(128, 1)
+
+
+    def positional_encoder(self, x):
+        # INPUT: (4, 250) with real, imag, cos, sin
+        # x = x.sum(1)
+        return x[:, 0]
+        x = x.transpose(1, 2)
+        x = F.relu(self.fc_p1(x))
+        x = self.dropout(x)
+        x = self.fc_p2(x).squeeze()
+        return x
+
+
         
     def encoder(self, x): 
         x = x[:, None, :]
@@ -133,13 +149,15 @@ class ClassCNN1(nn.Module):
         return self.classifier(x)
 
     def encode(self, x):
+        if params.data_use_position:
+            x = self.positional_encoder(x)
         return self.encoder(x)
 
     def expand(self, x):
         return self.expander(x)
 
     def forward(self, x):
-        x = self.encoder(x)
+        x = self.encode(x)
         if params.loss=="vicreg":
             x = self.expander(x)
         else:

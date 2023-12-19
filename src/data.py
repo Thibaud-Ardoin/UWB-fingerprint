@@ -43,6 +43,18 @@ def fourier(x):
     x = torch.abs(x)
     return x
 
+def add_angular(data_point, label_point):
+    # INPUT:    data_point: 250p signal  X label_point: (device id, position id) 
+    angle = label_point[1] * 2 * np.pi / params.num_pos
+    
+    # OUTPUT:   data_point: (250p signal, 250*cos(a), 250*sin(a))
+    cos = torch.full_like(data_point[:, 0], torch.cos(angle))
+    sin = torch.full_like(data_point[:, 0], torch.sin(angle))
+    
+    return torch.stack((data_point[:, 0], data_point[:, 1], cos, sin))
+
+
+
 
 #################################################
 #   Dataset definition for the training process
@@ -55,8 +67,7 @@ class MyDataset(torch.utils.data.Dataset):
         self.testset = testset
         self.data = data
         self.transform_list = [
-            lambda x: torch.from_numpy(x),
-            lambda x: x.to(torch.float32)
+            lambda x: torch.from_numpy(x)
         ]
         self.augmentations = [
             eval(function_name) for function_name in params.augmentations
@@ -65,6 +76,11 @@ class MyDataset(torch.utils.data.Dataset):
         # If not a testset, we add the desired augmentations
         if not self.testset:
             self.transform_list += self.augmentations
+
+        if params.data_type != "complex":
+            self.transform_list += [lambda x: x.to(torch.float32)]
+        else:
+            self.transform_list += [torch.view_as_real, lambda x: x.to(torch.float32)]
 
         self.transforms = transforms.Compose(
             self.transform_list
@@ -80,7 +96,8 @@ class MyDataset(torch.utils.data.Dataset):
             x, y = self.data[index-1]
         x = self.transforms(x).to(params.device)
         y = torch.from_numpy(y).to(params.device)
-            
+        if params.data_use_position:
+            x = add_angular(x, y)
         return x, y
     
     def __len__(self):
