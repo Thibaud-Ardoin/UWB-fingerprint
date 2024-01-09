@@ -116,6 +116,10 @@ class DataGatherer():
         self.labels = np.load(params.labelfile)
         # self.data_formating()
 
+        if params.data_spliting == "file_test":
+            self.test_data = np.load(params.testfile)
+            self.test_label = np.load(params.testlabelfile)
+
 
     def data_formating(self):
         # Formating of Label data
@@ -172,8 +176,32 @@ class DataGatherer():
     def spliting_data(self, return_array=False):
         if params.data_spliting == "random":
             return self.random_split()
+        
+        elif params.data_spliting == "file_test":
+            return self.file_split()
         else :
             return self.positional_split(return_array)
+        
+    def file_split(self):
+        """
+            Split the data according to a test file and a training file.
+            In our case, we train with our latest quality data and see if it generalise with our previous measurmments:
+            This means Different time of recording and environment
+        """ 
+        training_loader = self.positional_split(its_all_train=True)
+
+        # Gather all the test data as a linear data loader
+
+        sub_set_indices = np.random.choice(len(self.test_data), int(params.data_test_rate*len(self.test_data)), replace=False)
+        z = list(zip(self.test_data[sub_set_indices], self.test_label[sub_set_indices]))
+
+        test_set = MyDataset(z, testset=True)
+        test_loader = torch.utils.data.DataLoader(test_set, batch_size=params.batch_size, shuffle=True)
+
+        return training_loader, test_loader
+
+
+
 
     def random_split(self):
         """
@@ -184,7 +212,7 @@ class DataGatherer():
         ind = np.arange(len(z))
         np.random.shuffle(ind)
         if params.data_limit > 0:
-            ind = np.random.choice(ind, min(len(ind), params.data_limit))
+            ind = np.random.choice(ind, min(len(ind), params.data_limit), replace=False)
         data_size = len(ind)
 
         train_data = [z[ind[i]] for i in range(int(params.split_train_ratio*data_size))]
@@ -200,7 +228,7 @@ class DataGatherer():
 
 
 
-    def positional_split(self, return_array=False):
+    def positional_split(self, return_array=False, its_all_train=False):
         """
             Separating the data such as the train and test data doesnt incorporate the same positions.
             This will enable us to test the generalisation of our model.
@@ -211,6 +239,9 @@ class DataGatherer():
         pos_ids = [np.where(self.labels[:,1] == i) for i in range(params.num_pos)]
         dev_ids = [np.where(self.labels[:,0] == i) for i in range(params.num_dev)]
         all_data = []
+        val_pos = params.validation_pos
+        if its_all_train:
+            val_pos = -1
 
         # For each device, put the first part of the data in training, the second part in validation
         for i in range(params.num_dev) :
@@ -219,7 +250,7 @@ class DataGatherer():
                 # Make the union between dev and pos befor getting the time separation
                 inter_ids = list(set(dev_ids[i][0]) & set(pos_ids[k][0]))
                 if params.data_limit > 0:
-                    inter_ids = np.random.choice(inter_ids, min(len(inter_ids), params.data_limit))
+                    inter_ids = np.random.choice(inter_ids, min(len(inter_ids), params.data_limit), replace=False)
                 all_data[i].append([z[inter_ids[j]] for j in range(len(inter_ids))])
 
         # Gather the training elements
@@ -227,7 +258,7 @@ class DataGatherer():
         for dev in range(params.num_dev) :
             training_loaders.append([])
             for pos in range(params.num_pos) :
-                if not pos==params.validation_pos :
+                if not pos==val_pos :
                     if params.flat_data:
                         # Dont divide in multi data loader for each class combination
                         training_loaders = training_loaders + all_data[dev][pos]
@@ -242,11 +273,14 @@ class DataGatherer():
             training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), batch_size=params.batch_size, shuffle=True)
 
 
+        if its_all_train:
+            return training_loaders
+
         # Gather the unique validation position
         # TODO: Make it also a multi positional element
         val_data = []
         for dev in range(params.num_dev) :
-            val_data = val_data + all_data[dev][params.validation_pos]
+            val_data = val_data + all_data[dev][val_pos]
         validation_set = MyDataset(val_data, testset=True)
         validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=params.batch_size, shuffle=True)
         self.training_loaders = training_loaders

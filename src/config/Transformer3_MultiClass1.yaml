@@ -1,4 +1,6 @@
-data_spliting: "file_test"
+# Archieved good results, with a Trapz > 90% and a train2test NN of 47% at peak and kmeans clustering > 90%
+# No collaps to small numbers, thanks to higher weighting of lambda std (?)
+data_spliting: "pos_test"
 loss: "vicreg" 
 model_name: "Transformer3"
 batch_size: 32
@@ -10,11 +12,9 @@ conv_kernel1_size: 2
 conv_kernel2_size: 2
 conv_layers_nb: 3
 data_limit: -1
-data_test_rate: 0.05
+data_test_rate: 0.1
 datafile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2_data.npy"
 device: "cuda"
-testfile: "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_data.npy"
-testlabelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_labels.npy"
 dropout_value: 0
 expender_out: 128
 expender_layers_nb: 1
@@ -44,7 +44,7 @@ signal_length: 200
 split_train_ratio: 0.8
 stride_size: 2
 tail_fc_layers_nb: 2
-test_interval: 500
+test_interval: 100
 trans_embedding_size: 16
 trans_head_nb: 3
 trans_layer_nb: 3

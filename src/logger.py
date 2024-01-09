@@ -74,14 +74,15 @@ class Logger():
 
     def log_scatter(self, data, labels, title="Some Scatter"):
         if params.use_wandb:
+            num_classes = max(labels)
             X = np.array(data)
             dimentions = [[2*i, i*2+1] for i in range(1)] #len(X[0])//2)]
-            colors_base = cm.rainbow(np.linspace(0, 1, params.num_dev))
+            colors_base = cm.rainbow(np.linspace(0, 1, num_classes))
             plt.rcParams["figure.figsize"] = (20,20)
             # colors = [colors_base[l] for l in labels]
             # print(colors_base)
             # print(np.arange(0, params.num_dev+1))
-            cmap, norm = matplotlib.colors.from_levels_and_colors(np.arange(0, params.num_dev+1)- 0.5, colors_base)
+            cmap, norm = matplotlib.colors.from_levels_and_colors(np.arange(0, num_classes+1)- 0.5, colors_base)
 
             # print(cmap)
             # print(norm)
@@ -89,7 +90,7 @@ class Logger():
             for i in range(len(dimentions)):
                 fig, ax = plt.subplots()
                 scatter = ax.scatter(X[:, dimentions[i][0]], X[:, dimentions[i][1]], c=labels, norm=norm, cmap=cmap, marker=".", linewidths=0.5, s=20)
-                handles, lab = scatter.legend_elements(prop="colors", num=params.num_dev, alpha=0.6)
+                handles, lab = scatter.legend_elements(prop="colors", num=num_classes, alpha=0.6)
                 legend1 = ax.legend(handles, lab,
                         loc="lower left", title="Device id")
                 ax.add_artist(legend1)

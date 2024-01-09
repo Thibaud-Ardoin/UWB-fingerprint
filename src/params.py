@@ -12,9 +12,13 @@ import torch
 datafile = "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2_data.npy"
 labelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2_labels.npy"
 
+testfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_data.npy"
+testlabelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_labels.npy"
+
+
 data_type = "not_complex"
-data_use_position = False
-data_spliting = "pos_test"  #"all_split"
+data_use_position = False       # If you want to add the angular information as input of the model too
+data_spliting = "file_test"  #"all_split", "file_test", "random"
 split_train_ratio = 0.80
 augmentations = ["addSomeNoise"] #fourrier
 noise_amount = 0
@@ -22,7 +26,7 @@ noise_amount = 0
 data_limit = -1
 validation_pos = 5
 validation_dev = 0      # Not used yet ?
-data_test_rate = 0.1    # Random % of data to run tests on (O(n**2))
+data_test_rate = 0.01    # Random % of data to run tests on (O(n**2))
 
 num_pos = 48    #21
 num_dev = 3    #13

@@ -77,14 +77,14 @@ def reid_evaluation_test2train_NN(test_embeddings, train_embeddings, test_labels
 
 def reid_evaluation(embeddings, labels, logger):    
     mat = distance_matrix(embeddings, embeddings)
-    
+    num_test_dev = max(labels)
     
     same_distances = []
     diff_distances = []
 
-    dev_ind = [np.where(np.array(labels)==i)[0] for i in range(params.num_dev)]
-    for i in range(params.num_dev):
-        for j in range(i, params.num_dev):
+    dev_ind = [np.where(np.array(labels)==i)[0] for i in range(num_test_dev)]
+    for i in range(num_test_dev):
+        for j in range(i, num_test_dev):
             sub_mat = mat[dev_ind[i]].T
             subsub_mat = sub_mat[dev_ind[j]]
             for ind_i in range(len(subsub_mat)):
@@ -172,12 +172,14 @@ def reid_evaluation(embeddings, labels, logger):
         plt.show()
 
 def evaluate_Kmeans(test_set, test_labels, logger):
+    num_test_dev = max(test_labels)
+
     data_size = len(test_set)
-    kmeans = KMeans(n_clusters=params.num_dev, random_state=0, n_init="auto").fit(test_set)
-    dev_ids = [np.where(test_labels == i) for i in range(params.num_dev)]
+    kmeans = KMeans(n_clusters=num_test_dev, random_state=0, n_init="auto").fit(test_set)
+    dev_ids = [np.where(test_labels == i) for i in range(num_test_dev)]
     accuracy = 0
     for ids in dev_ids :
-        hist = np.histogram(kmeans.labels_[ids], bins=params.num_dev)
+        hist = np.histogram(kmeans.labels_[ids], bins=num_test_dev)
         accuracy += np.max(hist[0])
 
     accuracy = 100*accuracy / data_size
@@ -188,8 +190,10 @@ def evaluate_Kmeans(test_set, test_labels, logger):
         print(" > Accuracy from Kmeans on clustering the test set: ", accuracy)
 
 def accuracy_test(model, encoded_test, labels_test, logger):
-    encoded = torch.Tensor(encoded_test).to(params.device)
-    labels = torch.Tensor(labels_test).to(params.device)
+    num_test_dev = max(labels_test)
+
+    encoded = torch.Tensor(encoded_test).to(num_test_dev)
+    labels = torch.Tensor(labels_test).to(num_test_dev)
     output = model.classify(encoded)
     predicted = torch.argmax(output, dim=1)
     target_count = labels.size(0)
