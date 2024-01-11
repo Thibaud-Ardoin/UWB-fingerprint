@@ -211,6 +211,9 @@ def accuracy_test(model, encoded_test, labels_test, logger):
 def testing_model(training_loaders, validation_loader, model, logger):
     start_time = time.time()
 
+    model.eval()
+    logger.save_model(model)
+
     encoded_train, labels_train = encode_data(model, training_loaders)
     encoded_test, labels_test = encode_data(model, validation_loader)
     enc_time = time.time()

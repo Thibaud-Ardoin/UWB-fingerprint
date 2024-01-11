@@ -18,9 +18,9 @@ testlabelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_label
 
 data_type = "not_complex"
 data_use_position = False       # If you want to add the angular information as input of the model too
-data_spliting = "file_test"  #"all_split", "file_test", "random"
+data_spliting = "pos_split"  #"all_split", "file_test", "random"
 split_train_ratio = 0.80
-augmentations = ["addSomeNoise"] #fourrier
+augmentations = ["addSomeNoise"] #fourrier, logDistortionNorm
 noise_amount = 0
 
 data_limit = -1
@@ -29,7 +29,7 @@ validation_dev = 0      # Not used yet ?
 data_test_rate = 0.01    # Random % of data to run tests on (O(n**2))
 
 num_pos = 48    #21
-num_dev = 3    #13
+num_dev = 9    #13
 signal_length = 200
 
 
@@ -104,11 +104,13 @@ window_size = 16
 ##############
 #   System   #
 ##############
+save_model = True   # On test section
 use_gpu = True
 device = "cuda" if torch.cuda.is_available() and use_gpu else "cpu"
 verbose = True
 plotting = False
 use_wandb = True
+saving_path = "./data/"
 
 
 

@@ -60,7 +60,7 @@ class Transformer3(nn.Module):
 		self.batchnorm2 = nn.BatchNorm1d(params.latent_dimention*4)
 		self.expenderFc1 = nn.Linear(params.latent_dimention, params.latent_dimention*4)
 		# self.expenderFc2 = nn.Linear(params.latent_dimention + int(params.expender_out/4), params.latent_dimention + int(params.expender_out/2))
-		self.expenderFc2 = nn.Linear(params.latent_dimention*4, params.latent_dimention*4)
+		# self.expenderFc2 = nn.Linear(params.latent_dimention*4, params.latent_dimention*4)
 		# self.expenderFc3 = nn.Linear(params.latent_dimention + int(params.expender_out/2), params.expender_out)
 		self.expenderFc3 = nn.Linear(params.latent_dimention*4, params.latent_dimention*4)
 

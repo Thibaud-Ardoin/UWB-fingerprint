@@ -53,6 +53,12 @@ def add_angular(data_point, label_point):
     
     return torch.stack((data_point[:, 0], data_point[:, 1], cos, sin))
 
+def logDistortionNorm(x):
+    eps = 1e-5    
+    logX1 = np.log(x+eps)
+    # return logX1
+    return (logX1 - logX1.min())/(logX1.max() - logX1.min())
+
 
 
 

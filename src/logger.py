@@ -32,6 +32,12 @@ class Logger():
         self.test_step += 1
 
 
+    def save_model(self, model):
+        if params.save_model:
+            torch.save(model, params.saving_path + "model2_" + str(self.epoch) + ".pth")
+
+
+
     def setupWB(self):
         wandb.init(
             # set the wandb project where this run will be logged
@@ -77,20 +83,21 @@ class Logger():
             num_classes = max(labels)
             X = np.array(data)
             dimentions = [[2*i, i*2+1] for i in range(1)] #len(X[0])//2)]
-            colors_base = cm.rainbow(np.linspace(0, 1, num_classes))
+            colors_base = cm.rainbow(np.linspace(0, 1, num_classes+1))
             plt.rcParams["figure.figsize"] = (20,20)
             # colors = [colors_base[l] for l in labels]
             # print(colors_base)
             # print(np.arange(0, params.num_dev+1))
-            cmap, norm = matplotlib.colors.from_levels_and_colors(np.arange(0, num_classes+1)- 0.5, colors_base)
+            # print(np.arange(0, num_classes+1)- 0.5)
+            cmap, norm = matplotlib.colors.from_levels_and_colors(np.arange(0, num_classes+2)- 0.5, colors_base)
 
-            # print(cmap)
+            # print(cmap.colors)
             # print(norm)
             
             for i in range(len(dimentions)):
                 fig, ax = plt.subplots()
                 scatter = ax.scatter(X[:, dimentions[i][0]], X[:, dimentions[i][1]], c=labels, norm=norm, cmap=cmap, marker=".", linewidths=0.5, s=20)
-                handles, lab = scatter.legend_elements(prop="colors", num=num_classes, alpha=0.6)
+                handles, lab = scatter.legend_elements(prop="colors", num=num_classes+1, alpha=0.6)
                 legend1 = ax.legend(handles, lab,
                         loc="lower left", title="Device id")
                 ax.add_artist(legend1)
