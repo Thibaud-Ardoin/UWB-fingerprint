@@ -15,12 +15,29 @@ from sklearn.metrics import classification_report, confusion_matrix
 import params
 
 
+def normdata(x):
+    x = torch.abs(x)
+    x = (x - x.min())/(x.max() - x.min())
+    return x
+
+def concatenate_samples(batchX, batchY, additional_samples):
+    # Concatenate every 3 samples
+    concatenated_tensors = [torch.cat(tuple(batchX[i:i+additional_samples+1]), dim=0) for i in range(0, len(batchX), additional_samples+1)]
+    concatenated_tensors_labels = [batchY[i] for i in range(0, len(batchY), additional_samples+1)]
+    if params.input_type == "fft":
+            concatenated_tensors = [normdata(torch.fft.rfft(tensor)) for tensor in concatenated_tensors]
+    batchX = torch.stack(concatenated_tensors)
+    batchY = torch.stack(concatenated_tensors_labels)
+    return batchX, batchY
+
 def encode_data(mymodel, dataloader):
     mymodel.eval()
     def loop_on_loader(loader):
         loader.dataset.testset = True
         encs, labs = [], []
         for i, (batchX, batchY) in enumerate(loader):
+            if params.additional_samples > 0:
+                batchX, batchY = concatenate_samples(batchX, batchY, params.additional_samples)
             # Compute encoded version of the data by our embedding model
             encs = encs + mymodel.encode(batchX).tolist()
             # Gather device labels accordingly (eventually randomly enumerated)
@@ -192,8 +209,8 @@ def evaluate_Kmeans(test_set, test_labels, logger):
 def accuracy_test(model, encoded_test, labels_test, logger):
     num_test_dev = max(labels_test)
 
-    encoded = torch.Tensor(encoded_test).to(num_test_dev)
-    labels = torch.Tensor(labels_test).to(num_test_dev)
+    encoded = torch.Tensor(encoded_test).to(params.device)
+    labels = torch.Tensor(labels_test).to(params.device)
     output = model.classify(encoded)
     predicted = torch.argmax(output, dim=1)
     target_count = labels.size(0)

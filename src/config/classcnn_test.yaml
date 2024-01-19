@@ -1,0 +1,49 @@
+data_spliting: "pos_split"
+loss: "crossentropy"
+model_name: "ClassCNN1"
+batch_size: 1200 # only a 1200//additional_samples passes through the model
+input_type: "raw"
+class_hidden_size: 253
+additional_samples: 4 # how many samples to add
+same_positions: false # if true, the same positions are used for all additional samples
+class_layers_nb: 1
+conv_features1_nb: 82
+conv_features2_nb: 33
+conv_kernel1_size: 15
+conv_kernel2_size: 6
+conv_layers_nb: 3
+data_limit: 500000
+data_test_rate: 0.1
+datafile: "../data/Messung9/messung9.2_data.npy"
+device: "cuda"
+dropout_value: 0
+expender_out: 138
+feature_norm: "layer"
+flat_data: true
+labelfile: "../data/Messung9/messung9.2_labels.npy"
+latent_dimention: 156
+learning_rate: 0.001
+lr_limit: 0.0001
+nb_epochs: 10000
+noise_amount: 0
+num_dev: 9 #9
+num_pos: 48 #48
+optimizer: "Adam"
+padding_size: 1
+patience: 50
+plotting: false
+set_parameters: "params.set_parameters"
+sheduler: "plateau"
+signal_length: 1000
+split_train_ratio: 0.8
+stride_size: 1
+tail_fc_layers_nb: 2
+test_interval: 1000
+use_extender: false
+use_gpu: true
+use_wandb: true
+validation_dev: 0
+validation_pos: [5,8,11,15,19,23] # multiple test positions
+verbose: true
+warmup_steps: 50
+window_size: 16

@@ -11,7 +11,7 @@ import torchvision.transforms as transforms
 
 import params
 
-
+from custom_batchsampler import CustomBatchSampler 
 
 ############################
 #   Processing functions
@@ -59,7 +59,10 @@ def logDistortionNorm(x):
     # return logX1
     return (logX1 - logX1.min())/(logX1.max() - logX1.min())
 
-
+# Function to apply Hamming window
+def apply_hamming_window(x):
+    hamming_window = torch.hann_window(len(x))
+    return x * hamming_window
 
 
 #################################################
@@ -245,7 +248,7 @@ class DataGatherer():
         pos_ids = [np.where(self.labels[:,1] == i) for i in range(params.num_pos)]
         dev_ids = [np.where(self.labels[:,0] == i) for i in range(params.num_dev)]
         all_data = []
-        val_pos = params.validation_pos
+        val_pos = params.validation_pos[0]
         if its_all_train:
             val_pos = -1
 
@@ -264,7 +267,7 @@ class DataGatherer():
         for dev in range(params.num_dev) :
             training_loaders.append([])
             for pos in range(params.num_pos) :
-                if not pos==val_pos :
+                if not pos in params.validation_pos :
                     if params.flat_data:
                         # Dont divide in multi data loader for each class combination
                         training_loaders = training_loaders + all_data[dev][pos]
@@ -276,7 +279,11 @@ class DataGatherer():
             for i in range(len(training_loaders)-1, -1, -1):
                 if len(training_loaders[i]) == 0:
                     del training_loaders[i]
-            training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), batch_size=params.batch_size, shuffle=True)
+            if params.additional_samples > 0 and params.loss == "crossentropy":
+                balanced_batch_sampler = CustomBatchSampler(MyDataset(training_loaders), params.additional_samples, params.same_positions, params.batch_size)
+                training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), batch_sampler=balanced_batch_sampler)
+            else:
+                training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), batch_size=params.batch_size, shuffle=True)
 
 
         if its_all_train:
@@ -286,9 +293,14 @@ class DataGatherer():
         # TODO: Make it also a multi positional element
         val_data = []
         for dev in range(params.num_dev) :
-            val_data = val_data + all_data[dev][val_pos]
+            for vali_pos in params.validation_pos:
+                val_data = val_data + all_data[dev][vali_pos]
         validation_set = MyDataset(val_data, testset=True)
-        validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=params.batch_size, shuffle=True)
+        if params.additional_samples > 0:
+            balanced_batch_sampler = CustomBatchSampler(validation_set, params.additional_samples, params.same_positions, params.batch_size)
+            validation_loader = torch.utils.data.DataLoader(validation_set, batch_sampler=balanced_batch_sampler)
+        else:
+            validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=params.batch_size, shuffle=True)
         self.training_loaders = training_loaders
         self.validation_loader = validation_loader
         if return_array:

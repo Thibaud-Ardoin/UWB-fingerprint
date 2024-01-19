@@ -8,6 +8,24 @@ from scipy.spatial import distance_matrix
 from utils.util import off_diagonal, accuracy
 
 
+def normdata(x):
+    x = torch.abs(x)
+    x = (x - x.min())/(x.max() - x.min())
+    return x
+
+def concatenate_samples(samples, additional_samples, labels=None):
+    # Concatenate every params.additional_samples samples
+    x = [torch.cat(tuple(samples[i:i+additional_samples+1]), dim=0) for i in range(0, len(samples), additional_samples+1)]
+    if params.input_type == "fft":
+        x = [normdata(torch.fft.rfft(tensor)) for tensor in x]
+    x = torch.stack(x)
+    if labels is not None:
+        y = [labels[i] for i in range(0, len(labels), additional_samples+1)]
+        y = torch.stack(y)
+        return x, y
+    return x
+    
+   
 class Loss():
     def __init__(self, trainDataloader, my_model, trainLoss, samples, var_memory2, cov_memory, dist_memory, var_memory, pos_accuracy, dev_accuracy):
         self.trainDataloader = trainDataloader
@@ -65,6 +83,9 @@ class Loss():
 
             elif params.loss == "crossentropy":
 
+                if params.additional_samples > 0:
+                    x, y = concatenate_samples(x, params.additional_samples, y)
+                    
                 dev_pred = self.my_model(x)
 
                 devLoss = ce_loss(dev_pred.double(), y[:,0])
