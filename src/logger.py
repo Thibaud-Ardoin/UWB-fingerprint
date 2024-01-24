@@ -34,7 +34,7 @@ class Logger():
 
     def save_model(self, model):
         if params.save_model:
-            torch.save(model, params.saving_path + "model2_" + str(self.epoch) + ".pth")
+            torch.save(model, params.saving_path + "model_" + params.saved_model_suffix + "_" + str(self.epoch) + ".pth")
 
 
 

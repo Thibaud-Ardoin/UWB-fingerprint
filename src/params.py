@@ -21,7 +21,7 @@ data_use_position = False       # If you want to add the angular information as 
 data_spliting = "pos_split"  #"all_split", "file_test", "random"
 split_train_ratio = 0.80
 augmentations = ["addSomeNoise"] #fourrier, logDistortionNorm
-noise_amount = 0
+noise_amount = 0.01
 
 data_limit = -1
 validation_pos = 5
@@ -37,7 +37,7 @@ signal_length = 200
 ############
 #   Train
 ############
-batch_size = 256
+batch_size = 32
 nb_epochs = 10000
 test_interval = 50
 

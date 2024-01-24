@@ -16,7 +16,7 @@ labelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2_labels.np
 device: "cuda"
 testfile: "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_data.npy"
 testlabelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_labels.npy"
-dropout_value: 0
+dropout_value: 0.01
 expender_out: 128
 expender_layers_nb: 1
 expender_hidden_size: 256
@@ -31,7 +31,7 @@ lambda_distance: 11    #14
 lambda_std: 4        #1.2
 lambda_cov: 4 
 nb_epochs: 10000
-noise_amount: 0
+noise_amount: 0.05
 num_dev: 8
 num_pos: 48
 optimizer: "Adam"
@@ -39,9 +39,9 @@ padding_size: 0
 patience: 100
 plotting: false
 set_parameters: "params.set_parameters"
-sheduler: "plateau"
+sheduler: "warmup" #warmup #plateau
 signal_length: 200
-split_train_ratio: 0.8
+split_train_ratio: 08
 save_model: true
 stride_size: 2
 tail_fc_layers_nb: 2
@@ -60,3 +60,5 @@ warmup_steps: 50
 window_size: 16
 data_type: "not complex"
 data_use_position: false
+augmentations: ["addSomeNoise"]
+saved_model_suffix: "noiseMore"
