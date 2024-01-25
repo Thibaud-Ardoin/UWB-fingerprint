@@ -89,6 +89,9 @@ class advCNN1():
     def classify(self, x):
         return self.devCls(x)
     
+    def encode(self, x):
+         return self.encoder(x)
+    
 
     def to(self, device):
         self.encoder = self.encoder.to(device)

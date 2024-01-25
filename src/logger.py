@@ -36,6 +36,62 @@ class Logger():
         if params.save_model:
             torch.save(model, params.saving_path + "model2_" + str(self.epoch) + ".pth")
 
+    def log_loss(self, loss, optim):
+        if params.loss=="crossentropy":
+            self.log({
+            "Dev class loss": np.mean(self.var_memory),
+            "Dev class accuracy": np.mean(self.dev_accuracy),
+            "Encoder loss": self.trainLoss / self.samples,
+            "learning rate": self.optimizer.get_lr()})
+            self.step_epoch()
+        elif params.loss=="triplet+crossentropy":
+            self.log({
+            "Triplet loss": np.mean(self.var_memory2),
+            "Dev class loss": np.mean(self.var_memory),
+            "Dev class accuracy": np.mean(self.dev_accuracy),
+            "Encoder loss": self.trainLoss / self.samples,
+            "learning rate": self.optimizer.get_lr()})
+            self.step_epoch()
+        elif params.loss=="AdversarialLoss":
+            self.log({
+            "Dev class loss": np.mean(loss.memory["dev_loss_memory"]),
+            "Pos class loss": np.mean(loss.memory["pos_loss_memory"]), 
+            "Dev class accuracy": np.mean(loss.memory["dev_accuracy"]),
+            "Pos class accuracy": np.mean(loss.memory["pos_accuracy"]),
+            "Encoder loss": loss.trainLoss / loss.samples,
+            "learning rate": optim.get_lr()})
+            self.step_epoch()
+        elif params.loss=="triplet3":
+            self.log({
+            "triploss": np.mean(self.var_memory2),
+            "cov_loss": np.mean(self.cov_memory),
+            "global_loss": self.trainLoss / self.samples,
+            "learning rate": self.optimizer.get_lr()})
+            self.step_epoch()
+        elif params.loss=="triplet2":
+            self.log({
+            "triploss": np.mean(self.var_memory2),
+            "global_loss": self.trainLoss / self.samples,
+            "learning rate": self.optimizer.get_lr()})
+            self.step_epoch()
+        elif params.loss=="triplet":
+            self.log({
+            "repr_loss": np.mean(self.dist_memory),
+            "cov_loss": np.mean(self.cov_memory),
+            "std_loss": np.mean(self.var_memory),
+            "triploss": np.mean(self.var_memory2),
+            "global_loss": self.trainLoss / self.samples,
+            "learning rate": self.optimizer.get_lr()})
+            self.step_epoch()
+        elif params.loss=="vicreg":
+            self.log({"repr_loss": np.mean(self.dist_memory),
+            "std_loss": np.mean(self.var_memory),
+            "std_loss2": np.mean(self.var_memory2),
+            "cov_loss": np.mean(self.cov_memory),
+            "global_loss": self.trainLoss / self.samples,
+            "learning rate": self.optimizer.get_lr()})
+            self.step_epoch()
+
 
 
     def setupWB(self):

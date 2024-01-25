@@ -1,7 +1,9 @@
 data_spliting: "random"
-loss: "crossentropy"
+loss: "CrossentropyLoss"
 model_name: "ClassCNN1"
 batch_size: 512
+additional_samples: 2  # For concatenation of additional data point
+same_positions: true   # If the concatenation should be done diagonal to positions or not
 class_hidden_size: 256
 class_layers_nb: 1
 conv_features1_nb: 80

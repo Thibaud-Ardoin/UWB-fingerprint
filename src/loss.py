@@ -24,22 +24,34 @@ def concatenate_samples(samples, additional_samples, labels=None):
         y = torch.stack(y)
         return x, y
     return x
+
+    
     
    
 class Loss():
-    def __init__(self, trainDataloader, my_model, trainLoss, samples, var_memory2, cov_memory, dist_memory, var_memory, pos_accuracy, dev_accuracy):
+    def __init__(self, trainDataloader, my_model):
         self.trainDataloader = trainDataloader
         self.my_model = my_model
-        self.trainLoss = trainLoss
-        self.samples = samples
-        self.var_memory2 = var_memory2
-        self.cov_memory = cov_memory
-        self.dist_memory = dist_memory
-        self.var_memory = var_memory
-        self.dev_accuracy = dev_accuracy
-        self.pos_accuracy = pos_accuracy
-        self.trainAcc ,self.valLoss, self.valAcc = 0, 0, 0
+
+        self.trainLoss = 0
+        self.samples = 0
+
+        # Memorry should be sub_class specific
+        self.memory_elements = ["samples", "trainLoss", "var_memory2", "cov_memory", "dist_memory", "var_memory", "dev_accuracy", "pos_accuracy", "trainAcc", "valLoss", "valAcc"]
+
         self.pos_amt = self.initialize_parameters()
+
+
+    def epoch_start(self):
+        self.build_memory_dictionary()
+        self.trainLoss = 0
+        self.samples = 0
+
+
+    def build_memory_dictionary(self):
+        self.memory = {
+            elmt_name: [0] for elmt_name in self.memory_elements
+        }
 
     def initialize_parameters(self):
         if not params.flat_data:
@@ -48,40 +60,19 @@ class Loss():
             pos_amt = None
         return pos_amt
     
+
+    def forwardpass_data(self):
+        pass
+    
+    
     def process_flat_data(self):
+       # Goes once through the dataloader
        for i, data in enumerate(self.trainDataloader):
 
             x, y = data
             ce_loss = nn.CrossEntropyLoss()
 
-            if params.loss == "adversarial":
-
-                dev_pred, pos_pred = self.my_model(x)
-
-                devLoss = ce_loss(dev_pred.double(), y[:,0])
-                posLoss = ce_loss(pos_pred.double(), y[:,1])
-
-                encLoss = (
-                    devLoss - posLoss
-                )
-
-                devAcc = accuracy(y[:,0], dev_pred)
-                posAcc = accuracy(y[:,1], pos_pred)
-
-                self.var_memory.append(devLoss.item())
-                self.cov_memory.append(posLoss.item())
-                self.pos_accuracy.append(posAcc)
-                self.dev_accuracy.append(devAcc)
-                # self.var_memory2.append(trip_loss.item())
-
-                size_of_batch = x.size(0)
-
-                self.trainLoss += encLoss.item() * size_of_batch
-                self.samples += size_of_batch
-
-                return devLoss, posLoss, encLoss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy
-
-            elif params.loss == "crossentropy":
+            if params.loss == "crossentropy":
 
                 if params.additional_samples > 0:
                     x, y = concatenate_samples(x, params.additional_samples, y)
@@ -100,7 +91,6 @@ class Loss():
                 self.trainLoss += devLoss.item() * size_of_batch
                 self.samples += size_of_batch
             
-                return devLoss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy
 
     def per_epoch(self, epoch):
         self.tripletLoss = nn.TripletMarginLoss(margin=params.triplet_mmargin, p=2, reduce=True, reduction="mean")
@@ -445,3 +435,87 @@ class Loss():
             self.samples += size_of_batch
         
         return loss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy
+    
+
+
+
+
+class AdversarialLoss(Loss):
+    def __init__(self, trainDataloader, my_model) -> None:
+        super().__init__(trainDataloader, my_model)
+        self.memory_elements.extend(["devLoss, posLoss", "encLoss", "dev_loss_memory", "pos_loss_memory", "dev_accuracy", "pos_accuracy", ])
+        self.build_memory_dictionary()
+
+        self.ce_loss = nn.CrossEntropyLoss()
+
+
+    def forwardpass_data(self):
+        # Extract next data batch from the dataloader
+        data = next(iter(self.trainDataloader))
+        x, y = data
+
+        dev_pred, pos_pred = self.my_model(x)
+
+        devLoss = self.ce_loss(dev_pred.double(), y[:,0])
+        posLoss = self.ce_loss(pos_pred.double(), y[:,1])
+
+        encLoss = (
+            devLoss - posLoss
+        )
+
+        devAcc = accuracy(y[:,0], dev_pred)
+        posAcc = accuracy(y[:,1], pos_pred)
+
+        # Rename element of memorry correctly
+        self.memory["devLoss"] = devLoss
+        self.memory["posLoss"] = posLoss
+        self.memory["encLoss"] = encLoss
+        self.memory["dev_loss_memory"].append(devLoss.item())
+        self.memory["pos_loss_memory"].append(posLoss.item())
+        self.memory["pos_accuracy"].append(posAcc)
+        self.memory["dev_accuracy"].append(devAcc)
+
+        size_of_batch = x.size(0)
+
+        self.trainLoss += encLoss.item() * size_of_batch
+        self.samples += size_of_batch
+
+
+
+class CrossentropyLoss(Loss):
+    def __init__(self, trainDataloader, my_model) -> None:
+        super().__init__(trainDataloader, my_model)
+        self.memory_elements.extend(["devLoss", "dev_loss_memory", "dev_accuracy"])
+        self.build_memory_dictionary()
+
+        self.ce_loss = nn.CrossEntropyLoss()
+
+
+    def forwardpass_data(self):
+       # Goes once through the dataloader
+        data = next(iter(self.trainDataloader))
+        x, y = data
+        if params.additional_samples > 0:
+            x, y = concatenate_samples(x, params.additional_samples, y)
+            
+        dev_pred = self.my_model(x)
+
+        devLoss = self.ce_loss(dev_pred.double(), y[:,0])
+
+        devAcc = accuracy(y[:,0], dev_pred)
+
+        size_of_batch = x.size(0)
+        self.trainLoss += devLoss.item() * size_of_batch
+        self.samples += size_of_batch
+
+        self.memory["devLoss"] = devLoss
+        self.memory["dev_loss_memory"].append(devLoss.item())
+        self.memory["dev_accuracy"].append(devAcc)
+
+        
+
+def load_loss(trainLoader, Model):
+	loss_object = eval(params.loss)(trainLoader, Model)
+	if params.verbose:
+		print(loss_object)
+	return loss_object
