@@ -4,6 +4,9 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import BatchSampler
 
+def custom_sort_key(item):
+    values = item.split()
+    return int(values[0]), int(values[1])
 
 class CustomBatchSampler(BatchSampler):
     
@@ -20,7 +23,7 @@ class CustomBatchSampler(BatchSampler):
     - check (bool, optional): Flag to enable batch checking. Defaults to False.
     """
 
-    def __init__(self, dataset, additional_samples, same_positions, batch_size, check=False):
+    def __init__(self, dataset, additional_samples, same_positions, batch_size, loss, validation_pos, num_dev, num_pos, train=False, check=False):
         loader = DataLoader(dataset)
         self.labels = []
         self.count = 0
@@ -30,10 +33,22 @@ class CustomBatchSampler(BatchSampler):
         # set the number of classes in each batch
         self.count_classes = batch_size//(additional_samples+1)
         self.same_positions = same_positions
+        self.loss = loss
+        self.train = train
+        self.validation_pos = validation_pos
+        self.num_dev = num_dev
+        self.num_pos = num_pos
         # check the batches for mistakes
         self.check = check
         self.list_indicies = []
-
+        #  for same posititions we need this multiplier to get the right number of samples (bachsize) for vicreg 
+        if loss == 'VicregAdditionalSamples' and self.train and self.same_positions:
+            self.count_multiplier = self.batch_size//(self.count_samples*self.num_dev*2)
+        # for different posititions we need to double the number because we can easily divide the batch 
+        elif loss == 'VicregAdditionalSamples' and self.train and not self.same_positions:
+            self.count_multiplier = self.batch_size//(self.count_samples*self.num_dev)
+        else:
+            self.count_multiplier = 1
         # Process labels based on position similarity
         if same_positions:
             for _, label in loader:
@@ -66,14 +81,31 @@ class CustomBatchSampler(BatchSampler):
         
         # Initialize counters for used indices for each unique label
         self.indicies_used_labels = {label: 0 for label in self.unique_labels}
-        
+
 
     def __iter__(self):
         self.count = 0
         self.list_indicies = []
         while self.count + self.batch_size < len(self.dataset):
-            # Randomly select count_classes labels for the current batch
-            selected_classes = np.random.choice(self.unique_labels, self.count_classes)
+            # test for VicregAdditionalSamples training
+            if self.loss == 'VicregAdditionalSamples' and self.train and self.same_positions:
+                excluded_elements = self.validation_pos
+                remaining_elements = list(set(range(self.num_pos)) - set(excluded_elements))
+                # Randomly choose a label in range 49
+                pos1 = np.random.choice(remaining_elements)
+                remaining_elements.remove(pos1)
+                pos2 = np.random.choice(remaining_elements)
+                # Sort the list based on the custom sorting key
+                sorted_list = sorted(self.unique_labels, key=custom_sort_key)
+                result_list1 = [item for item in sorted_list if item.split()[1] == str(pos1)]
+                result_list2 = [item for item in sorted_list if item.split()[1] == str(pos2)]
+                selected_classes = result_list1 + result_list2
+            elif self.loss == 'VicregAdditionalSamples' and self.train and not self.same_positions:
+                # Randomly select count_classes labels for the current batch
+                selected_classes = self.unique_labels
+            else:
+                # Randomly select count_classes labels for the current batch
+                selected_classes = np.random.choice(self.unique_labels, self.count_classes)
 
             # Initialize an empty list to store indices for the current batch
             batch_indices = []
@@ -86,18 +118,18 @@ class CustomBatchSampler(BatchSampler):
                 # Extract a subset of indices for the current class
                 subset_indices = current_class_indices[
                     self.indicies_used_labels[current_class]:
-                    self.indicies_used_labels[current_class] + self.count_samples
+                    self.indicies_used_labels[current_class] + self.count_samples *self.count_multiplier
                 ]
 
                 # Extend the batch indices with the subset
                 batch_indices.extend(subset_indices)
 
                 # Update the count of used indices for the current class
-                self.indicies_used_labels[current_class] += self.count_samples
+                self.indicies_used_labels[current_class] += self.count_samples*self.count_multiplier
 
                 # Check if all indices for the current class have been used
                 if (
-                    self.indicies_used_labels[current_class] + self.count_samples
+                    self.indicies_used_labels[current_class] + self.count_samples*self.count_multiplier
                     > len(current_class_indices)
                 ):
                     # If so, shuffle the indices for the current class
@@ -113,7 +145,7 @@ class CustomBatchSampler(BatchSampler):
             yield batch_indices
 
             # Update the overall count based on the number of classes and samples
-            self.count += self.count_classes * self.count_samples
+            self.count += self.count_classes * self.count_samples*self.count_multiplier
         # check the batches for mistakes
         if self.check:
             for i, x in enumerate(self.list_indicies):

@@ -93,7 +93,7 @@ class Loss():
 
                 self.trainLoss += devLoss.item() * size_of_batch
                 self.samples += size_of_batch
-            
+
 
     def per_epoch(self, epoch):
         self.tripletLoss = nn.TripletMarginLoss(margin=params.triplet_mmargin, p=2, reduce=True, reduction="mean")
@@ -514,7 +514,90 @@ class CrossentropyLoss(Loss):
         self.memory["dev_loss_memory"].append(devLoss.item())
         self.memory["dev_accuracy"].append(devAcc)
 
+class VicregAdditionalSamples(Loss):
+    def __init__(self, trainDataloader, my_model) -> None:
+        super().__init__(trainDataloader, my_model)
+        self.memory_elements.extend(["loss", "repr_loss_memory", "std_loss_memory", "std_loss2_memory", "cov_loss_memory"])
+        self.build_memory_dictionary()
 
+
+    def forwardpass_data(self):
+       # Goes once through the dataloader
+        data = next(iter(self.trainDataloader))
+        x, y = data
+        # set the number of concatenated samples for each device
+        count_concatenations = params.batch_size//((params.additional_samples+1)*params.num_dev*2)
+
+        x, y = concatenate_samples(x, params.additional_samples, y)
+        if not params.same_positions:
+            batchx1 = [element for index, element in enumerate(x) if index % 2 == 0]
+            batchx2 = [element for index, element in enumerate(x) if index % 2 == 1]
+            y = [element for index, element in enumerate(y) if index % 2 == 0]
+            batchx1 = torch.stack(batchx1)
+            batchx2 = torch.stack(batchx2)
+        else :
+            batchx1 = x[:len(x)//2]
+            batchx2 = x[len(x)//2:]
+
+        z1 = self.my_model(batchx1)
+        z2 = self.my_model(batchx2)
+
+        x1 = [z1[dev*(count_concatenations):(dev+1)*(count_concatenations)] for dev in range(params.num_dev)]
+        x2 = [z2[dev*(count_concatenations):(dev+1)*(count_concatenations)] for dev in range(params.num_dev)]
+
+        # Same as z1, z2 ?
+        x = torch.cat(x1)
+        y = torch.cat(x2)
+        
+        repr_loss = torch.stack([F.mse_loss(x1[dev], x2[dev]) for dev in range(params.num_dev)]).sum()
+        
+        x = x - x.mean(dim=0)
+        y = y - y.mean(dim=0)
+
+        size_of_batch = x.size(0)
+
+        xt1 = torch.stack([x1[dev] for dev in range(params.num_dev)],  dim=0)
+        xt2 = torch.stack([x2[dev] for dev in range(params.num_dev)],  dim=0)
+        
+        std_x = torch.sqrt(xt1.var(dim=0) + 0.0001)
+        std_y = torch.sqrt(xt2.var(dim=0) + 0.0001)
+        std_loss = torch.mean(F.relu(1 - std_x)) / 2 + torch.mean(F.relu(1 - std_y)) / 2
+            
+            
+        # Maximise the variance allong the batch
+        std_x2 = torch.sqrt(x.var(dim=0) + 0.0001)
+        std_y2 = torch.sqrt(y.var(dim=0) + 0.0001)
+        std_loss2 = torch.mean(F.relu(1 - std_x2)) / 2 + torch.mean(F.relu(1 - std_y2)) / 2
+        
+        
+        # Minimise the covariance along the encodded embeddings
+        cov_x = (x.T @ x) / ((count_concatenations) - 1)
+        cov_y = (y.T @ y) / ((count_concatenations) - 1)
+        cov_loss = off_diagonal(cov_x).pow_(2).sum().div(
+            self.my_model.embedding_size
+        ) + off_diagonal(cov_y).pow_(2).sum().div(self.my_model.embedding_size)
+
+        # Paper's parameters 25, 25, 1
+        loss = (
+            params.lambda_distance * repr_loss
+            + params.lambda_std * std_loss
+            + params.lambda_cov * cov_loss
+        ) / (params.lambda_distance + params.lambda_std + params.lambda_cov)
+
+        # Keep track of the elements of the loss
+        self.dist_memory.append(repr_loss.item())
+        self.var_memory.append(std_loss.item())
+        self.var_memory2.append(std_loss2.item())
+        self.cov_memory.append(cov_loss.item())
+
+        self.trainLoss += loss.item() * size_of_batch
+        self.samples += size_of_batch
+        
+        self.memory["loss"] = loss
+        self.memory["repr_loss_memory"].append(repr_loss.item())
+        self.memory["std_loss_memory"].append(std_loss.item())
+        self.memory["std_loss2_memory"].append(std_loss2.item())
+        self.memory["cov_loss_memory"].append(cov_loss.item())
 
 def load_loss(trainLoader, Model):
 	loss_object = eval(params.loss)(trainLoader, Model)

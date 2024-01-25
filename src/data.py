@@ -279,8 +279,8 @@ class DataGatherer():
             for i in range(len(training_loaders)-1, -1, -1):
                 if len(training_loaders[i]) == 0:
                     del training_loaders[i]
-            if params.additional_samples > 0 and params.loss == "crossentropy":
-                balanced_batch_sampler = CustomBatchSampler(MyDataset(training_loaders), params.additional_samples, params.same_positions, params.batch_size)
+            if params.additional_samples > 0:
+                balanced_batch_sampler = CustomBatchSampler(MyDataset(training_loaders), params.additional_samples, params.same_positions, params.batch_size, params.loss, params.validation_pos, params.num_dev, params.num_pos, train=True)
                 training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), batch_sampler=balanced_batch_sampler)
             else:
                 training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), batch_size=params.batch_size, shuffle=True)
@@ -297,7 +297,7 @@ class DataGatherer():
                 val_data = val_data + all_data[dev][vali_pos]
         validation_set = MyDataset(val_data, testset=True)
         if params.additional_samples > 0:
-            balanced_batch_sampler = CustomBatchSampler(validation_set, params.additional_samples, params.same_positions, params.batch_size)
+            balanced_batch_sampler = CustomBatchSampler(validation_set, params.additional_samples, params.same_positions, params.batch_size, params.loss, params.validation_pos, params.num_dev, params.num_pos)
             validation_loader = torch.utils.data.DataLoader(validation_set, batch_sampler=balanced_batch_sampler)
         else:
             validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=params.batch_size, shuffle=True)

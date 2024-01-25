@@ -45,6 +45,14 @@ class Logger():
             "Encoder loss": loss.trainLoss / loss.samples,
             "learning rate": optim.get_lr()})
             self.step_epoch()
+        if params.loss=="VicregAdditionalSamples":
+            self.log({"repr_loss": np.mean(loss.memory["repr_loss_memory"]),
+            "std_loss": np.mean(loss.memory["std_loss_memory"]),
+            "std_loss2": np.mean(loss.memory["std_loss2_memory"]),
+            "cov_loss": np.mean(loss.memory["cov_loss_memory"]),
+            "global_loss": loss.trainLoss / loss.samples,
+            "learning rate": optim.get_lr()})
+            self.step_epoch()
         elif params.loss=="triplet+crossentropy":
             self.log({
             "Triplet loss": np.mean(self.var_memory2),

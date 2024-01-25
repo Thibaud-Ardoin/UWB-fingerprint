@@ -37,7 +37,7 @@ def encode_data(mymodel, dataloader):
         loader.dataset.testset = True
         encs, labs = [], []
         for i, (batchX, batchY) in enumerate(loader):
-            if params.additional_samples > 0 and params.loss=="CrossentropyLoss":
+            if params.additional_samples > 0:
                 batchX, batchY = concatenate_samples(batchX, batchY, params.additional_samples)
             # Compute encoded version of the data by our embedding model
             encs = encs + mymodel.encode(batchX).tolist()
