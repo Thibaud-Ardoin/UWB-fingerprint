@@ -29,7 +29,7 @@ num_dev: 13
 num_pos: 21
 optimizer: "Adam"
 padding_size: 1
-patience: 50
+patience: 500
 plotting: false
 set_parameters: "params.set_parameters"
 sheduler: "plateau"

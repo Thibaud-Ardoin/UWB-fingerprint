@@ -75,7 +75,7 @@ class Trainer:
                     elif params.loss=="AdversarialLoss":
                         # Compile Loss
                         self.Loss.process_flat_data()
-                        # Adversarial Backprop
+                        # Adversarial Backproploss
                         self.optimizer.zero_grad()
                         self.Loss.memory["devLoss"].backward(retain_graph=True)
                         self.Loss.memory["posLoss"].backward(retain_graph=True)

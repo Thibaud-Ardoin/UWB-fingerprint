@@ -37,12 +37,13 @@ class Logger():
             torch.save(model, params.saving_path + "model2_" + str(self.epoch) + ".pth")
 
     def log_loss(self, loss, optim):
-        if params.loss=="crossentropy":
+        # TODO setup an automated logging taht logs all the loss.memory content
+        if params.loss=="CrossentropyLoss":
             self.log({
-            "Dev class loss": np.mean(self.var_memory),
-            "Dev class accuracy": np.mean(self.dev_accuracy),
-            "Encoder loss": self.trainLoss / self.samples,
-            "learning rate": self.optimizer.get_lr()})
+            "Dev class loss": np.mean(loss.memory["dev_loss_memory"]),
+            "Dev class accuracy": np.mean(loss.memory["dev_accuracy"]),
+            "Encoder loss": loss.trainLoss / loss.samples,
+            "learning rate": optim.get_lr()})
             self.step_epoch()
         elif params.loss=="triplet+crossentropy":
             self.log({

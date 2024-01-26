@@ -152,6 +152,7 @@ def __get_dict__():
 
 
 def set_parameters(args):
+
     for i in range(1, len(args)):
         name, value = args[i].split("=")
         name = name[2:]
@@ -164,7 +165,16 @@ def set_parameters(args):
                 value = float(value)
             globals()[name] = value
 
+    implied_values()
 
+
+def implied_values():
+    # Implications on the params values
+    if input_type=="fft":
+        globals()["signal_length"] = globals()["signal_length"]//2
+        
+    # Input of model is a concatenation of signal lengthes
+    globals()["signal_length"] = globals()["signal_length"] * (globals()["additional_samples"]+1)
 
 
 

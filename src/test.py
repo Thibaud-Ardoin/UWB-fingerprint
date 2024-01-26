@@ -22,11 +22,11 @@ def normdata(x):
 
 def concatenate_samples(batchX, batchY, additional_samples):
     # Concatenate every 3 samples
-    number_used_sample = (additional_samples+1)*len(batchX)//(additional_samples+1)
+    number_used_sample = (additional_samples+1)*(len(batchX)//(additional_samples+1))
     concatenated_tensors = [torch.cat(tuple(batchX[i:i+additional_samples+1]), dim=0) for i in range(0, number_used_sample-1, additional_samples+1)]
     concatenated_tensors_labels = [batchY[i] for i in range(0, number_used_sample-1, additional_samples+1)]
     if params.input_type == "fft":
-            concatenated_tensors = [normdata(torch.fft.rfft(tensor)) for tensor in concatenated_tensors]
+            concatenated_tensors = [normdata(torch.fft.rfft(tensor))[:-1] for tensor in concatenated_tensors]
     batchX = torch.stack(concatenated_tensors)
     batchY = torch.stack(concatenated_tensors_labels)
     return batchX, batchY
@@ -37,7 +37,7 @@ def encode_data(mymodel, dataloader):
         loader.dataset.testset = True
         encs, labs = [], []
         for i, (batchX, batchY) in enumerate(loader):
-            if params.additional_samples > 0 and params.loss=="crossentropy":
+            if params.additional_samples > 0 and params.loss=="CrossentropyLoss":
                 batchX, batchY = concatenate_samples(batchX, batchY, params.additional_samples)
             # Compute encoded version of the data by our embedding model
             encs = encs + mymodel.encode(batchX).tolist()

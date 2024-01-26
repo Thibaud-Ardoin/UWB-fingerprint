@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
 import params
@@ -15,12 +16,14 @@ def normdata(x):
 
 def concatenate_samples(samples, additional_samples, labels=None):
     # Concatenate every params.additional_samples samples
-    x = [torch.cat(tuple(samples[i:i+additional_samples+1]), dim=0) for i in range(0, len(samples), additional_samples+1)]
+    number_used_sample = (additional_samples+1)*(len(samples)//(additional_samples+1))
+    x = [torch.cat(tuple(samples[i:i+additional_samples+1]), dim=0) for i in range(0, number_used_sample-1, additional_samples+1)]
     if params.input_type == "fft":
-        x = [normdata(torch.fft.rfft(tensor)) for tensor in x]
+        x = [normdata(torch.fft.rfft(tensor))[:-1] for tensor in x]
+    
     x = torch.stack(x)
     if labels is not None:
-        y = [labels[i] for i in range(0, len(labels), additional_samples+1)]
+        y = [labels[i] for i in range(0, number_used_sample-1, additional_samples+1)]
         y = torch.stack(y)
         return x, y
     return x
@@ -499,7 +502,6 @@ class CrossentropyLoss(Loss):
             x, y = concatenate_samples(x, params.additional_samples, y)
             
         dev_pred = self.my_model(x)
-
         devLoss = self.ce_loss(dev_pred.double(), y[:,0])
 
         devAcc = accuracy(y[:,0], dev_pred)
@@ -512,7 +514,7 @@ class CrossentropyLoss(Loss):
         self.memory["dev_loss_memory"].append(devLoss.item())
         self.memory["dev_accuracy"].append(devAcc)
 
-        
+
 
 def load_loss(trainLoader, Model):
 	loss_object = eval(params.loss)(trainLoader, Model)
