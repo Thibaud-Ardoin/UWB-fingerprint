@@ -4,6 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import BatchSampler
 
+import params
 
 class CustomBatchSampler(BatchSampler):
     
@@ -123,3 +124,47 @@ class CustomBatchSampler(BatchSampler):
 
     def __len__(self):
         return len(self.dataset) // self.batch_size
+    
+
+
+if __name__ == "__main__":
+
+    ###########################
+    # LETs TRY THIS SAMPLER
+    ##############################
+    
+    from data import MyDataset, MyDataLoader
+    import params
+    import matplotlib.pyplot as plt
+
+    number_data_points = 1500
+    data_size = 200
+    bsz = 128
+    data = np.random.rand(number_data_points, data_size)
+    nb_dev = 3
+    nb_pos = 5
+    labels = [[[(dev, pos) for _ in range(100)] for dev in range(nb_dev)] for pos in range(nb_pos) ]
+    labels = np.array(labels)
+    labels = labels.reshape((labels.shape[0]*labels.shape[1]*labels.shape[2], labels.shape[3]))
+
+    print(labels.shape)
+    print(data.shape)
+
+    z = list(zip(data, labels))
+    dataset = MyDataset(z)
+
+    if False:   # Test the classic dataloader, basically random shuffle of all data
+        dataLoader = torch.utils.data.DataLoader(dataset, batch_size=bsz, shuffle=True)
+    if False:   # Test the customBatchSampler with normal loader. Need concatenation
+        sampler = CustomBatchSampler(dataset, additional_samples=2, same_positions=True, batch_size=bsz, check=False)
+        dataLoader = torch.utils.data.DataLoader(dataset, batch_sampler=sampler)
+    if True:   # Test customBatchWith MyDataLoader
+        dataLoader = MyDataLoader(dataset, additional_samples=2, same_positions=False, batch_size=bsz)
+
+    for d in dataLoader:
+        x, y = d
+        print(x.shape)
+        print(y.shape)
+        plt.plot(y.cpu().numpy())
+        plt.show()
+        break

@@ -11,7 +11,7 @@ import torchvision.transforms as transforms
 
 import params
 
-from custom_batchsampler import CustomBatchSampler 
+from custom_batchsampler import CustomBatchSampler
 
 ############################
 #   Processing functions
@@ -42,6 +42,10 @@ def fourier(x):
     x = torch.fft.fft(x)
     x = torch.abs(x)
     return x
+
+def rfft(x):
+    return normdata(torch.fft.rfft(x))[:-1]
+
 
 def add_angular(data_point, label_point):
     # INPUT:    data_point: 250p signal  X label_point: (device id, position id) 
@@ -111,6 +115,40 @@ class MyDataset(torch.utils.data.Dataset):
     
     def __len__(self):
         return len(self.data)
+    
+
+
+########################################################################################################
+#   DataLoader to draw data in good batches according ot the number to desired mesurments per datapoint.
+########################################################################################################
+
+
+class MyDataLoader(torch.utils.data.DataLoader):
+    def __init__(self, data_set, batch_size=params.batch_size, additional_samples=params.additional_samples, same_positions=params.same_positions):
+        self.nb_concatenated = additional_samples + 1
+        balanced_batch_sampler = CustomBatchSampler(data_set, additional_samples=additional_samples, same_positions=same_positions, batch_size=batch_size*self.nb_concatenated)
+        super(MyDataLoader, self).__init__(dataset=data_set, batch_sampler=balanced_batch_sampler)
+
+    def concatenate_samples(self, samples, labels=None):
+        # Concatenate every params.additional_samples samples
+        number_used_sample = (self.nb_concatenated)*(len(samples)//(self.nb_concatenated))
+        x = [torch.cat(torch.unbind(samples[i:i+self.nb_concatenated]), dim=0) for i in range(0, number_used_sample-1, self.nb_concatenated)]        
+        x = torch.stack(x)
+
+        if labels is not None:
+            # ! Select only 1st label of each group of concatenated signals
+            y = [labels[i] for i in range(0, number_used_sample-1, self.nb_concatenated)]
+            y = torch.stack(y)
+            return x, y
+        return x
+
+
+    def __iter__(self):
+        for x, y in super(MyDataLoader, self).__iter__():
+            x, y = self.concatenate_samples(x, y)
+            yield x, y
+        # folded_labels = y.reshape(y.shape[0]//self.nb_concatenated, self.nb_concatenated, 2)
+
 
 
 ###########################################################
@@ -132,8 +170,8 @@ class DataGatherer():
 
     def data_formating(self):
         # Formating of Label data
-        initial_position_number = 15
-        initial_device_number = 3
+        # initial_position_number = 15
+        # initial_device_number = 3
 
         formated_data = list(self.data)
         formated_labels = list(self.labels)
@@ -272,18 +310,20 @@ class DataGatherer():
                         # Dont divide in multi data loader for each class combination
                         training_loaders = training_loaders + all_data[dev][pos]
                     else :
-                        training_set = MyDataset(all_data[dev][pos])
+                        training_set = MeyDataset(all_data[dev][pos])
                         training_loaders[dev].append(torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True))
         if params.flat_data:
             # Sanity check
             for i in range(len(training_loaders)-1, -1, -1):
                 if len(training_loaders[i]) == 0:
                     del training_loaders[i]
-            if params.additional_samples > 0 and params.loss == "crossentropy":
-                balanced_batch_sampler = CustomBatchSampler(MyDataset(training_loaders), params.additional_samples, params.same_positions, params.batch_size)
-                training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), batch_sampler=balanced_batch_sampler)
+            if params.additional_samples > 0 and params.loss == "CrossEntropyLoss":
+                # balanced_batch_sampler = CustomBatchSampler(MyDataset(training_loaders), params.additional_samples, params.same_positions, params.batch_size)
+                training_loaders = MyDataLoader(training_loaders)
             else:
-                training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), batch_size=params.batch_size, shuffle=True)
+                training_loaders = MyDataLoader(training_loaders)
+
+                # training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), batch_size=params.batch_size, shuffle=True)
 
 
         if its_all_train:
@@ -297,19 +337,19 @@ class DataGatherer():
                 val_data = val_data + all_data[dev][vali_pos]
         validation_set = MyDataset(val_data, testset=True)
         if params.additional_samples > 0:
-            balanced_batch_sampler = CustomBatchSampler(validation_set, params.additional_samples, params.same_positions, params.batch_size)
-            validation_loader = torch.utils.data.DataLoader(validation_set, batch_sampler=balanced_batch_sampler)
+            # balanced_batch_sampler = CustomBatchSampler(validation_set, params.additional_samples, params.same_positions, params.batch_size)
+            validation_loader = MyDataLoader(validation_set)
+            # validation_loader = torch.utils.data.DataLoader(validation_set, batch_sampler=balanced_batch_sampler)
         else:
-            validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=params.batch_size, shuffle=True)
+            validation_loader = MyDataLoader(validation_set)
+
+            # validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=params.batch_size, shuffle=True)
         self.training_loaders = training_loaders
         self.validation_loader = validation_loader
         if return_array:
             return training_loaders, validation_loader, all_data
         return training_loaders, validation_loader
-        
-
-    # def data_loading():
-    #     data, label = load_form_source()
+    
 
 
 if __name__ == "__main__":

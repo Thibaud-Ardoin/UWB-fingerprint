@@ -102,6 +102,7 @@ class ClassCNN1(nn.Module):
 
         
     def encoder(self, x): 
+        print(x.shape)
         x = x[:, None, :]
 
         # Conv layers
@@ -111,8 +112,10 @@ class ClassCNN1(nn.Module):
             if i < params.conv_layers_nb -1:
                 x = F.relu(x)
 
+        print(x.shape)
         x = self.norm(x)
         x = self.flatten(x)
+
 
         # Tail fc
         for i in range(params.tail_fc_layers_nb):

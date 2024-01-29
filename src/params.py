@@ -17,7 +17,7 @@ testlabelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_label
 
 # TODO reunite properly following input types in the dataloader
 data_type = "not_complex"
-input_type = "fft"
+input_type = "normal" #rfft"
 
 data_use_position = False       # If you want to add the angular information as input of the model too
 
@@ -170,7 +170,7 @@ def set_parameters(args):
 
 def implied_values():
     # Implications on the params values
-    if input_type=="fft":
+    if input_type=="rfft":
         globals()["signal_length"] = globals()["signal_length"]//2
         
     # Input of model is a concatenation of signal lengthes

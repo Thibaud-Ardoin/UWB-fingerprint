@@ -77,8 +77,8 @@ class Loss():
 
             if params.loss == "crossentropy":
 
-                if params.additional_samples > 0:
-                    x, y = concatenate_samples(x, params.additional_samples, y)
+                # if params.additional_samples > 0:
+                #     x, y = concatenate_samples(x, params.additional_samples, y)
                     
                 dev_pred = self.my_model(x)
 
@@ -498,8 +498,8 @@ class CrossentropyLoss(Loss):
        # Goes once through the dataloader
         data = next(iter(self.trainDataloader))
         x, y = data
-        if params.additional_samples > 0:
-            x, y = concatenate_samples(x, params.additional_samples, y)
+        # if params.additional_samples > 0:
+        #     x, y = concatenate_samples(x, params.additional_samples, y)
             
         dev_pred = self.my_model(x)
         devLoss = self.ce_loss(dev_pred.double(), y[:,0])
