@@ -128,6 +128,7 @@ class MyDataset(torch.utils.data.Dataset):
 class MyDataLoader(torch.utils.data.DataLoader):
     def __init__(self, data_set, batch_size=params.batch_size, additional_samples=params.additional_samples, same_positions=params.same_positions):
         self.nb_concatenated = additional_samples + 1
+        print("self.nb_concatenated", self.nb_concatenated)
         balanced_batch_sampler = CustomBatchSampler(data_set, additional_samples=additional_samples, same_positions=same_positions, batch_size=batch_size*self.nb_concatenated)
         super(MyDataLoader, self).__init__(dataset=data_set, batch_sampler=balanced_batch_sampler)
 
