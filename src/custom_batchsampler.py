@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import time
 
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import BatchSampler
@@ -22,7 +23,7 @@ class CustomBatchSampler(BatchSampler):
     """
 
     def __init__(self, dataset, additional_samples, same_positions, batch_size, check=False):
-        loader = DataLoader(dataset)
+        # loader = DataLoader(dataset.data)   # Ziped data: Avoid using DataLoader if not necessary (?)
         self.labels = []
         self.count = 0
         self.count_samples = additional_samples+1
@@ -37,11 +38,12 @@ class CustomBatchSampler(BatchSampler):
 
         # Process labels based on position similarity
         if same_positions:
-            for _, label in loader:
-                self.labels.append(label[0])
-            self.labels = torch.stack(self.labels)
-            #TODO: workaround for the fact that sets don't work with numpy arrays
-            self.unique_labels = set(map(tuple, self.labels.cpu().numpy()))
+            # Convert list of label pairs as a tensor
+            for _, label in self.dataset.data:
+                self.labels.append(label)
+            self.unique_labels = set(map(tuple, self.labels))
+            self.labels = torch.tensor(np.array(self.labels))
+
             self.unique_labels = [' '.join(map(str, label)) for label in self.unique_labels]
             self.indicies_for_label = {
                 label: np.where(
@@ -49,11 +51,12 @@ class CustomBatchSampler(BatchSampler):
                     (self.labels.cpu().numpy()[:,1] == np.fromstring(label, sep=' ').astype(int)[1])
                 )[0]
                 for label in self.unique_labels
-}
+            }
         else:
-            for _, label in loader:
-                self.labels.append(label[0][0])
-            self.labels = torch.LongTensor(self.labels)
+            # Keeping only device information from the labels
+            for _, label in self.dataset.data:
+                self.labels.append(label[0])
+            self.labels = torch.tensor(np.array(self.labels))
             self.unique_labels = list(set(self.labels.numpy()))
             self.indicies_for_label = {label: np.where(self.labels.numpy() == label)[0]
                                  for label in self.unique_labels}
@@ -136,6 +139,8 @@ if __name__ == "__main__":
     from data import MyDataset, MyDataLoader
     import params
     import matplotlib.pyplot as plt
+    from models import ClassCNN1
+    import time
 
     number_data_points = 1500
     data_size = 200
@@ -159,12 +164,22 @@ if __name__ == "__main__":
         sampler = CustomBatchSampler(dataset, additional_samples=2, same_positions=True, batch_size=bsz, check=False)
         dataLoader = torch.utils.data.DataLoader(dataset, batch_sampler=sampler)
     if True:   # Test customBatchWith MyDataLoader
+        params.signal_length = params.signal_length*(1+params.additional_samples)
         dataLoader = MyDataLoader(dataset, additional_samples=2, same_positions=False, batch_size=bsz)
+
+    print("wait.....")
+
+    model = ClassCNN1().to(params.device)
 
     for d in dataLoader:
         x, y = d
         print(x.shape)
         print(y.shape)
-        plt.plot(y.cpu().numpy())
+        # plt.plot(x[0].cpu().numpy())
+        # plt.show()
+        out = model(x)
+        print(out.shape)
+        plt.plot(out.detach().cpu().numpy())
         plt.show()
+
         break

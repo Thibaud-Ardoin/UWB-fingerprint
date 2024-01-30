@@ -17,7 +17,7 @@ testlabelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_label
 
 # TODO reunite properly following input types in the dataloader
 data_type = "not_complex"
-input_type = "normal" #rfft"
+input_type = "fft" #rfft"
 
 data_use_position = False       # If you want to add the angular information as input of the model too
 

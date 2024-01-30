@@ -35,11 +35,8 @@ class ClassCNN1(nn.Module):
                 stride=params.stride_size, 
                 padding=params.padding_size))
             out_size = math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)
-        self.convs = nn.ModuleList(self.convs)
 
-        # self.conv2 = nn.Conv1d(32, 32, kernel_size=5, stride=2, padding=2)
-        # self.conv3 = nn.Conv1d(32, 64, kernel_size=5, stride=2, padding=2)
-        # self.conv4 = nn.Conv1d(64, 64, kernel_size=3, stride=2, padding=2)
+        self.convs = nn.ModuleList(self.convs)
 
         if params.feature_norm == "batch":
             self.norm = nn.BatchNorm1d(feature_sizes[params.conv_layers_nb+1])
@@ -101,8 +98,7 @@ class ClassCNN1(nn.Module):
 
 
         
-    def encoder(self, x): 
-        print(x.shape)
+    def encoder(self, x):
         x = x[:, None, :]
 
         # Conv layers
@@ -112,7 +108,6 @@ class ClassCNN1(nn.Module):
             if i < params.conv_layers_nb -1:
                 x = F.relu(x)
 
-        print(x.shape)
         x = self.norm(x)
         x = self.flatten(x)
 

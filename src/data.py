@@ -2,6 +2,7 @@
     data.py
     Load the data, preprocessing, dataloader definition
 """
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 import itertools
@@ -111,6 +112,7 @@ class MyDataset(torch.utils.data.Dataset):
         y = torch.from_numpy(y).to(params.device)
         if params.data_use_position:
             x = add_angular(x, y)
+
         return x, y
     
     def __len__(self):
@@ -133,12 +135,12 @@ class MyDataLoader(torch.utils.data.DataLoader):
         # Concatenate every params.additional_samples samples
         number_used_sample = (self.nb_concatenated)*(len(samples)//(self.nb_concatenated))
         x = [torch.cat(torch.unbind(samples[i:i+self.nb_concatenated]), dim=0) for i in range(0, number_used_sample-1, self.nb_concatenated)]        
-        x = torch.stack(x)
+        x = torch.stack(x).to(params.device)
 
         if labels is not None:
             # ! Select only 1st label of each group of concatenated signals
             y = [labels[i] for i in range(0, number_used_sample-1, self.nb_concatenated)]
-            y = torch.stack(y)
+            y = torch.stack(y).to(params.device)
             return x, y
         return x
 
@@ -310,19 +312,19 @@ class DataGatherer():
                         # Dont divide in multi data loader for each class combination
                         training_loaders = training_loaders + all_data[dev][pos]
                     else :
-                        training_set = MeyDataset(all_data[dev][pos])
+                        training_set = MyDataset(all_data[dev][pos])
                         training_loaders[dev].append(torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True))
         if params.flat_data:
             # Sanity check
             for i in range(len(training_loaders)-1, -1, -1):
                 if len(training_loaders[i]) == 0:
                     del training_loaders[i]
-            if params.additional_samples > 0 and params.loss == "CrossEntropyLoss":
+            if params.additional_samples > 0 and params.loss == "CrossentropyLoss":
                 # balanced_batch_sampler = CustomBatchSampler(MyDataset(training_loaders), params.additional_samples, params.same_positions, params.batch_size)
-                training_loaders = MyDataLoader(training_loaders)
+                # training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), sampler=balanced_batch_sampler)                
+                training_loaders = MyDataLoader(MyDataset(training_loaders))
             else:
-                training_loaders = MyDataLoader(training_loaders)
-
+                training_loaders = MyDataLoader(MyDataset(training_loaders))
                 # training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), batch_size=params.batch_size, shuffle=True)
 
 

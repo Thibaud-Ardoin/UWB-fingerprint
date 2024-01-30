@@ -1,4 +1,5 @@
 import sys
+import time
 
 import wandb
 
@@ -21,13 +22,21 @@ def main():
 
     params.set_parameters(sys.argv)
 
+    t1 = time.time()
     logger = Logger()
+    t2 = time.time()
+    print("Logger creation time: ", t2-t1)
 
     dg = DataGatherer()
     trainDataloader, valDataloader = dg.spliting_data()
+    t3 = time.time()
+    print("DataLoaders creation time: ", t3-t2)
+
 
     model = load_model()
     # logger.log_model(model)
+    t4 = time.time()
+    print("Model creation time: ", t4-t3)
 
     trainer=Trainer(trainDataloader, valDataloader, model, logger)
     trainer.train()
