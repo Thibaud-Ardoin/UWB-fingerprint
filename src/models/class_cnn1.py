@@ -107,7 +107,6 @@ class ClassCNN1(nn.Module):
             x = self.dropout(x)
             if i < params.conv_layers_nb -1:
                 x = F.relu(x)
-            print(x.shape)
 
         x = self.norm(x)
         x = self.flatten(x)

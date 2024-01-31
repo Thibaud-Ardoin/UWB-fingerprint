@@ -41,7 +41,7 @@ same_positions = True   # If the concatenation should be done diagonal to positi
 ############
 #   Train
 ############
-batch_size = 256
+batch_size = 512
 nb_epochs = 10000
 test_interval = 5
 
@@ -176,6 +176,9 @@ def implied_values():
     # Input of model is a concatenation of signal lengthes
     globals()["signal_length"] = globals()["signal_length"] * (globals()["additional_samples"]+1)
 
+
+def save_to_yaml():
+    pass
 
 
 

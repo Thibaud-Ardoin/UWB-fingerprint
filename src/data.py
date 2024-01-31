@@ -149,6 +149,7 @@ class MyDataLoader(torch.utils.data.DataLoader):
     def __iter__(self):
         for x, y in super(MyDataLoader, self).__iter__():
             x, y = self.concatenate_samples(x, y)
+            # Todo add global FFT transformations
             yield x, y
         # folded_labels = y.reshape(y.shape[0]//self.nb_concatenated, self.nb_concatenated, 2)
 
