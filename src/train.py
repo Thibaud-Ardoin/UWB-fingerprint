@@ -59,10 +59,11 @@ class Trainer:
             self.my_model.train()
             self.Loss.epoch_start()
             # TODO: reunite flat data and multiclass
+            # Is this done properly alreaddy ?
 
             # loop over the current batch of data
             # Flat_data is when the loss doesnt need a dataloader[dev][pos] multiclass
-            if params.flat_data:    
+            if True:    
                 for i in range(epoch_size):
                     # Compile loss
                     self.Loss.forwardpass_data()
@@ -71,10 +72,13 @@ class Trainer:
                         self.optimizer.zero_grad()
                         self.Loss.memory["devLoss"].backward()
                         self.optimizer.step()
-
+                    elif params.loss=="VicregAdditionalSamples":
+                        self.optimizer.zero_grad()
+                        self.Loss.memory["vicLoss"].backward()
+                        self.optimizer.step()
                     elif params.loss=="AdversarialLoss":
                         # Compile Loss
-                        self.Loss.process_flat_data()
+                        # self.Loss.process_flat_data()
                         # Adversarial Backproploss
                         self.optimizer.zero_grad()
                         self.Loss.memory["devLoss"].backward(retain_graph=True)

@@ -35,7 +35,7 @@ num_pos = 48    #21
 num_dev = 9    #13
 signal_length = 200
 additional_samples = 2  # For concatenation of additional data point
-same_positions = True   # If the concatenation should be done diagonal to positions or not
+same_positions = False   # If the concatenation should be done diagonal to positions or not
 
 
 ############
@@ -60,7 +60,7 @@ patience = 50
 ###########
 #   Loss
 ###########
-loss = "crossentropy"  #"vicreg" #"adversarial" #"triplet3" #"triplet" #"vicreg"
+loss = "VicregAdditionalSamples"  #"vicreg" #"adversarial" #"triplet3" #"triplet" #"vicreg"
 lambda_triplet = 10
 triplet_mmargin = 1
 lambda_distance = 11    #14

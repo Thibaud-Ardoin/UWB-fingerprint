@@ -34,8 +34,9 @@ class ClassCNN1(nn.Module):
                 kernel_size=kernel_sizes[i], 
                 stride=params.stride_size, 
                 padding=params.padding_size))
+            #out_size = math.floor(((math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)) - params.pooling_kernel_size) / params.pooling_stride_size +1)
+            # without maxpool
             out_size = math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)
-
         self.convs = nn.ModuleList(self.convs)
 
         if params.feature_norm == "batch":
@@ -104,6 +105,7 @@ class ClassCNN1(nn.Module):
         # Conv layers
         for i in range(params.conv_layers_nb):
             x = self.convs[i](x)
+            #x = self.max_pool(x)
             x = self.dropout(x)
             if i < params.conv_layers_nb -1:
                 x = F.relu(x)
@@ -156,7 +158,7 @@ class ClassCNN1(nn.Module):
 
     def forward(self, x):
         x = self.encode(x)
-        if params.loss=="vicreg":
+        if params.loss=="vicreg" or params.loss=="VicregAdditionalSamples":
             x = self.expander(x)
         else:
             x = self.classify(x)
