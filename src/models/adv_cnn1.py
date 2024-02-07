@@ -15,15 +15,21 @@ class advEncoder(nn.Module):
         super(advEncoder, self).__init__()
         self.dropout = nn.Dropout(params.dropout_value)
 
+        out_size = params.signal_length
+
         self.conv1 = nn.Conv1d(1, 32, kernel_size=5, stride=2, padding=2)
         self.conv2 = nn.Conv1d(32, 32, kernel_size=5, stride=2, padding=2)
         self.conv3 = nn.Conv1d(32, 64, kernel_size=5, stride=2, padding=2)
         self.conv4 = nn.Conv1d(64, 64, kernel_size=3, stride=2, padding=2)
 
+        kernel_sizes = [5, 5, 5, 3]
+        for i in range(len(kernel_sizes)):
+            out_size = math.ceil((out_size + 4 - (kernel_sizes[i] - 1))/2)
+
         self.norm = nn.BatchNorm1d(64)
 
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(14*64, params.latent_dimention*2)
+        self.fc1 = nn.Linear(out_size*64, params.latent_dimention*2)
         self.fc2 = nn.Linear(params.latent_dimention*2, params.latent_dimention)
 
     def forward(self, x):
@@ -88,6 +94,9 @@ class advCNN1():
 
     def classify(self, x):
         return self.devCls(x)
+    
+    def encode(self, x):
+         return self.encoder(x)
     
 
     def to(self, device):

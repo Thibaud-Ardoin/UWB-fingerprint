@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
 import params
@@ -8,20 +9,59 @@ from scipy.spatial import distance_matrix
 from utils.util import off_diagonal, accuracy
 
 
+def normdata(x):
+    x = torch.abs(x)
+    x = (x - x.min())/(x.max() - x.min())
+    return x
+
+def concatenate_samples(samples, additional_samples, labels=None):
+    # Concatenate every params.additional_samples samples
+    number_used_sample = (additional_samples+1)*(len(samples)//(additional_samples+1))
+    x = [torch.cat(tuple(samples[i:i+additional_samples+1]), dim=0) for i in range(0, number_used_sample-1, additional_samples+1)]
+    if params.input_type == "fft":
+        x = [normdata(torch.fft.rfft(tensor))[:-1] for tensor in x]
+    
+    x = torch.stack(x)
+    if labels is not None:
+        y = [labels[i] for i in range(0, number_used_sample-1, additional_samples+1)]
+        y = torch.stack(y)
+        return x, y
+    return x
+
+    
+    
+   
 class Loss():
-    def __init__(self, trainDataloader, my_model, trainLoss, samples, var_memory2, cov_memory, dist_memory, var_memory, pos_accuracy, dev_accuracy):
+    def __init__(self, trainDataloader, my_model):
         self.trainDataloader = trainDataloader
+
         self.my_model = my_model
-        self.trainLoss = trainLoss
-        self.samples = samples
-        self.var_memory2 = var_memory2
-        self.cov_memory = cov_memory
-        self.dist_memory = dist_memory
-        self.var_memory = var_memory
-        self.dev_accuracy = dev_accuracy
-        self.pos_accuracy = pos_accuracy
-        self.trainAcc ,self.valLoss, self.valAcc = 0, 0, 0
+
+        self.trainLoss = 0
+        self.samples = 0
+
+        # Memorry should be sub_class specific
+        self.memory_elements = ["samples", "trainLoss", "var_memory2", "cov_memory", "dist_memory", "var_memory", "dev_accuracy", "pos_accuracy", "trainAcc", "valLoss", "valAcc"]
+
         self.pos_amt = self.initialize_parameters()
+
+        # self.dist_memory = []
+        # self.var_memory = []
+        # self.var_memory2 = []
+        # self.cov_memory = []
+
+
+
+    def epoch_start(self):
+        self.build_memory_dictionary()
+        self.trainLoss = 0
+        self.samples = 0
+
+
+    def build_memory_dictionary(self):
+        self.memory = {
+            elmt_name: [0] for elmt_name in self.memory_elements
+        }
 
     def initialize_parameters(self):
         if not params.flat_data:
@@ -30,41 +70,23 @@ class Loss():
             pos_amt = None
         return pos_amt
     
+
+    def forwardpass_data(self):
+        pass
+    
+    
     def process_flat_data(self):
+       # Goes once through the dataloader
        for i, data in enumerate(self.trainDataloader):
 
             x, y = data
             ce_loss = nn.CrossEntropyLoss()
 
-            if params.loss == "adversarial":
+            if params.loss == "crossentropy":
 
-                dev_pred, pos_pred = self.my_model(x)
-
-                devLoss = ce_loss(dev_pred.double(), y[:,0])
-                posLoss = ce_loss(pos_pred.double(), y[:,1])
-
-                encLoss = (
-                    devLoss - posLoss
-                )
-
-                devAcc = accuracy(y[:,0], dev_pred)
-                posAcc = accuracy(y[:,1], pos_pred)
-
-                self.var_memory.append(devLoss.item())
-                self.cov_memory.append(posLoss.item())
-                self.pos_accuracy.append(posAcc)
-                self.dev_accuracy.append(devAcc)
-                # self.var_memory2.append(trip_loss.item())
-
-                size_of_batch = x.size(0)
-
-                self.trainLoss += encLoss.item() * size_of_batch
-                self.samples += size_of_batch
-
-                return devLoss, posLoss, encLoss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy
-
-            elif params.loss == "crossentropy":
-
+                # if params.additional_samples > 0:
+                #     x, y = concatenate_samples(x, params.additional_samples, y)
+                    
                 dev_pred = self.my_model(x)
 
                 devLoss = ce_loss(dev_pred.double(), y[:,0])
@@ -78,8 +100,7 @@ class Loss():
 
                 self.trainLoss += devLoss.item() * size_of_batch
                 self.samples += size_of_batch
-            
-                return devLoss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy
+
 
     def per_epoch(self, epoch):
         self.tripletLoss = nn.TripletMarginLoss(margin=params.triplet_mmargin, p=2, reduce=True, reduction="mean")
@@ -423,4 +444,183 @@ class Loss():
             self.trainLoss += loss.item() * size_of_batch
             self.samples += size_of_batch
         
-        return loss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy
+        return loss #, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy
+    
+
+
+
+
+class AdversarialLoss(Loss):
+    def __init__(self, trainDataloader, my_model) -> None:
+        super().__init__(trainDataloader, my_model)
+        self.memory_elements.extend(["devLoss, posLoss", "encLoss", "dev_loss_memory", "pos_loss_memory", "dev_accuracy", "pos_accuracy", ])
+        self.build_memory_dictionary()
+
+        self.ce_loss = nn.CrossEntropyLoss()
+
+
+    def forwardpass_data(self):
+        # Extract next data batch from the dataloader
+        data = next(iter(self.trainDataloader))
+        x, y = data
+
+        dev_pred, pos_pred = self.my_model(x)
+
+        devLoss = self.ce_loss(dev_pred.double(), y[:,0])
+        posLoss = self.ce_loss(pos_pred.double(), y[:,1])
+
+        encLoss = (
+            devLoss - posLoss
+        )
+
+        devAcc = accuracy(y[:,0], dev_pred)
+        posAcc = accuracy(y[:,1], pos_pred)
+
+        # Rename element of memorry correctly
+        self.memory["devLoss"] = devLoss
+        self.memory["posLoss"] = posLoss
+        self.memory["encLoss"] = encLoss
+        self.memory["dev_loss_memory"].append(devLoss.item())
+        self.memory["pos_loss_memory"].append(posLoss.item())
+        self.memory["pos_accuracy"].append(posAcc)
+        self.memory["dev_accuracy"].append(devAcc)
+
+        size_of_batch = x.size(0)
+
+        self.trainLoss += encLoss.item() * size_of_batch
+        self.samples += size_of_batch
+
+
+
+class CrossentropyLoss(Loss):
+    def __init__(self, trainDataloader, my_model) -> None:
+        super().__init__(trainDataloader, my_model)
+        self.memory_elements.extend(["devLoss", "dev_loss_memory", "dev_accuracy"])
+        self.build_memory_dictionary()
+
+        self.ce_loss = nn.CrossEntropyLoss()
+
+
+    def forwardpass_data(self):
+       # Goes once through the dataloader
+        data = next(iter(self.trainDataloader))
+        x, y = data
+        # if params.additional_samples > 0:
+        #     x, y = concatenate_samples(x, params.additional_samples, y)
+            
+        dev_pred = self.my_model(x)
+        devLoss = self.ce_loss(dev_pred.double(), y[:,0])
+
+        devAcc = accuracy(y[:,0], dev_pred)
+
+        size_of_batch = x.size(0)
+        self.trainLoss += devLoss.item() * size_of_batch
+        self.samples += size_of_batch
+
+        self.memory["devLoss"] = devLoss
+        self.memory["dev_loss_memory"].append(devLoss.item())
+        self.memory["dev_accuracy"].append(devAcc)
+
+
+
+class VicregLoss(Loss):
+    def __init__(self, trainDataloader, my_model) -> None:
+        super().__init__(trainDataloader, my_model)
+        self.memory_elements.extend(["loss", "repr_loss_memory", "std_loss_memory", "std_loss2_memory", "cov_loss_memory"])
+        self.build_memory_dictionary()
+
+
+    def forwardpass_data(self):
+        # Select the distinct positions on which to train random position
+        p1 = np.random.choice(self.pos_amt)
+        p2 = np.random.choice([p for p in range(self.pos_amt) if p!=p1])
+
+
+        # print([next(iter(self.trainDataloader[dev][p1]))[0].shape for dev in range(len(self.trainDataloader))])
+
+        # Two data batches, with same device and different position
+        batchX1 = [next(iter(self.trainDataloader[dev][p1]))[0] for dev in range(len(self.trainDataloader))]
+        batchX2 = [next(iter(self.trainDataloader[dev][p2]))[0] for dev in range(len(self.trainDataloader))]
+
+        # TODO set the batch size correctly for that
+        c1 = torch.concatenate(batchX1)
+        c2 = torch.concatenate(batchX2)
+
+        z1 = self.my_model(c1)
+        z2 = self.my_model(c2)
+
+        # print(z1.shape)
+
+        x1 = [z1[dev*params.batch_size:(dev+1)*params.batch_size] for dev in range(len(self.trainDataloader))]
+        x2 = [z2[dev*params.batch_size:(dev+1)*params.batch_size] for dev in range(len(self.trainDataloader))]
+
+        # Same as z1, z2 ?
+        x = torch.cat(x1)
+        y = torch.cat(x2)
+
+        # print(len(x1))
+
+        # print(x.shape)
+
+        # Global distance between two positions        
+        repr_loss = torch.stack([F.mse_loss(x1[dev], x2[dev]) for dev in range(params.num_dev)]).sum()
+        
+        x = x - x.mean(dim=0)
+        y = y - y.mean(dim=0)
+
+        size_of_batch = x.size(0)
+
+        xt1 = torch.stack([x1[dev] for dev in range(len(self.trainDataloader))],  dim=0)
+        xt2 = torch.stack([x2[dev] for dev in range(len(self.trainDataloader))],  dim=0)
+        
+        # xt1 = xt1 - xt1.mean(dim=0)
+        # xt2 = xt2 - xt2.mean(dim=0)
+        
+        std_x = torch.sqrt(xt1.var(dim=0) + 0.0001)
+        std_y = torch.sqrt(xt2.var(dim=0) + 0.0001)
+        std_loss = torch.mean(F.relu(1 - std_x)) / 2 + torch.mean(F.relu(1 - std_y)) / 2
+            
+            
+        # # Maximise the variance allong the batch
+        # std_x2 = torch.sqrt(x.var(dim=0) + 0.0001)
+        # std_y2 = torch.sqrt(y.var(dim=0) + 0.0001)
+        # std_loss2 = torch.mean(F.relu(1 - std_x2)) / 2 + torch.mean(F.relu(1 - std_y2)) / 2
+        
+        # Minimise the covariance along the encodded embeddings
+        cov_x = (x.T @ x) / (params.batch_size - 1)
+        cov_y = (y.T @ y) / (params.batch_size - 1)
+        cov_loss = off_diagonal(cov_x).pow_(2).sum().div(
+            self.my_model.embedding_size
+        ) + off_diagonal(cov_y).pow_(2).sum().div(self.my_model.embedding_size)
+        # cov_loss = F.relu(1 - cov_loss)
+
+        # Paper's parameters 25, 25, 1
+        vic_loss = (
+            params.lambda_distance * repr_loss
+            + params.lambda_std * std_loss
+            + params.lambda_cov * cov_loss
+        ) / (params.lambda_distance + params.lambda_std + params.lambda_cov)
+
+        self.trainLoss += vic_loss.item() * size_of_batch
+        self.samples += size_of_batch
+        
+        self.memory["vicLoss"] = vic_loss
+        self.memory["repr_loss_memory"].append(repr_loss.item())
+        self.memory["std_loss_memory"].append(std_loss.item())
+        self.memory["std_loss2_memory"].append(0)#std_loss2.item())
+        self.memory["cov_loss_memory"].append(cov_loss.item())
+
+
+
+
+
+def load_loss(trainLoader, Model):
+    try:
+        loss_object = eval(params.loss)(trainLoader, Model)
+    except:
+        loss_object = Loss(trainLoader, Model)
+
+    if params.verbose:
+        print(loss_object)
+    return loss_object
+

@@ -15,6 +15,12 @@ from sklearn.metrics import classification_report, confusion_matrix
 import params
 
 
+def normdata(x):
+    x = torch.abs(x)
+    x = (x - x.min())/(x.max() - x.min())
+    return x
+
+
 def encode_data(mymodel, dataloader):
     mymodel.eval()
     def loop_on_loader(loader):
@@ -192,8 +198,8 @@ def evaluate_Kmeans(test_set, test_labels, logger):
 def accuracy_test(model, encoded_test, labels_test, logger):
     num_test_dev = max(labels_test)
 
-    encoded = torch.Tensor(encoded_test).to(num_test_dev)
-    labels = torch.Tensor(labels_test).to(num_test_dev)
+    encoded = torch.Tensor(encoded_test).to(params.device)
+    labels = torch.Tensor(labels_test).to(params.device)
     output = model.classify(encoded)
     predicted = torch.argmax(output, dim=1)
     target_count = labels.size(0)
@@ -216,6 +222,7 @@ def testing_model(training_loaders, validation_loader, model, logger):
 
     encoded_train, labels_train = encode_data(model, training_loaders)
     encoded_test, labels_test = encode_data(model, validation_loader)
+
     enc_time = time.time()
     print("[Test]: time for encodding", enc_time - start_time)
 

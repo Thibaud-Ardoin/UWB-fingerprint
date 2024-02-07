@@ -15,31 +15,35 @@ labelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2_labels.n
 testfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_data.npy"
 testlabelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_labels.npy"
 
-
+# TODO reunite properly following input types in the dataloader
 data_type = "not_complex"
+input_type = "fft" #rfft"
+
 data_use_position = False       # If you want to add the angular information as input of the model too
+
 data_spliting = "pos_split"  #"all_split", "file_test", "random"
 split_train_ratio = 0.80
 augmentations = ["addSomeNoise"] #fourrier, logDistortionNorm
 noise_amount = 0
 
 data_limit = -1
-validation_pos = 5
+validation_pos = [5]
 validation_dev = 0      # Not used yet ?
 data_test_rate = 0.01    # Random % of data to run tests on (O(n**2))
 
 num_pos = 48    #21
 num_dev = 9    #13
 signal_length = 200
-
+additional_samples = 2  # For concatenation of additional data point
+same_positions = False   # If the concatenation should be done diagonal to positions or not
 
 
 ############
 #   Train
 ############
-batch_size = 256
+batch_size = 512
 nb_epochs = 10000
-test_interval = 50
+test_interval = 5
 
 
 ############
@@ -56,7 +60,7 @@ patience = 50
 ###########
 #   Loss
 ###########
-loss = "vicreg" #"adversarial" #"triplet3" #"triplet" #"vicreg"
+loss = "VicregLoss"  #"vicreg" #"adversarial" #"triplet3" #"triplet" #"vicreg"
 lambda_triplet = 10
 triplet_mmargin = 1
 lambda_distance = 11    #14
@@ -109,7 +113,7 @@ use_gpu = True
 device = "cuda" if torch.cuda.is_available() and use_gpu else "cpu"
 verbose = True
 plotting = False
-use_wandb = True
+use_wandb = False
 saving_path = "./data/"
 
 
@@ -131,7 +135,7 @@ def __use_config__(file_name):
 # These are variables that are concequences of some previous combinations
 
 flat_data = False
-if loss == "adversarial" or loss == "crossentropy" or data_spliting=="random":
+if loss == "AdversarialLoss" or loss == "crossentropy" or data_spliting=="random":
     flat_data = True
 
 
@@ -148,6 +152,7 @@ def __get_dict__():
 
 
 def set_parameters(args):
+
     for i in range(1, len(args)):
         name, value = args[i].split("=")
         name = name[2:]
@@ -160,8 +165,20 @@ def set_parameters(args):
                 value = float(value)
             globals()[name] = value
 
+    implied_values()
 
 
+def implied_values():
+    # Implications on the params values
+    if input_type=="rfft":
+        globals()["signal_length"] = globals()["signal_length"]//2
+        
+    # Input of model is a concatenation of signal lengthes
+    globals()["signal_length"] = globals()["signal_length"] * (globals()["additional_samples"]+1)
+
+
+def save_to_yaml():
+    pass
 
 
 

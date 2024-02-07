@@ -2,6 +2,7 @@
     data.py
     Load the data, preprocessing, dataloader definition
 """
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 import itertools
@@ -11,7 +12,7 @@ import torchvision.transforms as transforms
 
 import params
 
-
+from custom_batchsampler import CustomBatchSampler
 
 ############################
 #   Processing functions
@@ -43,6 +44,10 @@ def fourier(x):
     x = torch.abs(x)
     return x
 
+def rfft(x):
+    return normdata(torch.fft.rfft(x))[:-1]
+
+
 def add_angular(data_point, label_point):
     # INPUT:    data_point: 250p signal  X label_point: (device id, position id) 
     angle = label_point[1] * 2 * np.pi / params.num_pos
@@ -59,7 +64,10 @@ def logDistortionNorm(x):
     # return logX1
     return (logX1 - logX1.min())/(logX1.max() - logX1.min())
 
-
+# Function to apply Hamming window
+def apply_hamming_window(x):
+    hamming_window = torch.hann_window(len(x))
+    return x * hamming_window
 
 
 #################################################
@@ -104,10 +112,47 @@ class MyDataset(torch.utils.data.Dataset):
         y = torch.from_numpy(y).to(params.device)
         if params.data_use_position:
             x = add_angular(x, y)
+
         return x, y
     
     def __len__(self):
         return len(self.data)
+    
+
+
+########################################################################################################
+#   DataLoader to draw data in good batches according ot the number to desired mesurments per datapoint.
+########################################################################################################
+
+
+class MyDataLoader(torch.utils.data.DataLoader):
+    def __init__(self, data_set, batch_size=params.batch_size, additional_samples=params.additional_samples, same_positions=params.same_positions):
+        self.nb_concatenated = additional_samples + 1
+        balanced_batch_sampler = CustomBatchSampler(data_set, additional_samples=additional_samples, same_positions=same_positions, batch_size=batch_size*self.nb_concatenated)
+        super(MyDataLoader, self).__init__(dataset=data_set, batch_sampler=balanced_batch_sampler)
+
+    def concatenate_samples(self, samples, labels=None):
+        # Concatenate every params.additional_samples samples
+        number_used_sample = (self.nb_concatenated)*(len(samples)//(self.nb_concatenated))
+        x = [torch.cat(torch.unbind(samples[i:i+self.nb_concatenated]), dim=0) for i in range(0, number_used_sample, self.nb_concatenated)]
+        x = torch.stack(x).to(params.device)
+
+        if labels is not None:
+            # ! Select only 1st label of each group of concatenated signals
+            y = [labels[i] for i in range(0, number_used_sample, self.nb_concatenated)]
+            y = torch.stack(y).to(params.device)
+            return x, y
+        return x
+
+
+    def __iter__(self):
+        for x, y in super(MyDataLoader, self).__iter__():
+            x, y = self.concatenate_samples(x, y)
+
+            # Todo add global FFT transformations
+            yield x, y
+        # folded_labels = y.reshape(y.shape[0]//self.nb_concatenated, self.nb_concatenated, 2)
+
 
 
 ###########################################################
@@ -129,8 +174,8 @@ class DataGatherer():
 
     def data_formating(self):
         # Formating of Label data
-        initial_position_number = 15
-        initial_device_number = 3
+        # initial_position_number = 15
+        # initial_device_number = 3
 
         formated_data = list(self.data)
         formated_labels = list(self.labels)
@@ -245,7 +290,7 @@ class DataGatherer():
         pos_ids = [np.where(self.labels[:,1] == i) for i in range(params.num_pos)]
         dev_ids = [np.where(self.labels[:,0] == i) for i in range(params.num_dev)]
         all_data = []
-        val_pos = params.validation_pos
+        val_pos = params.validation_pos[0]
         if its_all_train:
             val_pos = -1
 
@@ -264,40 +309,39 @@ class DataGatherer():
         for dev in range(params.num_dev) :
             training_loaders.append([])
             for pos in range(params.num_pos) :
-                if not pos==val_pos :
+                if not pos in params.validation_pos :
                     if params.flat_data:
                         # Dont divide in multi data loader for each class combination
                         training_loaders = training_loaders + all_data[dev][pos]
                     else :
                         training_set = MyDataset(all_data[dev][pos])
-                        training_loaders[dev].append(torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True))
+                        # training_loaders[dev].append(torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True))
+                        training_loaders[dev].append(MyDataLoader(training_set))
         if params.flat_data:
             # Sanity check
             for i in range(len(training_loaders)-1, -1, -1):
                 if len(training_loaders[i]) == 0:
                     del training_loaders[i]
-            training_loaders = torch.utils.data.DataLoader(MyDataset(training_loaders), batch_size=params.batch_size, shuffle=True)
-
+            training_loaders = MyDataLoader(MyDataset(training_loaders))
 
         if its_all_train:
             return training_loaders
 
         # Gather the unique validation position
-        # TODO: Make it also a multi positional element
         val_data = []
         for dev in range(params.num_dev) :
-            val_data = val_data + all_data[dev][val_pos]
+            for vali_pos in params.validation_pos:
+                val_data = val_data + all_data[dev][vali_pos]
         validation_set = MyDataset(val_data, testset=True)
-        validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=params.batch_size, shuffle=True)
+
+        validation_loader = MyDataLoader(validation_set)
+
         self.training_loaders = training_loaders
         self.validation_loader = validation_loader
         if return_array:
             return training_loaders, validation_loader, all_data
         return training_loaders, validation_loader
-        
-
-    # def data_loading():
-    #     data, label = load_form_source()
+    
 
 
 if __name__ == "__main__":

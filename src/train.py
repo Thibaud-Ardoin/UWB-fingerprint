@@ -13,7 +13,7 @@ import numpy as np
 from optimizer import Optimizer, AdvOptimizer
 import params
 from test import testing_model
-from loss import Loss
+from loss import Loss, load_loss
 
 class Trainer:
     def __init__(self, trainDataloader, valDataloader, model, logger):
@@ -21,65 +21,9 @@ class Trainer:
         self.logger = logger
         self.trainDataloader = trainDataloader
         self.valDataloader = valDataloader
-        self.loss_memory, self.cov_memory, self.dist_memory, self.var_memory, self.var_memory2, self.pos_accuracy, self.dev_accuracy = [], [], [], [], [], [], []
-        self.trainLoss, self.samples = 0, 0
         self.optimizer = self.initialize_parameters()
-        self.Loss = Loss(self.trainDataloader, self.my_model, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy)
-    def loss_logging(self):
-        if params.loss=="crossentropy":
-            self.logger.log({
-            "Dev class loss": np.mean(self.var_memory),
-            "Dev class accuracy": np.mean(self.dev_accuracy),
-            "Encoder loss": self.trainLoss / self.samples,
-            "learning rate": self.optimizer.get_lr()})
-            self.logger.step_epoch()
-        elif params.loss=="triplet+crossentropy":
-            self.logger.log({
-            "Triplet loss": np.mean(self.var_memory2),
-            "Dev class loss": np.mean(self.var_memory),
-            "Dev class accuracy": np.mean(self.dev_accuracy),
-            "Encoder loss": self.trainLoss / self.samples,
-            "learning rate": self.optimizer.get_lr()})
-            self.logger.step_epoch()
-        elif params.loss=="adversarial":
-            self.logger.log({
-            "Dev class loss": np.mean(self.var_memory),
-            "Pos class loss": np.mean(self.cov_memory),
-            "Pos class accuracy": np.mean(self.pos_accuracy), 
-            "Dev class accuracy": np.mean(self.dev_accuracy),
-            "Encoder loss": self.trainLoss / self.samples,
-            "learning rate": self.optimizer.get_lr()})
-            self.logger.step_epoch()
-        elif params.loss=="triplet3":
-            self.logger.log({
-            "triploss": np.mean(self.var_memory2),
-            "cov_loss": np.mean(self.cov_memory),
-            "global_loss": self.trainLoss / self.samples,
-            "learning rate": self.optimizer.get_lr()})
-            self.logger.step_epoch()
-        elif params.loss=="triplet2":
-            self.logger.log({
-            "triploss": np.mean(self.var_memory2),
-            "global_loss": self.trainLoss / self.samples,
-            "learning rate": self.optimizer.get_lr()})
-            self.logger.step_epoch()
-        elif params.loss=="triplet":
-            self.logger.log({
-            "repr_loss": np.mean(self.dist_memory),
-            "cov_loss": np.mean(self.cov_memory),
-            "std_loss": np.mean(self.var_memory),
-            "triploss": np.mean(self.var_memory2),
-            "global_loss": self.trainLoss / self.samples,
-            "learning rate": self.optimizer.get_lr()})
-            self.logger.step_epoch()
-        elif params.loss=="vicreg":
-            self.logger.log({"repr_loss": np.mean(self.dist_memory),
-            "std_loss": np.mean(self.var_memory),
-            "std_loss2": np.mean(self.var_memory2),
-            "cov_loss": np.mean(self.cov_memory),
-            "global_loss": self.trainLoss / self.samples,
-            "learning rate": self.optimizer.get_lr()})
-            self.logger.step_epoch()
+        self.Loss = load_loss(self.trainDataloader, self.my_model)
+    
     def initialize_parameters(self):
         if params.model_name == "advCNN1":
             optimizer = AdvOptimizer(self.my_model)
@@ -99,11 +43,13 @@ class Trainer:
         return epoch_size 
 
     def train(self):
-        encodded_validations = []
 
-        if not params.flat_data :
+        if params.flat_data :
+            epoch_size = len(self.trainDataloader)//params.batch_size
+        else :
             epoch_size = self.calculate_epoch_size()
-            print(" Nb of passes per epoch: ", epoch_size)
+
+        print(" Nb of passes per epoch: ", epoch_size)
         
         # loop through the epochs
         for epoch in range(0, params.nb_epochs):
@@ -111,51 +57,68 @@ class Trainer:
             print("[INFO] epoch: {}...".format(epoch + 1))
 
             self.my_model.train()
-            
+            self.Loss.epoch_start()
+            # TODO: reunite flat data and multiclass
+            # Is this done properly alreaddy ?
+
             # loop over the current batch of data
-            if params.flat_data:
-                if params.loss=="crossentropy":
-                    devLoss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy = self.Loss.process_flat_data()
-                    self.optimizer.zero_grad()
-                    devLoss.backward()
-                    self.optimizer.step()
-                elif params.loss=="adversarial":
-                    devLoss, posLoss, encLoss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy = self.Loss.process_flat_data()
-                    self.optimizer.zero_grad()
-                    devLoss.backward(retain_graph=True)
-                    posLoss.backward(retain_graph=True)
-                    encLoss.backward()
-                    self.optimizer.step()
+            # Flat_data is when the loss doesnt need a dataloader[dev][pos] multiclass
+            if True:    
+                for i in range(epoch_size):
+                    # Compile loss
+                    self.Loss.forwardpass_data()
+                    if params.loss=="CrossentropyLoss":
+                        # Backprop
+                        self.optimizer.zero_grad()
+                        self.Loss.memory["devLoss"].backward()
+                        self.optimizer.step()
+                    elif params.loss=="VicregLoss":
+                        self.optimizer.zero_grad()
+                        self.Loss.memory["vicLoss"].backward()
+                        self.optimizer.step()
+                    elif params.loss=="AdversarialLoss":
+                        # Compile Loss
+                        # self.Loss.process_flat_data()
+                        # Adversarial Backproploss
+                        self.optimizer.zero_grad()
+                        self.Loss.memory["devLoss"].backward(retain_graph=True)
+                        self.Loss.memory["posLoss"].backward(retain_graph=True)
+                        self.Loss.memory["encLoss"].backward()
+                        self.optimizer.step()
+
             else :
                 # Data divided in multi class
                 for i in range(epoch_size):
-                    
-                    loss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy = self.Loss.per_epoch(epoch)
+
+                    # Compile loss
+                    loss =  self.Loss.per_epoch(epoch)
+                    #trainLoss, samples, var_memory2, cov_memory, dist_memory, var_memory, pos_accuracy, dev_accuracy = self.Loss.per_epoch(epoch)
+
                     # Backprop
                     self.optimizer.zero_grad()
                     loss.backward()
                     self.optimizer.step()
-            self.loss_logging()
+
+            # Log all loss information as needed
+            self.logger.log_loss(self.Loss, self.optimizer)
 
 
             trainTemplate = "TRAIN - epoch: {} train loss: {:.6f} learning rate: {:.6f}"
-            print(trainTemplate.format(epoch + 1, (self.trainLoss / self.samples),
+            print(trainTemplate.format(epoch + 1, (self.Loss.trainLoss / self.Loss.samples),
                 (self.optimizer.get_lr())))
-            self.loss_memory.append(self.trainLoss / self.samples)
 
             # Optimizer
-            self.optimizer.epoch_routine(self.trainLoss / self.samples)
+            self.optimizer.epoch_routine(self.Loss.trainLoss / self.Loss.samples)
             if self.optimizer.early_stopping() :
+                testing_model(self.trainDataloader, self.valDataloader, self.my_model, self.logger)
                 break
             
             # From time to time let's see wehat that models output on validation data
             if (epoch+1)%params.test_interval==0:
                 testing_model(self.trainDataloader, self.valDataloader, self.my_model, self.logger)
 
-        testing_model(self.trainDataloader, self.valDataloader, self.my_model, self.logger)
 
         #end
-        return self.loss_memory, self.cov_memory, self.var_memory, self.var_memory2, self.dist_memory, encodded_validations
 
 
 

@@ -1,4 +1,8 @@
-loss: "adversarial"
+loss: "AdversarialLoss"
 model_name: "advCNN1"
 latent_dimention: 32
 expender_out: 32
+test_interval: 100
+use_wandb: true
+additional_samples: 2  # For concatenation of additional data point
+same_positions: true   # If the concatenation should be done diagonal to positions or not
