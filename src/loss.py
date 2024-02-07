@@ -351,6 +351,7 @@ class Loss():
                     ####### SETUP WITH TWO RANDOM POSITIONS EVERY TIME
                     
         elif params.loss == "vicreg":
+
             p1 = np.random.choice(self.pos_amt)
             p2 = np.random.choice([p for p in range(self.pos_amt) if p!=p1])
             

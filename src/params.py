@@ -111,7 +111,7 @@ verbose = True
 plotting = False
 use_wandb = True
 saving_path = "./data/"
-
+saved_model_suffix = "model_test10"
 
 
 ###########################
