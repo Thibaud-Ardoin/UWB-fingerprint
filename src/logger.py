@@ -93,12 +93,12 @@ class Logger():
             "learning rate": self.optimizer.get_lr()})
             self.step_epoch()
         elif params.loss=="vicreg":
-            self.log({"repr_loss": np.mean(self.dist_memory),
-            "std_loss": np.mean(self.var_memory),
-            "std_loss2": np.mean(self.var_memory2),
-            "cov_loss": np.mean(self.cov_memory),
-            "global_loss": self.trainLoss / self.samples,
-            "learning rate": self.optimizer.get_lr()})
+            self.log({"repr_loss": np.mean(loss.dist_memory),
+            "std_loss": np.mean(loss.var_memory),
+            "std_loss2": np.mean(loss.var_memory2),
+            "cov_loss": np.mean(loss.cov_memory),
+            "global_loss": loss.trainLoss / loss.samples,
+            "learning rate": optim.get_lr()})
             self.step_epoch()
 
 

@@ -45,6 +45,12 @@ class Loss():
 
         self.pos_amt = self.initialize_parameters()
 
+        # self.dist_memory = []
+        # self.var_memory = []
+        # self.var_memory2 = []
+        # self.cov_memory = []
+
+
 
     def epoch_start(self):
         self.build_memory_dictionary()
@@ -438,7 +444,7 @@ class Loss():
             self.trainLoss += loss.item() * size_of_batch
             self.samples += size_of_batch
         
-        return loss, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy
+        return loss #, self.trainLoss, self.samples, self.var_memory2, self.cov_memory, self.dist_memory, self.var_memory, self.pos_accuracy, self.dev_accuracy
     
 
 
@@ -609,8 +615,12 @@ class VicregLoss(Loss):
 
 
 def load_loss(trainLoader, Model):
-	loss_object = eval(params.loss)(trainLoader, Model)
-	if params.verbose:
-		print(loss_object)
-	return loss_object
+    try:
+        loss_object = eval(params.loss)(trainLoader, Model)
+    except:
+        loss_object = Loss(trainLoader, Model)
+
+    if params.verbose:
+        print(loss_object)
+    return loss_object
 

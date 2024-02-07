@@ -91,11 +91,12 @@ class Trainer:
                 for i in range(epoch_size):
 
                     # Compile loss
-                    self.Loss.per_epoch(epoch)
+                    loss =  self.Loss.per_epoch(epoch)
+                    #trainLoss, samples, var_memory2, cov_memory, dist_memory, var_memory, pos_accuracy, dev_accuracy = self.Loss.per_epoch(epoch)
 
                     # Backprop
                     self.optimizer.zero_grad()
-                    self.Loss.trainingLoss.backward()
+                    loss.backward()
                     self.optimizer.step()
 
             # Log all loss information as needed

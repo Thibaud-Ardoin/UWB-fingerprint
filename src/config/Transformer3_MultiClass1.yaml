@@ -1,7 +1,7 @@
 # Archieved good results, with a Trapz > 90% and a train2test NN of 47% at peak and kmeans clustering > 90%
 # No collaps to small numbers, thanks to higher weighting of lambda std (?)
 data_spliting: "pos_test"
-loss: "vicreg" 
+loss: "VicregLoss" 
 model_name: "Transformer3"
 batch_size: 32
 class_hidden_size: 256
@@ -53,7 +53,7 @@ use_extender: true
 use_gpu: true
 use_wandb: true
 validation_dev: 0
-validation_pos: 5
+validation_pos: [5]
 verbose: true
 warmup_steps: 50
 window_size: 16
