@@ -39,7 +39,7 @@ padding_size: 0
 patience: 100
 plotting: false
 set_parameters: "params.set_parameters"
-sheduler: "warmup" #warmup #plateau
+sheduler: "plateau" #warmup #plateau
 signal_length: 200
 split_train_ratio: 08
 save_model: true
