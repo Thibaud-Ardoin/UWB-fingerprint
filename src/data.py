@@ -134,12 +134,12 @@ class MyDataLoader(torch.utils.data.DataLoader):
     def concatenate_samples(self, samples, labels=None):
         # Concatenate every params.additional_samples samples
         number_used_sample = (self.nb_concatenated)*(len(samples)//(self.nb_concatenated))
-        x = [torch.cat(torch.unbind(samples[i:i+self.nb_concatenated]), dim=0) for i in range(0, number_used_sample-1, self.nb_concatenated)]        
+        x = [torch.cat(torch.unbind(samples[i:i+self.nb_concatenated]), dim=0) for i in range(0, number_used_sample, self.nb_concatenated)]
         x = torch.stack(x).to(params.device)
 
         if labels is not None:
             # ! Select only 1st label of each group of concatenated signals
-            y = [labels[i] for i in range(0, number_used_sample-1, self.nb_concatenated)]
+            y = [labels[i] for i in range(0, number_used_sample, self.nb_concatenated)]
             y = torch.stack(y).to(params.device)
             return x, y
         return x
@@ -148,6 +148,7 @@ class MyDataLoader(torch.utils.data.DataLoader):
     def __iter__(self):
         for x, y in super(MyDataLoader, self).__iter__():
             x, y = self.concatenate_samples(x, y)
+
             # Todo add global FFT transformations
             yield x, y
         # folded_labels = y.reshape(y.shape[0]//self.nb_concatenated, self.nb_concatenated, 2)
@@ -314,6 +315,7 @@ class DataGatherer():
                         training_loaders = training_loaders + all_data[dev][pos]
                     else :
                         training_set = MyDataset(all_data[dev][pos])
+                        # training_loaders[dev].append(torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True))
                         training_loaders[dev].append(MyDataLoader(training_set))
         if params.flat_data:
             # Sanity check
@@ -326,7 +328,6 @@ class DataGatherer():
             return training_loaders
 
         # Gather the unique validation position
-        # TODO: Make it also a multi positional element
         val_data = []
         for dev in range(params.num_dev) :
             for vali_pos in params.validation_pos:

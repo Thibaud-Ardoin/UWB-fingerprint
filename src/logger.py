@@ -45,7 +45,7 @@ class Logger():
             "Encoder loss": loss.trainLoss / loss.samples,
             "learning rate": optim.get_lr()})
             self.step_epoch()
-        if params.loss=="VicregAdditionalSamples":
+        if params.loss=="VicregLoss":
             self.log({"repr_loss": np.mean(loss.memory["repr_loss_memory"]),
             "std_loss": np.mean(loss.memory["std_loss_memory"]),
             "std_loss2": np.mean(loss.memory["std_loss2_memory"]),

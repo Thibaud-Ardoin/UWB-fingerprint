@@ -72,7 +72,7 @@ class Trainer:
                         self.optimizer.zero_grad()
                         self.Loss.memory["devLoss"].backward()
                         self.optimizer.step()
-                    elif params.loss=="VicregAdditionalSamples":
+                    elif params.loss=="VicregLoss":
                         self.optimizer.zero_grad()
                         self.Loss.memory["vicLoss"].backward()
                         self.optimizer.step()
