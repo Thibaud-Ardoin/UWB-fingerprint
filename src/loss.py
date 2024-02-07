@@ -559,16 +559,16 @@ class VicregLoss(Loss):
         # Global distance between two positions        
         repr_loss = torch.stack([F.mse_loss(x1[dev], x2[dev]) for dev in range(params.num_dev)]).sum()
         
-        # x = x - x.mean(dim=0)
-        # y = y - y.mean(dim=0)
+        x = x - x.mean(dim=0)
+        y = y - y.mean(dim=0)
 
         size_of_batch = x.size(0)
 
         xt1 = torch.stack([x1[dev] for dev in range(len(self.trainDataloader))],  dim=0)
         xt2 = torch.stack([x2[dev] for dev in range(len(self.trainDataloader))],  dim=0)
         
-        xt1 = xt1 - xt1.mean(dim=0)
-        xt2 = xt2 - xt2.mean(dim=0)
+        # xt1 = xt1 - xt1.mean(dim=0)
+        # xt2 = xt2 - xt2.mean(dim=0)
         
         std_x = torch.sqrt(xt1.var(dim=0) + 0.0001)
         std_y = torch.sqrt(xt2.var(dim=0) + 0.0001)

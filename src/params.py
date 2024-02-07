@@ -60,7 +60,7 @@ patience = 50
 ###########
 #   Loss
 ###########
-loss = "VicregAdditionalSamples"  #"vicreg" #"adversarial" #"triplet3" #"triplet" #"vicreg"
+loss = "VicregLoss"  #"vicreg" #"adversarial" #"triplet3" #"triplet" #"vicreg"
 lambda_triplet = 10
 triplet_mmargin = 1
 lambda_distance = 11    #14
