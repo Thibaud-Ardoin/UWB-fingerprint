@@ -14,19 +14,19 @@ def normdata(x):
     x = (x - x.min())/(x.max() - x.min())
     return x
 
-def concatenate_samples(samples, additional_samples, labels=None):
-    # Concatenate every params.additional_samples samples
-    number_used_sample = (additional_samples+1)*(len(samples)//(additional_samples+1))
-    x = [torch.cat(tuple(samples[i:i+additional_samples+1]), dim=0) for i in range(0, number_used_sample-1, additional_samples+1)]
-    if params.input_type == "fft":
-        x = [normdata(torch.fft.rfft(tensor))[:-1] for tensor in x]
+# def concatenate_samples(samples, additional_samples, labels=None):
+#     # Concatenate every params.additional_samples samples
+#     number_used_sample = (additional_samples+1)*(len(samples)//(additional_samples+1))
+#     x = [torch.cat(tuple(samples[i:i+additional_samples+1]), dim=0) for i in range(0, number_used_sample-1, additional_samples+1)]
+#     if params.input_type == "fft":
+#         x = [normdata(torch.fft.rfft(tensor))[:-1] for tensor in x]
     
-    x = torch.stack(x)
-    if labels is not None:
-        y = [labels[i] for i in range(0, number_used_sample-1, additional_samples+1)]
-        y = torch.stack(y)
-        return x, y
-    return x
+#     x = torch.stack(x)
+#     if labels is not None:
+#         y = [labels[i] for i in range(0, number_used_sample-1, additional_samples+1)]
+#         y = torch.stack(y)
+#         return x, y
+#     return x
 
     
     
@@ -372,6 +372,7 @@ class Loss():
                     ####### SETUP WITH TWO RANDOM POSITIONS EVERY TIME
                     
         elif params.loss == "vicreg":
+
             p1 = np.random.choice(self.pos_amt)
             p2 = np.random.choice([p for p in range(self.pos_amt) if p!=p1])
             

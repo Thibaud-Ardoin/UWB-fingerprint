@@ -12,6 +12,8 @@ conv_kernel1_size: 2
 conv_kernel2_size: 2
 conv_layers_nb: 3
 data_limit: -1
+additional_samples: 0 
+same_positions: True
 data_test_rate: 0.1
 datafile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2_data.npy"
 device: "cuda"

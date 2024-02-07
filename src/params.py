@@ -24,7 +24,7 @@ data_use_position = False       # If you want to add the angular information as 
 data_spliting = "pos_split"  #"all_split", "file_test", "random"
 split_train_ratio = 0.80
 augmentations = ["addSomeNoise"] #fourrier, logDistortionNorm
-noise_amount = 0
+noise_amount = 0.01
 
 data_limit = -1
 validation_pos = [5]
@@ -41,7 +41,7 @@ same_positions = False   # If the concatenation should be done diagonal to posit
 ############
 #   Train
 ############
-batch_size = 512
+batch_size = 32
 nb_epochs = 10000
 test_interval = 5
 
@@ -115,7 +115,7 @@ verbose = True
 plotting = False
 use_wandb = False
 saving_path = "./data/"
-
+saved_model_suffix = "model_test10"
 
 
 ###########################
