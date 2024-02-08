@@ -8,4 +8,4 @@ Experimental setup to test various methods in order to extract fingerprints from
 ``python src/main.py --config=src/config/class_optimal_baseline.yaml``
 
 ## Organisation
-![alt text](https://github.com/[username]/[reponame]/blob/[branch]/map.jpg?raw=true)
+![Softwearmap](map.jpg?raw=true)
