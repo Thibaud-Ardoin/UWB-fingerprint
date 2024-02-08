@@ -38,7 +38,7 @@ num_dev: 9
 num_pos: 48
 optimizer: "Adam"
 padding_size: 0
-patience: 100
+patience: 500
 plotting: false
 set_parameters: "params.set_parameters"
 sheduler: "plateau"
@@ -46,7 +46,7 @@ signal_length: 200
 split_train_ratio: 0.8
 stride_size: 2
 tail_fc_layers_nb: 2
-test_interval: 100
+test_interval: 250
 trans_embedding_size: 16
 trans_head_nb: 3
 trans_layer_nb: 3

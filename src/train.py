@@ -57,7 +57,7 @@ class Trainer:
             print("[INFO] epoch: {}...".format(epoch + 1))
 
             self.my_model.train()
-            # self.Loss.epoch_start()
+            self.Loss.epoch_start()
             # TODO: reunite flat data and multiclass
             # Is this done properly alreaddy ?
 
