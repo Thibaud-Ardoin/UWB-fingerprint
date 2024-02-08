@@ -9,10 +9,10 @@ from scipy.spatial import distance_matrix
 from utils.util import off_diagonal, accuracy
 
 
-def normdata(x):
-    x = torch.abs(x)
-    x = (x - x.min())/(x.max() - x.min())
-    return x
+# def normdata(x):
+#     x = torch.abs(x)
+#     x = (x - x.min())/(x.max() - x.min())
+#     return x
 
 # def concatenate_samples(samples, additional_samples, labels=None):
 #     # Concatenate every params.additional_samples samples

@@ -55,13 +55,13 @@ class CustomBatchSampler(BatchSampler):
         self.check = check
         self.list_indicies = []
         #  for same posititions we need this multiplier to get the right number of samples (bachsize) for vicreg 
-        if self.loss == 'VicregAdditionalSamples' and self.train and self.same_positions:
-            self.count_multiplier = self.batch_size//(self.count_samples*self.num_dev*2)
-        # for different posititions we need to double the number because we can easily divide the batch 
-        elif self.loss == 'VicregAdditionalSamples' and self.train and not self.same_positions:
-            self.count_multiplier = self.batch_size//(self.count_samples*self.num_dev)
-        else:
-            self.count_multiplier = 1
+        # if self.loss == 'VicregAdditionalSamples' and self.train and self.same_positions:
+        #     self.count_multiplier = self.batch_size//(self.count_samples*self.num_dev*2)
+        # # for different posititions we need to double the number because we can easily divide the batch 
+        # elif self.loss == 'VicregAdditionalSamples' and self.train and not self.same_positions:
+        #     self.count_multiplier = self.batch_size//(self.count_samples*self.num_dev)
+        # else:
+        #     self.count_multiplier = 1
         # Process labels based on position similarity
         if same_positions:
             # Convert list of label pairs as a tensor
@@ -139,18 +139,18 @@ class CustomBatchSampler(BatchSampler):
                 # Extract a subset of indices for the current class
                 subset_indices = current_class_indices[
                     self.indicies_used_labels[current_class]:
-                    self.indicies_used_labels[current_class] + self.count_samples *self.count_multiplier
+                    self.indicies_used_labels[current_class] + self.count_samples #*self.count_multiplier
                 ]
 
                 # Extend the batch indices with the subset
                 batch_indices.extend(subset_indices)
 
                 # Update the count of used indices for the current class
-                self.indicies_used_labels[current_class] += self.count_samples*self.count_multiplier
+                self.indicies_used_labels[current_class] += self.count_samples #*self.count_multiplier
 
                 # Check if all indices for the current class have been used
                 if (
-                    self.indicies_used_labels[current_class] + self.count_samples*self.count_multiplier
+                    self.indicies_used_labels[current_class] + self.count_samples #*self.count_multiplier
                     > len(current_class_indices)
                 ):
                     # If so, shuffle the indices for the current class
@@ -166,7 +166,7 @@ class CustomBatchSampler(BatchSampler):
             yield batch_indices
 
             # Update the overall count based on the number of classes and samples
-            self.count += self.count_classes * self.count_samples*self.count_multiplier
+            self.count += self.count_classes * self.count_samples #*self.count_multiplier
         # check the batches for mistakes
         if self.check:
             for i, x in enumerate(self.list_indicies):

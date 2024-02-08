@@ -315,8 +315,8 @@ class DataGatherer():
                         training_loaders = training_loaders + all_data[dev][pos]
                     else :
                         training_set = MyDataset(all_data[dev][pos])
-                        # training_loaders[dev].append(torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True))
-                        training_loaders[dev].append(MyDataLoader(training_set))
+                        training_loaders[dev].append(torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True))
+                        # training_loaders[dev].append(MyDataLoader(training_set))
         if params.flat_data:
             # Sanity check
             for i in range(len(training_loaders)-1, -1, -1):
@@ -333,8 +333,8 @@ class DataGatherer():
             for vali_pos in params.validation_pos:
                 val_data = val_data + all_data[dev][vali_pos]
         validation_set = MyDataset(val_data, testset=True)
-
-        validation_loader = MyDataLoader(validation_set)
+        validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=params.batch_size, shuffle=True)
+        # validation_loader = MyDataLoader(validation_set)
 
         self.training_loaders = training_loaders
         self.validation_loader = validation_loader
