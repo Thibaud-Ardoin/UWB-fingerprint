@@ -45,7 +45,7 @@ class Trainer:
     def train(self):
 
         if params.flat_data :
-            epoch_size = len(self.trainDataloader)//params.batch_size
+            epoch_size = len(self.trainDataloader)
         else :
             epoch_size = self.calculate_epoch_size()
 
