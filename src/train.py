@@ -65,6 +65,7 @@ class Trainer:
             # Flat_data is when the loss doesnt need a dataloader[dev][pos] multiclass
             if True:    
                 for i in range(epoch_size):
+                    print("Batch: ", i, "of", epoch_size, end='\r')
                     # Compile loss
                     self.Loss.forwardpass_data()
                     if params.loss=="CrossentropyLoss":
