@@ -6,29 +6,7 @@ import params
 import torch.nn as nn
 
 from scipy.spatial import distance_matrix
-from utils.util import off_diagonal, accuracy
-
-
-# def normdata(x):
-#     x = torch.abs(x)
-#     x = (x - x.min())/(x.max() - x.min())
-#     return x
-
-# def concatenate_samples(samples, additional_samples, labels=None):
-#     # Concatenate every params.additional_samples samples
-#     number_used_sample = (additional_samples+1)*(len(samples)//(additional_samples+1))
-#     x = [torch.cat(tuple(samples[i:i+additional_samples+1]), dim=0) for i in range(0, number_used_sample-1, additional_samples+1)]
-#     if params.input_type == "fft":
-#         x = [normdata(torch.fft.rfft(tensor))[:-1] for tensor in x]
-    
-#     x = torch.stack(x)
-#     if labels is not None:
-#         y = [labels[i] for i in range(0, number_used_sample-1, additional_samples+1)]
-#         y = torch.stack(y)
-#         return x, y
-#     return x
-
-    
+from utils.util import off_diagonal, accuracy  
     
    
 class Loss():
@@ -73,34 +51,6 @@ class Loss():
 
     def forwardpass_data(self):
         pass
-    
-    
-    def process_flat_data(self):
-       # Goes once through the dataloader
-       for i, data in enumerate(self.trainDataloader):
-
-            x, y = data
-            ce_loss = nn.CrossEntropyLoss()
-
-            if params.loss == "crossentropy":
-
-                # if params.additional_samples > 0:
-                #     x, y = concatenate_samples(x, params.additional_samples, y)
-                    
-                dev_pred = self.my_model(x)
-
-                devLoss = ce_loss(dev_pred.double(), y[:,0])
-
-                devAcc = accuracy(y[:,0], dev_pred)
-
-                self.var_memory.append(devLoss.item())
-                self.dev_accuracy.append(devAcc)
-
-                size_of_batch = x.size(0)
-
-                self.trainLoss += devLoss.item() * size_of_batch
-                self.samples += size_of_batch
-
 
     def per_epoch(self, epoch):
         self.tripletLoss = nn.TripletMarginLoss(margin=params.triplet_mmargin, p=2, reduce=True, reduction="mean")

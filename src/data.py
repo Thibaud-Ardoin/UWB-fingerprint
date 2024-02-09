@@ -9,6 +9,7 @@ import itertools
 
 import torch
 import torchvision.transforms as transforms
+import torchaudio
 
 import params
 
@@ -44,6 +45,12 @@ def fourier(x):
     x = torch.abs(x)
     return x
 
+def spectrogram(x):
+    # TODO: parameters need to be adjusted
+    spectrogram = torchaudio.transforms.Spectrogram(n_fft=(params.signal_length)//10, hop_length=10, power=1, normalized=True, onesided=False).to(params.device)
+    x = spectrogram(x)
+    return x
+
 def rfft(x):
     return normdata(torch.fft.rfft(x))[:-1]
 
@@ -64,10 +71,10 @@ def logDistortionNorm(x):
     # return logX1
     return (logX1 - logX1.min())/(logX1.max() - logX1.min())
 
-# Function to apply Hamming window
-def apply_hamming_window(x):
-    hamming_window = torch.hann_window(len(x))
-    return x * hamming_window
+# Function to apply Hann window
+def apply_hann_window(x):
+    hann_window = torch.hann_window(len(x))
+    return x * hann_window
 
 
 #################################################
@@ -92,9 +99,9 @@ class MyDataset(torch.utils.data.Dataset):
             self.transform_list += self.augmentations
 
         if params.data_type != "complex":
-            self.transform_list += [lambda x: x.to(torch.float32)]
+            self.transform_list += [] #lambda x: x.to(torch.float32)
         else:
-            self.transform_list += [torch.view_as_real, lambda x: x.to(torch.float32)]
+            self.transform_list += [] #torch.view_as_real, lambda x: x.to(torch.float32)
 
         self.transforms = transforms.Compose(
             self.transform_list
@@ -131,6 +138,19 @@ class MyDataLoader(torch.utils.data.DataLoader):
         balanced_batch_sampler = CustomBatchSampler(data_set, additional_samples=additional_samples, same_positions=same_positions, batch_size=batch_size*self.nb_concatenated)
         super(MyDataLoader, self).__init__(dataset=data_set, batch_sampler=balanced_batch_sampler)
 
+        self.post_concat_transform_list = []
+        if params.input_type == "spectrogram":
+            self.post_concat_transform_list += [lambda x: spectrogram(x)]
+        elif params.input_type == "fft":
+            self.post_concat_transform_list += [lambda x: fourier(x), lambda x: normdata(x)]
+        elif params.data_type == "complex":
+            self.post_concat_transform_list += [torch.view_as_real]
+        self.post_concat_transform_list += [lambda x: x.to(torch.float32)]
+
+        self.post_concat_transforms = transforms.Compose(
+            self.post_concat_transform_list
+        )
+
     def concatenate_samples(self, samples, labels=None):
         # Concatenate every params.additional_samples samples
         number_used_sample = (self.nb_concatenated)*(len(samples)//(self.nb_concatenated))
@@ -148,8 +168,8 @@ class MyDataLoader(torch.utils.data.DataLoader):
     def __iter__(self):
         for x, y in super(MyDataLoader, self).__iter__():
             x, y = self.concatenate_samples(x, y)
+            x = self.post_concat_transforms(x)
 
-            # Todo add global FFT transformations
             yield x, y
         # folded_labels = y.reshape(y.shape[0]//self.nb_concatenated, self.nb_concatenated, 2)
 
