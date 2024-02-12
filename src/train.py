@@ -32,11 +32,15 @@ class Trainer:
         return optimizer
         
     def calculate_epoch_size(self):
+        
         min_size = None
         for pos in range(len(self.trainDataloader)):
             for dev in range(len(self.trainDataloader[pos])):
                 dataset_length = len(self.trainDataloader[pos][dev].dataset)
-                if min_size is None or min_size > dataset_length:
+                # For now make sure the dataset is full
+                assert dataset_length>0, " For now this training process is accepting only a full dataset. The current label is empty: dev" + str(dev) + ", Pod" + str(pos)
+
+                if (min_size is None or min_size > dataset_length) :
                     min_size = dataset_length
         epoch_size = int(min_size / params.batch_size)
         

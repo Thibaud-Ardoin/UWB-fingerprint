@@ -9,7 +9,7 @@ import itertools
 
 import torch
 import torchvision.transforms as transforms
-import torchaudio
+# import torchaudio
 
 import params
 
@@ -309,10 +309,25 @@ class DataGatherer():
         z = list(zip(self.data, self.labels))
         pos_ids = [np.where(self.labels[:,1] == i) for i in range(params.num_pos)]
         dev_ids = [np.where(self.labels[:,0] == i) for i in range(params.num_dev)]
+
+        # Hard coded test to have a proper visual of the used labels
+        if False: 
+            m = []
+            for dev in range(params.num_dev):
+                m.append([])
+                for pos in range(params.num_pos):
+                    ids = list(set(dev_ids[dev][0]) & set(pos_ids[pos][0]))
+                    m[dev].append(len(ids))
+
+            m = np.array(m)
+            plt.imshow(m)
+            plt.colorbar()
+            plt.show()
+
         all_data = []
-        val_pos = params.validation_pos[0]
         if its_all_train:
-            val_pos = -1
+            # Remove all validation position, this is a pure training set
+            params.validation_pos = []
 
         # For each device, put the first part of the data in training, the second part in validation
         for i in range(params.num_dev) :
