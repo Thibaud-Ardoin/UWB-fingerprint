@@ -61,47 +61,31 @@ class Trainer:
             print("[INFO] epoch: {}...".format(epoch + 1))
 
             self.my_model.train()
+            # Reset memorry about the last epoch loop
             self.Loss.epoch_start()
-            # TODO: reunite flat data and multiclass
-            # Is this done properly alreaddy ?
 
-            # loop over the current batch of data
-            # Flat_data is when the loss doesnt need a dataloader[dev][pos] multiclass
-            if True:    
-                for i in range(epoch_size):
-                    print("Batch: ", i, "of", epoch_size, end='\r')
-                    # Compile loss
-                    self.Loss.forwardpass_data()
-                    if params.loss=="CrossentropyLoss":
-                        # Backprop
-                        self.optimizer.zero_grad()
-                        self.Loss.memory["devLoss"].backward()
-                        self.optimizer.step()
-                    elif params.loss=="VicregLoss":
-                        self.optimizer.zero_grad()
-                        self.Loss.memory["vicLoss"].backward()
-                        self.optimizer.step()
-                    elif params.loss=="AdversarialLoss":
-                        # Compile Loss
-                        # self.Loss.process_flat_data()
-                        # Adversarial Backproploss
-                        self.optimizer.zero_grad()
-                        self.Loss.memory["devLoss"].backward(retain_graph=True)
-                        self.Loss.memory["posLoss"].backward(retain_graph=True)
-                        self.Loss.memory["encLoss"].backward()
-                        self.optimizer.step()
-
-            else :
-                # Data divided in multi class
-                for i in range(epoch_size):
-
-                    # Compile loss
-                    loss =  self.Loss.per_epoch(epoch)
-                    #trainLoss, samples, var_memory2, cov_memory, dist_memory, var_memory, pos_accuracy, dev_accuracy = self.Loss.per_epoch(epoch)
-
+            # loop over the whole TrainLoader about 1 time
+            for i in range(epoch_size):
+                print("Batch: ", i, "of", epoch_size, end='\r')
+                # Compile loss
+                self.Loss.forwardpass_data()
+                if params.loss=="CrossentropyLoss":
                     # Backprop
                     self.optimizer.zero_grad()
-                    loss.backward()
+                    self.Loss.memory["devLoss"].backward()
+                    self.optimizer.step()
+                elif params.loss=="VicregLoss":
+                    self.optimizer.zero_grad()
+                    self.Loss.memory["vicLoss"].backward()
+                    self.optimizer.step()
+                elif params.loss=="AdversarialLoss":
+                    # Compile Loss
+                    # self.Loss.process_flat_data()
+                    # Adversarial Backproploss
+                    self.optimizer.zero_grad()
+                    self.Loss.memory["devLoss"].backward(retain_graph=True)
+                    self.Loss.memory["posLoss"].backward(retain_graph=True)
+                    self.Loss.memory["encLoss"].backward()
                     self.optimizer.step()
 
             # Log all loss information as needed

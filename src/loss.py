@@ -486,9 +486,6 @@ class VicregLoss(Loss):
         p1 = np.random.choice(self.pos_amt)
         p2 = np.random.choice([p for p in range(self.pos_amt) if p!=p1])
 
-
-        # print([next(iter(self.trainDataloader[dev][p1]))[0].shape for dev in range(len(self.trainDataloader))])
-
         # Two data batches, with same device and different position
         batchX1 = [next(iter(self.trainDataloader[dev][p1]))[0] for dev in range(len(self.trainDataloader))]
         batchX2 = [next(iter(self.trainDataloader[dev][p2]))[0] for dev in range(len(self.trainDataloader))]
@@ -500,18 +497,12 @@ class VicregLoss(Loss):
         z1 = self.my_model(c1)
         z2 = self.my_model(c2)
 
-        # print(z1.shape)
-
         x1 = [z1[dev*params.batch_size:(dev+1)*params.batch_size] for dev in range(len(self.trainDataloader))]
         x2 = [z2[dev*params.batch_size:(dev+1)*params.batch_size] for dev in range(len(self.trainDataloader))]
 
         # Same as z1, z2 ?
-        x = torch.cat(x1)
-        y = torch.cat(x2)
-
-        # print(len(x1))
-
-        # print(x.shape)
+        x = z1 #torch.cat(x1)
+        y = z2 #torch.cat(x2)
 
         # Global distance between two positions        
         repr_loss = torch.stack([F.mse_loss(x1[dev], x2[dev]) for dev in range(params.num_dev)]).sum()
