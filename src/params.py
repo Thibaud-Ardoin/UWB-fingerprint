@@ -9,33 +9,33 @@ import torch
 ##########
 #   Data
 ##########
-datafile = "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2_data.npy"
-labelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2_labels.npy"
+datafile = "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10_9.2_data.npy"
+labelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10_9.2_labels.npy"
 
 testfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_data.npy"
 testlabelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_labels.npy"
 
 # TODO reunite properly following input types in the dataloader
 data_type = "not_complex"
-input_type = "fft" #rfft"
+input_type = "none" #rfft"
 
 data_use_position = False       # If you want to add the angular information as input of the model too
 
 data_spliting = "pos_split"  #"all_split", "file_test", "random"
 split_train_ratio = 0.80
 augmentations = ["addSomeNoise"] #fourrier, logDistortionNorm
-noise_amount = 0.01
+noise_amount = 0
 
 data_limit = -1
 validation_pos = [5]
 validation_dev = 0      # Not used yet ?
-data_test_rate = 0.01    # Random % of data to run tests on (O(n**2))
+data_test_rate = 0.02    # Random ratio of data to run tests on (O(n**2))
 
-num_pos = 48    #21
+num_pos = 98    #21
 num_dev = 9    #13
 signal_length = 200
-additional_samples = 2  # For concatenation of additional data point
-same_positions = False   # If the concatenation should be done diagonal to positions or not
+additional_samples = 0  # For concatenation of additional data point
+same_positions = True   # If the concatenation should be done diagonal to positions or not
 
 
 ############
@@ -43,14 +43,14 @@ same_positions = False   # If the concatenation should be done diagonal to posit
 ############
 batch_size = 32
 nb_epochs = 10000
-test_interval = 5
+test_interval = 100
 
 
 ############
 #   Optim
 ############
 optimizer = "Adam"
-sheduler = "plateau"    #"warmup" plateau
+sheduler = "warmup"    #"warmup" plateau
 warmup_steps = 50
 learning_rate = 1e-3
 lr_limit = 1e-4
@@ -64,7 +64,7 @@ loss = "VicregLoss"  #"vicreg" #"adversarial" #"triplet3" #"triplet" #"vicreg"
 lambda_triplet = 10
 triplet_mmargin = 1
 lambda_distance = 11    #14
-lambda_std = 1.2         #1.2
+lambda_std = 4         #1.2
 lambda_cov = 4          #4
 
 
@@ -72,8 +72,8 @@ lambda_cov = 4          #4
 #   Model
 ############
 model_name = "Transformer3" #"advCNN1" #"Transformer3"
-latent_dimention = 32
-expender_out = 32
+latent_dimention = 450
+expender_out = 128
 use_extender = True
 dropout_value = 0
 # embed_size = 8 #TODO no the right numba
@@ -108,12 +108,12 @@ window_size = 16
 ##############
 #   System   #
 ##############
-save_model = True   # On test section
+save_model = False   # On test section
 use_gpu = True
 device = "cuda" if torch.cuda.is_available() and use_gpu else "cpu"
 verbose = True
 plotting = False
-use_wandb = False
+use_wandb = True
 saving_path = "./data/"
 saved_model_suffix = "model_test10"
 
@@ -135,7 +135,7 @@ def __use_config__(file_name):
 # These are variables that are concequences of some previous combinations
 
 flat_data = False
-if loss == "AdversarialLoss" or loss == "crossentropy" or data_spliting=="random":
+if loss == "AdversarialLoss" or loss == "CrossentropyLoss" or data_spliting=="random":
     flat_data = True
 
 

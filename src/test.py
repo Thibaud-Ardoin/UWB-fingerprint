@@ -163,7 +163,7 @@ def reid_evaluation(embeddings, labels, logger):
         print("> Amount of positive clustering when False accuracy reaches 0,1% 1% and 10%")
         print(list(100*np.array(ta_accuracy)), "%")
 
-        print("> Area size under the clustering curve")
+        print("> Area size under the clustering curve (Trapz)")
         print(area)
 
         print("> Accuracy for positive classification according to the nearest neighbor ")

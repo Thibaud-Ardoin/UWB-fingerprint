@@ -16,7 +16,7 @@ labelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10_9.2_label
 device: "cuda"
 testfile: "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_data.npy"
 testlabelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_labels.npy"
-dropout_value: 0.01
+dropout_value: 0.02
 expender_out: 128
 expender_layers_nb: 1
 expender_hidden_size: 256
