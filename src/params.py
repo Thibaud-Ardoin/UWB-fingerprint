@@ -43,18 +43,18 @@ same_positions = True   # If the concatenation should be done diagonal to positi
 ############
 batch_size = 32
 nb_epochs = 10000
-test_interval = 100
+test_interval = 250
 
 
 ############
 #   Optim
 ############
 optimizer = "Adam"
-sheduler = "warmup"    #"warmup" plateau
+sheduler = "plateau"    #"warmup" plateau
 warmup_steps = 50
 learning_rate = 1e-3
 lr_limit = 1e-4
-patience = 50
+patience = 250
 
 
 ###########
