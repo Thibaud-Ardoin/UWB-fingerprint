@@ -152,6 +152,7 @@ def reid_evaluation(embeddings, labels, logger):
             "Positive clustering at error rate 10%": 100*ta_accuracy[2],
             "Trapz": area,
             "NN classification on test data": 100*correct_classification/(correct_classification+wrong_classification)})
+    logger.log_maximisation_value({"Trapz": area})
 
     
     if params.verbose:

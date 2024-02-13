@@ -24,6 +24,7 @@ class Logger():
             self.setupWB()
         self.epoch=0
         self.test_step = 0
+        self.max_memory = {}
 
     def step_epoch(self):
         self.epoch += 1
@@ -133,6 +134,19 @@ class Logger():
                 else:
                     wandb.log({"unkown": info, "epoch": self.epoch})
 
+    def log_maximisation_value(self, info):
+        for k in info:
+            max_k = "max_" + k
+            val = info[k]
+            if max_k in self.max_memory.keys():
+                if self.max_memory[max_k] < val:
+                    self.max_memory[max_k] = val
+            else:
+                self.max_memory[max_k] = val
+                    
+        self.log(self.max_memory)
+
+
 
     def log_curve(self, curve, title="some curve", column_names=["x", "y"]):
         if params.use_wandb:
@@ -189,4 +203,11 @@ if __name__ == "__main__":
     logger.log(13, "numba")
     logger.log(15, "numba")
     logger.log("an other type of data ball")
+
+    logger.log_maximisation_value({"yoo": 1})
+    logger.log_maximisation_value({"yoo": 2})
+    logger.log_maximisation_value({"yoo": 3})
+    logger.log_maximisation_value({"yoo": 1})
+    logger.log_maximisation_value({"yoo": 0})
+    logger.log_maximisation_value({"yoo": -1})
     logger.finish()
