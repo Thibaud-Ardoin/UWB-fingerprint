@@ -41,7 +41,7 @@ same_positions = True   # If the concatenation should be done diagonal to positi
 ############
 #   Train
 ############
-batch_size = 32
+batch_size = 6
 nb_epochs = 10000
 test_interval = 250
 
@@ -50,7 +50,7 @@ test_interval = 250
 #   Optim
 ############
 optimizer = "Adam"
-sheduler = "plateau"    #"warmup" plateau
+sheduler = "combi"    #"warmup" plateau "combi" for the combination of both
 warmup_steps = 50
 learning_rate = 1e-3
 lr_limit = 1e-4
@@ -72,8 +72,8 @@ lambda_cov = 4          #4
 #   Model
 ############
 model_name = "Transformer3" #"advCNN1" #"Transformer3"
-latent_dimention = 450
-expender_out = 128
+latent_dimention = 256
+expender_out = 256
 use_extender = True
 dropout_value = 0
 # embed_size = 8 #TODO no the right numba
@@ -95,10 +95,10 @@ class_layers_nb = 1
 class_hidden_size = 256
 
 # Transformers
-trans_embedding_size = 64 #actually becomming the multiplier of the nb of heads
-trans_head_nb = 2
-trans_layer_nb = 3
-trans_hidden_nb= 32
+trans_embedding_size = 10 #actually becomming the multiplier of the nb of heads
+trans_head_nb = 1
+trans_layer_nb = 4
+trans_hidden_nb= 128
 
 # Transformer2
 window_size = 16
@@ -108,7 +108,7 @@ window_size = 16
 ##############
 #   System   #
 ##############
-save_model = False   # On test section
+save_model = True   # On test section
 use_gpu = True
 device = "cuda" if torch.cuda.is_available() and use_gpu else "cpu"
 verbose = True

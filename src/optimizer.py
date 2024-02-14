@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 
 import torch
 from torch.optim import Adam, AdamW
-from torch.optim.lr_scheduler import ReduceLROnPlateau, LambdaLR, LRScheduler, ExponentialLR
+from torch.optim.lr_scheduler import ReduceLROnPlateau, StepLR, LambdaLR, LRScheduler, ExponentialLR, SequentialLR
 from ignite.handlers.param_scheduler import create_lr_scheduler_with_warmup
 import pytorch_warmup as warmup
 
@@ -35,16 +35,51 @@ import params
 
 
 
+class Combi_scheduler():
+	def __init__(self):
+		self.warmup_steps = params.warmup_steps
+		self.base_lr = params.learning_rate
+		self.epoch = 0
+		self.min_loss = None
+
+	def __call__(self, loss):
+		self.epoch += 1
+
+		# Distinguish Warmup increase with plateau part
+		if self.epoch < self.warmup_steps :
+			alpha = (self.epoch / self.warmup_steps)
+			return self.base_lr * alpha + (self.base_lr/10)*(1-alpha)		
+		else :
+			# Track the minimum of the loss
+			if self.min_loss is None or loss < self.min_loss :
+				self.min_loss = loss
+				self.delta_min = 0
+			else :
+				self.delta_min += 1
+				if self.delta_min > params.patience :
+					self.base_lr = self.base_lr/10
+					self.delta_min = 0
+			return self.base_lr
+
+
 class Optimizer():
 	def __init__(self, model):
 		self.epoch = 0
-		self.optim = eval(params.optimizer)(model.parameters(), lr=params.learning_rate)
+		self.optim = eval(params.optimizer)(model.parameters(), lr=1)
 		self.scheduler = None
 		if params.sheduler == "warmup":
 			self.lr_scheduler = ExponentialLR(self.optim, gamma=0.999)
 			self.warmup_scheduler = warmup.ExponentialWarmup(self.optim, warmup_period=int(params.warmup_steps/2))
 		elif params.sheduler == "plateau":
 			self.scheduler = ReduceLROnPlateau(self.optim, 'min', patience=params.patience)
+		elif params.sheduler == "combi":
+			self.scheduler = torch.optim.lr_scheduler.LambdaLR(self.optim, Combi_scheduler())
+
+			# schedulers = [
+			# 	ExponentialLR(self.optim, gamma=1-1e-3), 
+			# 	ReduceLROnPlateau(self.optim, 'min', patience=params.patience)
+			# ]
+			# self.scheduler = SequentialLR(self.optim, schedulers=schedulers, milestones=[100])
 
 
 	def step(self):
@@ -59,6 +94,10 @@ class Optimizer():
 	def epoch_routine(self, loss):
 		if params.sheduler == "plateau":
 			self.scheduler.step(loss)
+		elif params.sheduler == "combi":
+			self.scheduler.step(loss)
+			# for i in range(len(self.scheduler)):
+			# 	self.scheduler[i].step(loss)
 		else :
 			with self.warmup_scheduler.dampening():
 				self.lr_scheduler.step()
@@ -68,10 +107,9 @@ class Optimizer():
 	def early_stopping(self):
 		if params.sheduler == "plateau":
 			return self.get_lr() < params.lr_limit
-		elif params.sheduler == "warmup":	
+		else:
 			if self.epoch > params.warmup_steps:
 				return self.get_lr() < params.lr_limit
-		return False
 
 
 
@@ -111,7 +149,7 @@ class AdvOptimizer(Optimizer):
 
 
 if __name__ == "__main__":
-	x=[]
+	x=Optimizer()
 	for i in range(100):
 		x.append(warmup(i))
 	plt.plot(x)

@@ -24,7 +24,7 @@ expender_hidden_size: 256
 feature_norm: "layer"
 flat_data: false
 labelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10_9.2_labels.npy"
-latent_dimention: 450
+latent_dimention: 200
 learning_rate: 0.001
 lr_limit: 0.0001
 lambda_triplet: 1
