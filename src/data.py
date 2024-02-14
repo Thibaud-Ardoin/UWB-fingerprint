@@ -135,6 +135,12 @@ class MyDataset(torch.utils.data.Dataset):
 class MyDataLoader(torch.utils.data.DataLoader):
     def __init__(self, data_set, batch_size=params.batch_size, additional_samples=params.additional_samples, same_positions=params.same_positions):
         self.nb_concatenated = additional_samples + 1
+
+        # Calculation of Bsz according to number of samples and VicReg configuration
+        sampler_bsz = batch_size*self.nb_concatenated
+        if params.loss=="VicregLoss":
+            sampler_bsz = sampler_bsz//params.num_dev
+
         balanced_batch_sampler = CustomBatchSampler(data_set, additional_samples=additional_samples, same_positions=same_positions, batch_size=batch_size*self.nb_concatenated)
         super(MyDataLoader, self).__init__(dataset=data_set, batch_sampler=balanced_batch_sampler)
 
@@ -350,7 +356,6 @@ class DataGatherer():
                         training_loaders = training_loaders + all_data[dev][pos]
                     else :
                         training_set = MyDataset(all_data[dev][pos])
-                        # training_loaders[dev].append(torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True))
                         training_loaders[dev].append(MyDataLoader(training_set))
         if params.flat_data:
             # Sanity check
@@ -368,7 +373,6 @@ class DataGatherer():
             for vali_pos in params.validation_pos:
                 val_data = val_data + all_data[dev][vali_pos]
         validation_set = MyDataset(val_data, testset=True)
-        # validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=params.batch_size, shuffle=True)
         validation_loader = MyDataLoader(validation_set)
 
         self.training_loaders = training_loaders

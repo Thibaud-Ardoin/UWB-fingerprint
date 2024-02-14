@@ -28,7 +28,7 @@ noise_amount = 0
 
 data_limit = -1
 validation_pos = [5]
-validation_dev = 0      # Not used yet ?
+validation_dev = []      # Not used yet ?
 data_test_rate = 0.02    # Random ratio of data to run tests on (O(n**2))
 
 num_pos = 98    #21
