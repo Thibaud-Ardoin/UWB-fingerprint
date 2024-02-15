@@ -308,6 +308,9 @@ class DataGatherer():
 
         # Gather the indexes for the diferent poses and the different devices
         z = list(zip(self.data, self.labels))
+        if params.verbose:
+            print(" \t * Current total loaded raw data reach size:", len(z))
+            print(" \t   Note that some might be removed according to the used Devices for example.")
         pos_ids = [np.where(self.labels[:,1] == i) for i in range(params.num_pos)]
         dev_ids = [np.where(self.labels[:,0] == i) for i in range(params.num_dev)]
 
@@ -368,6 +371,7 @@ class DataGatherer():
             for vali_pos in params.validation_pos:
                 val_data = val_data + all_data[dev][vali_pos]
         validation_set = MyDataset(val_data, testset=True)
+        # Adjust batch size according to the feedforward type
         bsz = params.batch_size
         if params.loss=="VicregLoss": bsz = bsz * params.num_dev
         validation_loader = MyDataLoader(validation_set, batch_size=bsz)

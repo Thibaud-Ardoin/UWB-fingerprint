@@ -130,10 +130,10 @@ class Transformer3(nn.Module):
 	def encode(self, x):
 		if params.data_use_position:
 			x = self.positional_encoder(x)
-		return self.encoder(x)		
+		return self.encoder(x)
 
 	def classify(self, x):
-		return self.expender(x)		
+		return self.expender(x)
 	
 	def forward(self, x):
 		x = self.encode(x)

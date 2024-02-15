@@ -21,16 +21,22 @@ def normdata(x):
     return x
 
 
-def encode_data(mymodel, dataloader):
+def encode_data(mymodel, dataloader, encode_even_less=False):
     mymodel.eval()
     def loop_on_loader(loader):
         loader.dataset.testset = True
         encs, labs = [], []
+        count = 0
+        amt2encode = len(loader.dataset) * params.data_test_rate
+        if encode_even_less: amt2encode * params.data_test_rate
         for i, (batchX, batchY) in enumerate(loader):
             # Compute encoded version of the data by our embedding model
             encs = encs + mymodel.encode(batchX).tolist()
             # Gather device labels accordingly (eventually randomly enumerated)
             labs = labs + batchY[:, 0].tolist()
+            count += batchX.shape[0]
+            if count > amt2encode:
+                break
         return encs, labs
     
     # Split differently according to the dataloader organisation
@@ -221,7 +227,7 @@ def testing_model(training_loaders, validation_loader, model, logger):
     model.eval()
     logger.save_model(model)
 
-    encoded_train, labels_train = encode_data(model, training_loaders)
+    encoded_train, labels_train = encode_data(model, training_loaders, encode_even_less=True)
     encoded_test, labels_test = encode_data(model, validation_loader)
 
     enc_time = time.time()
@@ -234,14 +240,14 @@ def testing_model(training_loaders, validation_loader, model, logger):
 
     # Selecting a subset of size params.data_test_rate for reid evalution
     mask = np.full(len(encoded_test), False)
-    mask[:int(len(encoded_test)*params.data_test_rate)] = True
+    mask[:int(len(encoded_test))] = True #*params.data_test_rate)] = True
     np.random.shuffle(mask)
     reid_evaluation(np.array(encoded_test)[mask], np.array(labels_test)[mask], logger)
     reid_time = time.time()
     print("[Test]: time for reid on test data", reid_time - scatter_time)
 
     mask2 = np.full(len(labels_train), False)
-    mask2[:int(len(labels_train)*params.data_test_rate*params.data_test_rate)] = True
+    mask2[:int(len(labels_train))] = True #*params.data_test_rate*params.data_test_rate)] = True
     np.random.shuffle(mask2)
     reid_evaluation_test2train_NN(np.array(encoded_test)[mask], np.array(encoded_train)[mask2], np.array(labels_test)[mask], np.array(labels_train)[mask2], logger)
     reid2_time = time.time()

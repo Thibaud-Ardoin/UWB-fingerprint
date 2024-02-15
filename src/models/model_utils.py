@@ -36,25 +36,11 @@ class PositionalEncoding(nn.Module):
 		return self.dropout(x)
 
 
-#  LIL Encoding NETWORK
-class BaseModel(nn.Module):
-	def __init__(self):
-		super(EncoderNet, self).__init__()
-
-	def encoder(self, x):         
-		return x
-	
-	def expender(self, x) :
-		return x
-	
-	def forward(self, x):
-		return x
-	
-
 def load_model():
 	model = eval("models." + params.model_name)().to(params.device)
 	if params.verbose:
 		print(model)
+		print("Total number of model's parameters", sum(p.numel() for p in model.parameters()))
 	return model
 
 

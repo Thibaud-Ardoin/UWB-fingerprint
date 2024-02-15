@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib
 
+import plotly
 import torch
 import wandb
 from torchviz import make_dot
@@ -176,17 +177,22 @@ class Logger():
             for i in range(len(dimentions)):
                 fig, ax = plt.subplots()
                 scatter = ax.scatter(X[:, dimentions[i][0]], X[:, dimentions[i][1]], c=labels, norm=norm, cmap=cmap, marker=".", linewidths=0.5, s=20)
-                handles, lab = scatter.legend_elements(prop="colors", num=num_classes+1, alpha=0.6)
+                handles, lab = scatter.legend_elements(prop="colors", num=num_classes+1, alpha=1)
                 legend1 = ax.legend(handles, lab,
                         loc="lower left", title="Device id")
                 ax.add_artist(legend1)
+     
                 ax.set_title("dimentions " + str(i*2) + "and " + str(i*2+1))
                 # .legend(loc='upper left',prop = {'size':7},bbox_to_anchor=(1,1))
                 # plt.tight_layout(pad=5)
                 plot_img = "data/plot_"+str(i)+".png"
                 fig.savefig(plot_img)
+                # wandb.log({
+                #     title + str(i) + "_ep" + str(self.test_step): wandb.Image(plot_img),
+                #     "epoch": self.epoch
+                # })
                 wandb.log({
-                    title + str(i) + "_ep" + str(self.test_step): wandb.Image(plot_img),
+                    title + str(i) + "_ep" + str(self.test_step): plt,
                     "epoch": self.epoch
                 })
                 plt.close()

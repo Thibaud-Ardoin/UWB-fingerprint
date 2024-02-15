@@ -34,16 +34,18 @@ class Trainer:
     def calculate_epoch_size(self):
         
         min_size = None
-        for pos in range(len(self.trainDataloader)):
-            for dev in range(len(self.trainDataloader[pos])):
-                dataset_length = len(self.trainDataloader[pos][dev].dataset)
+        for dev in range(len(self.trainDataloader)):
+            for pos in range(len(self.trainDataloader[dev])):
+                dataset_length = len(self.trainDataloader[dev][pos].dataset)
                 # For now make sure the dataset is full
                 assert dataset_length>0, " For now this training process is accepting only a full dataset. The current label is empty: dev" + str(dev) + ", Pod" + str(pos)
 
                 if (min_size is None or min_size > dataset_length) :
                     min_size = dataset_length
-        
-        epoch_size = int(min_size / params.batch_size)
+
+        # Min_size of dataset for each (dev, pos) pair. Each forward pass the model sees 2Pos and all devices.
+        # To see about once all data, needs: (min_size x nb_pos/2)/Dataset's bsz 
+        epoch_size = int(min_size*(len(self.trainDataloader[0])/2)/params.batch_size)
         
         return epoch_size 
 
@@ -53,8 +55,10 @@ class Trainer:
             epoch_size = len(self.trainDataloader)
         else :
             epoch_size = self.calculate_epoch_size()
-
-        print(" Nb of passes per epoch: ", epoch_size)
+        
+        # Provide more control over granularity
+        print(" * According to the training data and batch size, we need ", epoch_size, " in order to go through the whole dataset.")
+        print(" * Hereby the number of steps in 1 epoch is fixed to: ", params.steps_per_epoch)
         
         # loop through the epochs
         for epoch in range(0, params.nb_epochs):
@@ -66,8 +70,8 @@ class Trainer:
             self.Loss.epoch_start()
 
             # loop over the whole TrainLoader about 1 time
-            for i in range(epoch_size):
-                print("Batch: ", i, "of", epoch_size, end='\r')
+            for i in range(params.steps_per_epoch):
+                print("Batch: ", i, "of", params.steps_per_epoch, end='\r')
                 # Compile loss
                 self.Loss.forwardpass_data()
                 if params.loss=="CrossentropyLoss":

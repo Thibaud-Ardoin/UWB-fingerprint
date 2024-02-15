@@ -65,7 +65,10 @@ class Combi_scheduler():
 class Optimizer():
 	def __init__(self, model):
 		self.epoch = 0
-		self.optim = eval(params.optimizer)(model.parameters(), lr=1)
+		lr = params.learning_rate
+		if params.sheduler=="combi": lr = 1
+		self.optim = eval(params.optimizer)(model.parameters(), lr=lr)
+
 		self.scheduler = None
 		if params.sheduler == "warmup":
 			self.lr_scheduler = ExponentialLR(self.optim, gamma=0.999)

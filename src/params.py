@@ -41,16 +41,17 @@ same_positions = True   # If the concatenation should be done diagonal to positi
 ############
 #   Train
 ############
-batch_size = 64
+batch_size = 1024
+steps_per_epoch = 100   # Provide data independant granularity of the training process
 nb_epochs = 10000
-test_interval = 250
+test_interval = 10
 
 
 ############
 #   Optim
 ############
 optimizer = "Adam"
-sheduler = "combi"    #"warmup" plateau "combi" for the combination of both
+sheduler = "plateau"    #"warmup" plateau "combi" for the combination of both
 warmup_steps = 50
 learning_rate = 1e-3
 lr_limit = 1e-4
@@ -60,18 +61,18 @@ patience = 250
 ###########
 #   Loss
 ###########
-loss = "VicregLoss"  #"vicreg" #"adversarial" #"triplet3" #"triplet" #"vicreg"
+loss = "VicregLoss"  #"VicregLoss" #"AdversarialLoss" #"CrossentropyLoss" #"triplet"
 lambda_triplet = 10
 triplet_mmargin = 1
 lambda_distance = 11    #14
-lambda_std = 4         #1.2
+lambda_std = 1         #1.2
 lambda_cov = 4          #4
 
 
 ############
 #   Model
 ############
-model_name = "Transformer3" #"advCNN1" #"Transformer3"
+model_name = "ConvMixer" #"Transformer3" #"advCNN1" #"Transformer3"
 latent_dimention = 256
 expender_out = 256
 use_extender = False
@@ -111,7 +112,7 @@ window_size = 16
 ##############
 #   System   #
 ##############
-save_model = True   # On test section
+save_model = False   # On test section
 use_gpu = True
 device = "cuda" if torch.cuda.is_available() and use_gpu else "cpu"
 verbose = True
