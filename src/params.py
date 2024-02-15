@@ -29,7 +29,7 @@ noise_amount = 0
 data_limit = -1
 validation_pos = [5]
 validation_dev = []      # Not used yet ?
-data_test_rate = 0.02    # Random ratio of data to run tests on (O(n**2))
+data_test_rate = 0.005    # Random ratio of data to run tests on (O(n**2))
 
 num_pos = 98    #21
 num_dev = 9    #13
@@ -41,7 +41,7 @@ same_positions = True   # If the concatenation should be done diagonal to positi
 ############
 #   Train
 ############
-batch_size = 6
+batch_size = 64
 nb_epochs = 10000
 test_interval = 250
 
@@ -74,9 +74,17 @@ lambda_cov = 4          #4
 model_name = "Transformer3" #"advCNN1" #"Transformer3"
 latent_dimention = 256
 expender_out = 256
-use_extender = True
+use_extender = False
 dropout_value = 0
 # embed_size = 8 #TODO no the right numba
+
+# Expender
+expender_layers_nb = 1
+expender_hidden_size = 256
+
+# Classification
+class_layers_nb = 1
+class_hidden_size = 256
 
 # CNN
 conv_layers_nb = 4
@@ -88,11 +96,6 @@ stride_size = 1
 padding_size = 1
 tail_fc_layers_nb = 2
 feature_norm = "layer" #layer #none
-
-expender_layers_nb = 1
-expender_hidden_size = 256
-class_layers_nb = 1
-class_hidden_size = 256
 
 # Transformers
 trans_embedding_size = 10 #actually becomming the multiplier of the nb of heads
@@ -172,7 +175,10 @@ def implied_values():
     # Implications on the params values
     if input_type=="rfft":
         globals()["signal_length"] = globals()["signal_length"]//2
-        
+
+    if loss=="VicregLoss":
+        globals()["batch_size"] = globals()["batch_size"]//globals()["num_dev"]
+
     # Input of model is a concatenation of signal lengthes
     globals()["signal_length"] = globals()["signal_length"] * (globals()["additional_samples"]+1)
 

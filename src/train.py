@@ -42,6 +42,7 @@ class Trainer:
 
                 if (min_size is None or min_size > dataset_length) :
                     min_size = dataset_length
+        
         epoch_size = int(min_size / params.batch_size)
         
         return epoch_size 
