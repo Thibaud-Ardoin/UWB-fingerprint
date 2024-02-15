@@ -17,12 +17,12 @@ import models
 class ConvMixer(nn.Module):
 	def __init__(self):
 		super(ConvMixer, self).__init__()
-				
-		self.embedding_size = 128 				# "h" in ConvMix paper
-		self.patch_size = 7 					# "p" in ConvMix paper
-		self.depth = 5							# Number of ConvMixer layers
-		self.kernel_size = 20 					# Size of depth conv's kernel
-		self.out_size = params.num_dev			# Output size
+
+		self.embedding_size = params.convm_embedding_size 				# "h" in ConvMix paper
+		self.patch_size = params.convm_patch_size 						# "p" in ConvMix paper
+		self.depth = params.convm_layer_nb								# Number of ConvMixer layers
+		self.kernel_size = params.convm_kernel_size 					# Size of depth conv's kernel
+		self.out_size = params.convm_out_size							# Output size
 
 		self.Seq = nn.Sequential																	# Sequence compiler
 		self.ActBn = lambda x: self.Seq(x, nn.GELU(), nn.BatchNorm1d(self.embedding_size))			# Activation + Batch norm
@@ -44,6 +44,8 @@ class ConvMixer(nn.Module):
 		x = self.patch_maker(x)
 		x = self.conv_mixers(x)
 		x = self.tail(x)
+		x = F.normalize(x, p=2, dim=1)
+
 		return x
 	
 	def classify(self, x):
@@ -53,15 +55,8 @@ class ConvMixer(nn.Module):
 
 
 	def forward(self, x):
-		x = x.unsqueeze(1)
-		x = self.patch_maker(x)
-
-		x = self.conv_mixers(x)
-
-		x = self.tail(x)
-
-		x = self.classifier(x)	
-
+		x = self.encode(x)
+		x = self.classifier(x)
 		return x
 
 

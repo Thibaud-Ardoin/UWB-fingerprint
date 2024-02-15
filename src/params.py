@@ -44,7 +44,7 @@ same_positions = True   # If the concatenation should be done diagonal to positi
 batch_size = 1024
 steps_per_epoch = 100   # Provide data independant granularity of the training process
 nb_epochs = 10000
-test_interval = 10
+test_interval = 100
 
 
 ############
@@ -55,7 +55,7 @@ sheduler = "plateau"    #"warmup" plateau "combi" for the combination of both
 warmup_steps = 50
 learning_rate = 1e-3
 lr_limit = 1e-4
-patience = 250
+patience = 100
 
 
 ###########
@@ -103,6 +103,13 @@ trans_embedding_size = 10 #actually becomming the multiplier of the nb of heads
 trans_head_nb = 1
 trans_layer_nb = 4
 trans_hidden_nb= 128
+
+# ConvMixer
+convm_embedding_size = 128
+convm_layer_nb = 4
+convm_kernel_size = 25
+convm_patch_size = 5
+convm_out_size = 32
 
 # Transformer2
 window_size = 16

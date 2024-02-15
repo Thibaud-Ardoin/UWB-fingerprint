@@ -177,7 +177,7 @@ class Logger():
             for i in range(len(dimentions)):
                 fig, ax = plt.subplots()
                 scatter = ax.scatter(X[:, dimentions[i][0]], X[:, dimentions[i][1]], c=labels, norm=norm, cmap=cmap, marker=".", linewidths=0.5, s=20)
-                handles, lab = scatter.legend_elements(prop="colors", num=num_classes+1, alpha=1)
+                handles, lab = scatter.legend_elements(prop="colors", num=num_classes+1, alpha=0.8)
                 legend1 = ax.legend(handles, lab,
                         loc="lower left", title="Device id")
                 ax.add_artist(legend1)
