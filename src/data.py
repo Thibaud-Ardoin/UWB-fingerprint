@@ -9,7 +9,7 @@ import itertools
 
 import torch
 import torchvision.transforms as transforms
-# import torchaudio
+import torchaudio
 
 import params
 
@@ -46,8 +46,7 @@ def fourier(x):
     return x
 
 def spectrogram(x):
-    # TODO: parameters need to be adjusted
-    spectrogram = torchaudio.transforms.Spectrogram(n_fft=(params.signal_length)//10, hop_length=10, power=1, normalized=True, onesided=False).to(params.device)
+    spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=8, power=1, normalized=True, onesided=False).to(params.device)
     x = spectrogram(x)
     return x
 
@@ -99,7 +98,7 @@ class MyDataset(torch.utils.data.Dataset):
             self.transform_list += self.augmentations
 
         if params.data_type != "complex":
-            self.transform_list += [] #lambda x: x.to(torch.float32)
+            self.transform_list += [] #lambda x: x.to(torch.float32) lambda x: torch.cat((x, torch.zeros(6, dtype=x.dtype)), dim=0)
         else:
             self.transform_list += [] #torch.view_as_real, lambda x: x.to(torch.float32)
 
@@ -144,8 +143,11 @@ class MyDataLoader(torch.utils.data.DataLoader):
             self.post_concat_transform_list += [lambda x: spectrogram(x)]
         elif params.input_type == "fft":
             self.post_concat_transform_list += [lambda x: fourier(x), lambda x: normdata(x)]
-        elif params.data_type == "complex":
+        if params.data_type == "complex":
             self.post_concat_transform_list += [torch.view_as_real]
+        else:
+            self.post_concat_transform_list += [lambda x: abs(x)]
+
         self.post_concat_transform_list += [lambda x: x.to(torch.float32)]
 
         self.post_concat_transforms = transforms.Compose(

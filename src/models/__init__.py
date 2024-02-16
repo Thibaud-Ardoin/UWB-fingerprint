@@ -6,6 +6,7 @@ from .transformer1 import Transformer1
 from .transformer2 import Transformer2
 from .transformer3 import Transformer3
 from .transformer4 import Transformer4
+from .ViT import ViT
 from .model_utils import load_model, PositionalEncoding
 from .conv_mixer import ConvMixer
 

@@ -23,33 +23,66 @@ class ClassCNN1(nn.Module):
         
         # Fur conv encoder
         self.convs = []
-        out_size = params.signal_length
-        feature_sizes = [1, params.conv_features1_nb, params.conv_features1_nb, params.conv_features2_nb, params.conv_features2_nb, params.conv_features2_nb, params.conv_features2_nb]
+        
+        if params.data_type == "complex":
+            input_channel = 2
+        else:
+            input_channel = 1
+        feature_sizes = [input_channel, params.conv_features1_nb, params.conv_features1_nb, params.conv_features2_nb, params.conv_features2_nb, params.conv_features2_nb, params.conv_features2_nb]
         kernel_sizes = [params.conv_kernel1_size, params.conv_kernel1_size, params.conv_kernel1_size, params.conv_kernel2_size, params.conv_kernel2_size, params.conv_kernel2_size]
-        for i in range(params.conv_layers_nb):
-#            print(kernel_sizes[i])
-            self.convs.append(nn.Conv1d(
-                feature_sizes[i],
-                feature_sizes[i+1], 
-                kernel_size=kernel_sizes[i], 
-                stride=params.stride_size, 
-                padding=params.padding_size))
-            #out_size = math.floor(((math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)) - params.pooling_kernel_size) / params.pooling_stride_size +1)
-            # without maxpool
-            out_size = math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)
+        
+        if params.input_type == "spectrogram":
+            out_size = params.spectrogram_window_size
+            out_size2 = params.spectrogram_window_size*(params.additional_samples+1)
+            for i in range(params.conv_layers_nb):
+        #            print(kernel_sizes[i])
+                self.convs.append(nn.Conv2d(
+                    feature_sizes[i],
+                    feature_sizes[i+1], 
+                    kernel_size=kernel_sizes[i], 
+                    stride=params.stride_size, 
+                    padding=params.padding_size))
+                out_size = math.floor(((math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)) - params.pooling_kernel_size) / params.pooling_stride_size +1)
+                out_size2 = math.floor(((math.ceil((out_size2 + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)) - params.pooling_kernel_size) / params.pooling_stride_size +1)
+                # without maxpool
+                #out_size = math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)
+        else:
+            out_size = params.signal_length
+            for i in range(params.conv_layers_nb):
+        #            print(kernel_sizes[i])
+                self.convs.append(nn.Conv1d(
+                    feature_sizes[i],
+                    feature_sizes[i+1], 
+                    kernel_size=kernel_sizes[i], 
+                    stride=params.stride_size, 
+                    padding=params.padding_size))
+                out_size = math.floor(((math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)) - params.pooling_kernel_size) / params.pooling_stride_size +1)
+                # without maxpool
+                #out_size = math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)
         self.convs = nn.ModuleList(self.convs)
+
+        if params.input_type == "spectrogram":
+            self.max_pool = nn.MaxPool2d(kernel_size=params.pooling_kernel_size, stride=params.pooling_stride_size)
+        else:    
+            self.max_pool = nn.MaxPool1d(kernel_size=params.pooling_kernel_size, stride=params.pooling_stride_size)
 
         if params.feature_norm == "batch":
             self.norm = nn.BatchNorm1d(feature_sizes[params.conv_layers_nb+1])
         elif params.feature_norm == "layer":
-            self.norm = nn.LayerNorm(out_size)
+            if params.input_type == "spectrogram":
+                self.norm = nn.LayerNorm([out_size, out_size2])
+            else: 
+                self.norm = nn.LayerNorm(out_size)
         else:
             self.norm = nn.Identity()
 
         # TAIL FC
         self.flatten = nn.Flatten()
         self.fcs = []
-        d1 = feature_sizes[params.conv_layers_nb+1] * out_size
+        if params.input_type == "spectrogram":
+            d1 = feature_sizes[params.conv_layers_nb+1] * out_size * out_size2
+        else:
+            d1 = feature_sizes[params.conv_layers_nb+1] * out_size
 #feature_sizes[params.conv_layers_nb+1] * math.ceil(params.signal_length / ((params.stride_size)**params.conv_layers_nb))
  #       print(d1)
         dim_size = [d1, params.latent_dimention, params.latent_dimention, params.latent_dimention]
@@ -101,11 +134,14 @@ class ClassCNN1(nn.Module):
         
     def encoder(self, x):
         x = x[:, None, :]
+        if params.data_type == "complex":
+            # Reshape the input to have 2 channels
+            x = x.view(x.shape[0], -1, x.shape[2])
 
         # Conv layers
         for i in range(params.conv_layers_nb):
             x = self.convs[i](x)
-            #x = self.max_pool(x)
+            x = self.max_pool(x)
             x = self.dropout(x)
             if i < params.conv_layers_nb -1:
                 x = F.relu(x)
@@ -158,7 +194,7 @@ class ClassCNN1(nn.Module):
 
     def forward(self, x):
         x = self.encode(x)
-        if params.loss=="vicreg" or params.loss=="VicregAdditionalSamples":
+        if params.loss=="vicreg":
             x = self.expander(x)
         else:
             x = self.classify(x)
