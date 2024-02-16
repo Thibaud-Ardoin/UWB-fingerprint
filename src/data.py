@@ -7,11 +7,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 
+import params
+
 import torch
 import torchvision.transforms as transforms
-import torchaudio
+# import torchaudio
 
-import params
 
 from custom_batchsampler import CustomBatchSampler
 

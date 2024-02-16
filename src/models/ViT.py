@@ -160,6 +160,9 @@ class ViT(nn.Module):
 		
 		return x
 	
+	def expand(self, x):
+		return x
+	
 	def classify(self, x):
 		# Pass 0th index of x through MLP head
     	#x = self.mlp_head(x[:, 0]) # for cls token

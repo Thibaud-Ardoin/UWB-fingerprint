@@ -51,8 +51,8 @@ test_interval = 100
 #   Optim
 ############
 optimizer = "Adam"
-sheduler = "plateau"    #"warmup" plateau "combi" for the combination of both
-warmup_steps = 50
+sheduler = "combi"    #"warmup" plateau "combi" for the combination of both
+warmup_steps = 15
 learning_rate = 1e-3
 lr_limit = 1e-4
 patience = 200
@@ -73,7 +73,7 @@ lambda_cov = 1          #4
 ############
 #   Model
 ############
-model_name = "ConvMixer" #"Transformer3" #"advCNN1" #"Transformer3"
+model_name = "ViT" #"Transformer3" #"advCNN1" #"Transformer3" "ConvMixer"
 latent_dimention = 256
 expender_out = 256
 use_extender = False
@@ -113,7 +113,7 @@ convm_patch_size = 10         # 15
 convm_out_size = 32           # 64
 
 # Transformer2
-window_size = 16
+window_size = 10
 
 
 

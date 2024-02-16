@@ -63,7 +63,7 @@ class Logger():
             self.step_epoch()
         if params.loss=="CrossTripletLoss":
             self.log({"triplet_loss": np.mean(loss.memory["triplet_loss_memory"]),
-            "crossentropy_loss_memory": np.mean(loss.memory["crossentropy_loss_memory"]),
+            "crossentropy_loss": np.mean(loss.memory["crossentropy_loss_memory"]),
             "dev_accuracy": np.mean(loss.memory["dev_accuracy"]),
             "global_loss": loss.trainLoss / loss.samples,
             "learning rate": optim.get_lr()})
