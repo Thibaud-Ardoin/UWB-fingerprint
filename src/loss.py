@@ -474,6 +474,180 @@ class CrossentropyLoss(Loss):
 
 
 
+
+class CrossTripletLoss(Loss):
+    """
+        Triplet with hard negative exemple mining 
+        + A crossentropy loss for direct classification            
+    """
+    def __init__(self, trainDataloader, my_model) -> None:
+        super().__init__(trainDataloader, my_model)
+        self.memory_elements.extend(["triplet_loss_memory", "dev_accuracy", "crossentropy_loss_memory"])
+        self.build_memory_dictionary()
+        self.tripletLoss = nn.TripletMarginLoss(margin=params.triplet_mmargin, p=2, reduce=True, reduction="mean")
+        self.crossentrioyLoss = nn.CrossEntropyLoss()
+
+    def forwardpass_data(self):
+        # Choose 2 random positions to compile loss on
+        p1 = np.random.choice(self.pos_amt)
+        p2 = np.random.choice([p for p in range(self.pos_amt) if p!=p1])
+
+        # Two lists data batches, with same device and different position
+        batchX1 = [next(iter(self.trainDataloader[dev][p1])) for dev in range(len(self.trainDataloader))]
+        batchX2 = [next(iter(self.trainDataloader[dev][p2])) for dev in range(len(self.trainDataloader))]
+
+        # Raw Encoding of the backbone
+        encoded1 = [self.my_model.encode(batchX1[dev][0]) for dev in range(len(self.trainDataloader))]
+        encoded2 = [self.my_model.encode(batchX2[dev][0]) for dev in range(len(self.trainDataloader))]
+
+
+        # CROSSENTROPY #
+        ################
+        cls_pred1 = [self.my_model.classify(enc) for enc in encoded1]
+        cls_pred2 = [self.my_model.classify(enc) for enc in encoded2]
+
+        all_class_pred = torch.cat(cls_pred1 + cls_pred2)
+
+        # Compile an array that represent the ground true dev labels for all_class_pred
+        label_dev = torch.arange(start=0, end=len(batchX1)).to(params.device)
+        label_dev = torch.cat([label_dev, label_dev])
+        label_dev = label_dev.unsqueeze(1)
+        label_dev = label_dev.expand((len(batchX1)*2, params.batch_size))
+        label_dev = label_dev.flatten()
+
+        crossentropy = self.crossentrioyLoss(all_class_pred.double(), label_dev)
+
+        devAcc = accuracy(label_dev, all_class_pred)
+
+        # TRIPLET #
+        ###########
+        # Expand after encoding
+        outs1 = [self.my_model.expand(enc) for enc in encoded1]
+        outs2 = [self.my_model.expand(enc) for enc in encoded2]
+
+        z1 = torch.cat(outs1)
+        z2 = torch.cat(outs2)                                
+
+        size_of_batch = z1.shape[0] + z2.shape[0]
+
+        # This distance matrix is between each batch of label Dev/pos
+        distance_mat = distance_matrix(
+            np.array([torch.flatten(xx1).cpu().detach().numpy() for xx1 in outs1]),
+            np.array([torch.flatten(xx2).cpu().detach().numpy() for xx2 in outs2])
+        )
+    
+        # Triplet loss Compiled for each device batch
+        trip_loss = 0
+        for dev1 in range(params.num_dev):
+            if np.random.rand() > 0.1:          # Hard case selection in 90% of the cases
+
+                # !! is this the minimum distance or the maximum ??
+                neighbors = np.argpartition(distance_mat[dev1], 2)
+                dev2 = neighbors[1]
+                if dev2==dev1:
+                    dev2 = neighbors[0]
+            else :
+                dev2 = np.random.choice([d for d in range(params.num_dev) if d!=dev1])
+
+            anchor = z1[dev1]         # P1, D1 
+            positive = z2[dev1]       # P2, D1
+            negative = z1[dev2]       # P1, D2
+
+            trip_loss += self.tripletLoss(anchor, positive, negative)
+
+        total_loss = (
+            params.lambda_triplet * trip_loss / params.num_dev +
+            params.lambda_class * crossentropy
+        )
+
+        # Logs
+        self.trainLoss += total_loss.item() * size_of_batch
+        self.samples += size_of_batch
+        
+        self.memory["triplet_loss_memory"].append(trip_loss.item())
+        self.memory["dev_accuracy"].append(devAcc)
+        self.memory["crossentropy_loss_memory"].append(crossentropy.item())
+        self.memory["loss"] = total_loss
+
+
+
+class TripletLoss(Loss):
+    """
+        Triplet with hard negative exemple mining and covariance regularizer
+    """
+    def __init__(self, trainDataloader, my_model) -> None:
+        super().__init__(trainDataloader, my_model)
+        self.memory_elements.extend(["triplet_loss_memory", "cov_loss_memory"])
+        self.build_memory_dictionary()
+        self.tripletLoss = nn.TripletMarginLoss(margin=params.triplet_mmargin, p=2, reduce=True, reduction="mean")
+
+    def forwardpass_data(self):
+        # Choose 2 random positions to compile loss on
+        p1 = np.random.choice(self.pos_amt)
+        p2 = np.random.choice([p for p in range(self.pos_amt) if p!=p1])
+
+        # Two lists data batches, with same device and different position
+        batchX1 = [next(iter(self.trainDataloader[dev][p1]))[0] for dev in range(len(self.trainDataloader))]
+        batchX2 = [next(iter(self.trainDataloader[dev][p2]))[0] for dev in range(len(self.trainDataloader))]
+
+        outs1 = [self.my_model(batchX1[dev]) for dev in range(len(self.trainDataloader))]
+        outs2 = [self.my_model(batchX2[dev]) for dev in range(len(self.trainDataloader))]
+
+        z1 = torch.cat(outs1)
+        z2 = torch.cat(outs2)                                
+
+        size_of_batch = z1.shape[0] + z2.shape[0]
+
+        # Covariance
+        z1 = z1 - z1.mean(dim=0)
+        z2 = z2 - z2.mean(dim=0)
+
+        # WHAT IS BATCH SIZE HERE ? LEN(Z1) ??        
+        cov_z1 = (z1.T @ z1) / (params.batch_size - 1)
+        cov_z2 = (z2.T @ z2) / (params.batch_size - 1)
+        cov_loss = off_diagonal(cov_z1).pow_(2).sum().div(
+            self.my_model.embedding_size
+        ) + off_diagonal(cov_z2).pow_(2).sum().div(self.my_model.embedding_size)
+
+        # This distance matrix is between each batch of label Dev/pos
+        distance_mat = distance_matrix(
+            np.array([torch.flatten(xx1).cpu().detach().numpy() for xx1 in outs1]),
+            np.array([torch.flatten(xx2).cpu().detach().numpy() for xx2 in outs2])
+        )
+    
+        # Triplet loss Compiled for each device batch
+        trip_loss = 0
+        for dev1 in range(params.num_dev):
+            if np.random.rand() > 0.1:          # Hard case selection in 90% of the cases
+
+                # !! is this the minimum distance or the maximum ??
+                neighbors = np.argpartition(distance_mat[dev1], 2)
+                dev2 = neighbors[1]
+                if dev2==dev1:
+                    dev2 = neighbors[0]
+            else :
+                dev2 = np.random.choice([d for d in range(params.num_dev) if d!=dev1])
+
+            anchor = z1[dev1]         # P1, D1 
+            positive = z2[dev1]       # P2, D1
+            negative = z1[dev2]       # P1, D2
+
+            trip_loss += self.tripletLoss(anchor, positive, negative)
+
+        total_loss = (
+            params.lambda_triplet * trip_loss / params.num_dev +
+            params.lambda_cov * cov_loss
+        )
+
+        # Logs
+        self.trainLoss += total_loss.item() * size_of_batch
+        self.samples += size_of_batch
+        
+        self.memory["loss"] = total_loss
+        self.memory["triplet_loss_memory"].append(trip_loss.item())
+        self.memory["cov_loss_memory"].append(cov_loss.item())
+
+
 class VicregLoss(Loss):
     def __init__(self, trainDataloader, my_model) -> None:
         super().__init__(trainDataloader, my_model)
@@ -510,7 +684,7 @@ class VicregLoss(Loss):
         x = x - x.mean(dim=0)
         y = y - y.mean(dim=0)
 
-        size_of_batch = x.size(0)
+        size_of_batch = x.size(0) + y.size(0)
 
         xt1 = torch.stack([x1[dev] for dev in range(len(self.trainDataloader))],  dim=0)
         xt2 = torch.stack([x2[dev] for dev in range(len(self.trainDataloader))],  dim=0)
@@ -546,10 +720,10 @@ class VicregLoss(Loss):
         self.trainLoss += vic_loss.item() * size_of_batch
         self.samples += size_of_batch
         
-        self.memory["vicLoss"] = vic_loss
+        self.memory["loss"] = vic_loss
         self.memory["repr_loss_memory"].append(repr_loss.item())
         self.memory["std_loss_memory"].append(std_loss.item())
-        self.memory["std_loss2_memory"].append(0)#std_loss2.item())
+        # self.memory["std_loss2_memory"].append(0)#std_loss2.item())
         self.memory["cov_loss_memory"].append(cov_loss.item())
 
 

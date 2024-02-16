@@ -41,7 +41,7 @@ same_positions = True   # If the concatenation should be done diagonal to positi
 ############
 #   Train
 ############
-batch_size = 1024
+batch_size = 32
 steps_per_epoch = 100   # Provide data independant granularity of the training process
 nb_epochs = 10000
 test_interval = 100
@@ -55,18 +55,19 @@ sheduler = "plateau"    #"warmup" plateau "combi" for the combination of both
 warmup_steps = 50
 learning_rate = 1e-3
 lr_limit = 1e-4
-patience = 100
+patience = 200
 
 
 ###########
 #   Loss
 ###########
-loss = "VicregLoss"  #"VicregLoss" #"AdversarialLoss" #"CrossentropyLoss" #"triplet"
-lambda_triplet = 10
+loss = "CrossTripletLoss"  #"VicregLoss" #"AdversarialLoss" #"CrossentropyLoss" #"TripletLoss"
 triplet_mmargin = 1
+lambda_triplet = 1
+lambda_class = 1
 lambda_distance = 11    #14
-lambda_std = 1         #1.2
-lambda_cov = 4          #4
+lambda_std = 2         #1.2
+lambda_cov = 1          #4
 
 
 ############
@@ -105,11 +106,11 @@ trans_layer_nb = 4
 trans_hidden_nb= 128
 
 # ConvMixer
-convm_embedding_size = 128
-convm_layer_nb = 4
-convm_kernel_size = 25
-convm_patch_size = 5
-convm_out_size = 32
+convm_embedding_size = 128     # 128
+convm_layer_nb = 10           # 4
+convm_kernel_size = 25        # 25
+convm_patch_size = 10         # 15
+convm_out_size = 32           # 64
 
 # Transformer2
 window_size = 16

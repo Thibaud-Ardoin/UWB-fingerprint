@@ -55,6 +55,20 @@ class Logger():
             "global_loss": loss.trainLoss / loss.samples,
             "learning rate": optim.get_lr()})
             self.step_epoch()
+        if params.loss=="TripletLoss":
+            self.log({"triplet_loss": np.mean(loss.memory["triplet_loss_memory"]),
+            "cov_loss": np.mean(loss.memory["cov_loss_memory"]),
+            "global_loss": loss.trainLoss / loss.samples,
+            "learning rate": optim.get_lr()})
+            self.step_epoch()
+        if params.loss=="CrossTripletLoss":
+            self.log({"triplet_loss": np.mean(loss.memory["triplet_loss_memory"]),
+            "crossentropy_loss_memory": np.mean(loss.memory["crossentropy_loss_memory"]),
+            "dev_accuracy": np.mean(loss.memory["dev_accuracy"]),
+            "global_loss": loss.trainLoss / loss.samples,
+            "learning rate": optim.get_lr()})
+            self.step_epoch()
+
         elif params.loss=="triplet+crossentropy":
             self.log({
             "Triplet loss": np.mean(self.var_memory2),
@@ -155,7 +169,7 @@ class Logger():
             wandb.log({
                 title + "_ep" + str(self.test_step): wandb.plot.line(table, column_names[0], column_names[1], title=title + str(self.test_step)),
                 "epoch": self.epoch
-            })
+            }, step=self.epoch)
 
 
     def log_scatter(self, data, labels, title="Some Scatter"):
@@ -194,7 +208,7 @@ class Logger():
                 wandb.log({
                     title + str(i) + "_ep" + str(self.test_step): plt,
                     "epoch": self.epoch
-                })
+                }, step=self.epoch)
                 plt.close()
 
     def finish(self):

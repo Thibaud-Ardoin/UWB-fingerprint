@@ -23,6 +23,7 @@ class ConvMixer(nn.Module):
 		self.depth = params.convm_layer_nb								# Number of ConvMixer layers
 		self.kernel_size = params.convm_kernel_size 					# Size of depth conv's kernel
 		self.out_size = params.convm_out_size							# Output size
+		self.feature_size = params.signal_length//self.patch_size		# The feature size inside the convmixer
 
 		self.Seq = nn.Sequential																	# Sequence compiler
 		self.ActBn = lambda x: self.Seq(x, nn.GELU(), nn.BatchNorm1d(self.embedding_size))			# Activation + Batch norm
@@ -35,9 +36,12 @@ class ConvMixer(nn.Module):
 								self.Residual(self.ActBn(nn.Conv1d(self.embedding_size, self.embedding_size, self.kernel_size, groups=self.embedding_size, padding="same"))), 
 							   	self.ActBn(nn.Conv1d(self.embedding_size, self.embedding_size, 1))) for i in range(self.depth)])
 							
+		# self.tail = nn.Flatten()
 		self.tail = self.Seq(nn.AdaptiveAvgPool1d((1)), nn.Flatten())
 		
-		self.classifier = nn.Linear(self.embedding_size, self.out_size)
+		self.expander = nn.Linear(self.embedding_size, self.out_size)
+		self.classifier = nn.Linear(self.embedding_size, params.num_dev)
+		# self.classifier = nn.Linear(self.embedding_size*self.feature_size, self.out_size)
 
 	def encode(self, x):
 		x = x.unsqueeze(1)
@@ -48,11 +52,14 @@ class ConvMixer(nn.Module):
 
 		return x
 	
+	def expand(self, x):
+		x = self.expander (x)
+		return x
+	
 	def classify(self, x):
 		# For output of alreaddy encoded x
 		x = self.classifier(x)
 		return x
-
 
 	def forward(self, x):
 		x = self.encode(x)

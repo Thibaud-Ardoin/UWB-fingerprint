@@ -42,7 +42,6 @@ class Trainer:
 
                 if (min_size is None or min_size > dataset_length) :
                     min_size = dataset_length
-
         # Min_size of dataset for each (dev, pos) pair. Each forward pass the model sees 2Pos and all devices.
         # To see about once all data, needs: (min_size x nb_pos/2)/Dataset's bsz 
         epoch_size = int(min_size*(len(self.trainDataloader[0])/2)/params.batch_size)
@@ -72,17 +71,26 @@ class Trainer:
             # loop over the whole TrainLoader about 1 time
             for i in range(params.steps_per_epoch):
                 print("Batch: ", i, "of", params.steps_per_epoch, end='\r')
-                # Compile loss
+                # Compile loss 
+                # TODO: Most of them are crunshable -> same action = same code
                 self.Loss.forwardpass_data()
                 if params.loss=="CrossentropyLoss":
-                    # Backprop
                     self.optimizer.zero_grad()
                     self.Loss.memory["devLoss"].backward()
                     self.optimizer.step()
                 elif params.loss=="VicregLoss":
                     self.optimizer.zero_grad()
-                    self.Loss.memory["vicLoss"].backward()
+                    self.Loss.memory["loss"].backward()
                     self.optimizer.step()
+                elif params.loss=="TripletLoss":
+                    self.optimizer.zero_grad()
+                    self.Loss.memory["loss"].backward()
+                    self.optimizer.step()
+                elif params.loss=="CrossTripletLoss":
+                    self.optimizer.zero_grad()
+                    self.Loss.memory["loss"].backward()
+                    self.optimizer.step()
+
                 elif params.loss=="AdversarialLoss":
                     # Compile Loss
                     # self.Loss.process_flat_data()
