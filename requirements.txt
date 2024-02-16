@@ -1,5 +1,6 @@
 matplotlib==3.7.2
 numpy==1.26.1
+plotly==5.19.0
 pytorch_ignite==0.4.12
 pytorch_warmup==0.1.1
 scikit_learn==1.2.2
