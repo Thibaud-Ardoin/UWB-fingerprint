@@ -9,8 +9,8 @@ import torch
 ##########
 #   Data
 ##########
-datafile = "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10_9.2_data.npy"
-labelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10_9.2_labels.npy"
+datafile = "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10.2.2_data.npy"
+labelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10.2.2_labels.npy"
 
 testfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_data.npy"
 testlabelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_labels.npy"
@@ -29,9 +29,9 @@ noise_amount = 0
 data_limit = -1
 validation_pos = [5]
 validation_dev = []      # Not used yet ?
-data_test_rate = 0.005    # Random ratio of data to run tests on (O(n**2))
+data_test_rate = 0.05    # Random ratio of data to run tests on (O(n**2))
 
-num_pos = 98    #21
+num_pos = 49    #21
 num_dev = 9    #13
 signal_length = 200
 additional_samples = 0  # For concatenation of additional data point
@@ -61,22 +61,22 @@ patience = 200
 ###########
 #   Loss
 ###########
-loss = "CrossTripletLoss"  #"VicregLoss" #"AdversarialLoss" #"CrossentropyLoss" #"TripletLoss"
+loss = "VicregLoss"  #"VicregLoss" #"AdversarialLoss" #"CrossentropyLoss" #"TripletLoss"
 triplet_mmargin = 1
 lambda_triplet = 1
 lambda_class = 1
 lambda_distance = 11    #14
-lambda_std = 2         #1.2
-lambda_cov = 1          #4
+lambda_std = 4         #1.2
+lambda_cov = 4          #4
 
 
 ############
 #   Model
 ############
-model_name = "ViT" #"Transformer3" #"advCNN1" #"Transformer3" "ConvMixer"
+model_name = "Transformer3" #"Transformer3" #"advCNN1" #"Transformer3" "ConvMixer"
 latent_dimention = 256
 expender_out = 256
-use_extender = False
+use_extender = True
 dropout_value = 0
 # embed_size = 8 #TODO no the right numba
 
@@ -113,7 +113,7 @@ convm_patch_size = 10         # 15
 convm_out_size = 32           # 64
 
 # Transformer2
-window_size = 10
+window_size = 16
 
 
 

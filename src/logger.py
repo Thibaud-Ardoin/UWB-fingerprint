@@ -169,7 +169,7 @@ class Logger():
             wandb.log({
                 title + "_ep" + str(self.test_step): wandb.plot.line(table, column_names[0], column_names[1], title=title + str(self.test_step)),
                 "epoch": self.epoch
-            }, step=self.epoch)
+            })
 
 
     def log_scatter(self, data, labels, title="Some Scatter"):
@@ -208,7 +208,7 @@ class Logger():
                 wandb.log({
                     title + str(i) + "_ep" + str(self.test_step): plt,
                     "epoch": self.epoch
-                }, step=self.epoch)
+                })
                 plt.close()
 
     def finish(self):

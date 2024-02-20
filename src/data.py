@@ -282,23 +282,55 @@ class DataGatherer():
         """
             Just randomly separate the all data into test and train
             enable to see performances in the case of learned position
+            Also available in non flat case: with a random split of each dev/pos pair
         """
         z = list(zip(self.data, self.labels))
-        ind = np.arange(len(z))
-        np.random.shuffle(ind)
-        if params.data_limit > 0:
-            ind = np.random.choice(ind, min(len(ind), params.data_limit), replace=False)
-        data_size = len(ind)
+        if params.flat_data:
+            # Random split the whole data into test and train
+            ind = np.arange(len(z))
+            np.random.shuffle(ind)
+            if params.data_limit > 0:
+                ind = np.random.choice(ind, min(len(ind), params.data_limit), replace=False)
+            data_size = len(ind)
 
-        train_data = [z[ind[i]] for i in range(int(params.split_train_ratio*data_size))]
-        val_data = [z[ind[i]] for i in range(int(params.split_train_ratio*data_size), data_size)]
+            train_data = [z[ind[i]] for i in range(int(params.split_train_ratio*data_size))]
+            val_data = [z[ind[i]] for i in range(int(params.split_train_ratio*data_size), data_size)]
 
-        training_set = MyDataset(train_data, testset=False)
-        training_loader = torch.utils.data.DataLoader(training_set, batch_size=params.batch_size, shuffle=True)
+            training_set = MyDataset(train_data, testset=False)
+            training_loader = MyDataLoader(training_set)
 
-        validation_set = MyDataset(val_data, testset=True)
-        validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=params.batch_size, shuffle=True)
-        
+            validation_set = MyDataset(val_data, testset=True)
+            validation_loader = MyDataLoader(validation_set)
+
+        else:   # Return loaders that matrixes of loaders
+            # split each dev/pair subset into test/train
+            pos_ids = [np.where(self.labels[:,1] == i) for i in range(params.num_pos)]
+            dev_ids = [np.where(self.labels[:,0] == i) for i in range(params.num_dev)]
+            
+            training_loader = []
+            validation_loader = []
+            # For each device, put the first part of the data in training, the second part in validation
+            for i in range(params.num_dev) :
+                training_loader.append([])
+                validation_loader.append([])
+                for k in range(params.num_pos) :
+                    # Make the union between dev and pos befor getting the time separation
+                    inter_ids = list(set(dev_ids[i][0]) & set(pos_ids[k][0]))
+                    if params.data_limit > 0:
+                        inter_ids = np.random.choice(inter_ids, min(len(inter_ids), params.data_limit), replace=False)
+
+                    # split(i, k) indices in train testsplit in
+
+                    [z[inter_ids[j]] for j in range(len(inter_ids))]
+
+
+                    training_loader.append()
+                    validation_loader.append()
+
+                    training_set = MyDataset()
+                    training_loader[dev].append(MyDataLoader(training_set))
+
+
         return training_loader, validation_loader
 
 

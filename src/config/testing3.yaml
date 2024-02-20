@@ -1,6 +1,6 @@
 # Archieved good results, with a Trapz > 90% and a train2test NN of 47% at peak and kmeans clustering > 90%
 # No collaps to small numbers, thanks to higher weighting of lambda std (?)
-data_spliting: "pos_test"
+data_spliting: "pos_split"
 loss: "VicregLoss" 
 model_name: "Transformer3"
 batch_size: 32
@@ -10,12 +10,14 @@ conv_features1_nb: 32
 conv_features2_nb: 30
 conv_kernel1_size: 2
 conv_kernel2_size: 2
+pooling_kernel_size: 3
+pooling_stride_size: 1
 conv_layers_nb: 3
 data_limit: -1
 additional_samples: 0 
 same_positions: True
-data_test_rate: 0.1
-datafile: "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10_9.2_data.npy"
+data_test_rate: 0.05
+datafile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2.2_data.npy"
 device: "cuda"
 dropout_value: 0
 expender_out: 256
@@ -23,19 +25,19 @@ expender_layers_nb: 1
 expender_hidden_size: 256
 feature_norm: "layer"
 flat_data: false
-labelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10_9.2_labels.npy"
+labelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2.2_labels.npy"
 latent_dimention: 200
 learning_rate: 0.001
 lr_limit: 0.0001
 lambda_triplet: 1
 lambda_class: 10
 lambda_distance: 11    #14
-lambda_std: 4        #1.2
+lambda_std: 6        #1.2
 lambda_cov: 4 
 nb_epochs: 10000
 noise_amount: 0
 num_dev: 9
-num_pos: 98
+num_pos: 48
 optimizer: "Adam"
 padding_size: 0
 patience: 250
