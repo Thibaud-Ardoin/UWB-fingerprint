@@ -10,7 +10,7 @@ import time
 import torch
 from sklearn.cluster import KMeans
 from scipy.spatial import distance_matrix
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix, precision_recall_fscore_support
 
 import params
 
@@ -212,10 +212,13 @@ def accuracy_test(model, encoded_test, labels_test, logger):
     target_count = labels.size(0)
     correct_val = (labels == predicted).sum().item()
     val_acc = 100 * correct_val / target_count
-    
-    logger.log({"Accuracy for dev classification on test data %": val_acc})
+    precision, recall, fscore, support = precision_recall_fscore_support(labels.cpu(), predicted.cpu())
+
+    logger.log({"Accuracy for dev classification on test data %": val_acc,
+                "F1 score on test data": np.mean(fscore)})
     if params.verbose:
         print("Accuracy for dev classification on test data %", val_acc)
+        print("F1 score on test data: ", fscore)
         print(classification_report(labels.cpu(), predicted.cpu()))
         print(confusion_matrix(labels.cpu(), predicted.cpu()))
 

@@ -64,6 +64,13 @@ class Transformer3(nn.Module):
 		# self.expenderFc3 = nn.Linear(params.latent_dimention + int(params.expender_out/2), params.expender_out)
 		self.expenderFc3 = nn.Linear(params.latent_dimention*4, params.latent_dimention*4)
 
+		# Classifier
+		self.classification_task = False
+		if params.loss=="CrossentropyLoss" or params.loss=="CrossTripletLoss":
+			self.classification_task = True
+			self.classFc1 = nn.Linear(params.latent_dimention, params.num_dev)
+
+
 	def positional_encoder(self, x):
 		# INPUT: (4, 250) with real, imag, cos, sin
 		return torch.sum(x[:, 0:2], axis=1)
@@ -126,11 +133,18 @@ class Transformer3(nn.Module):
 
 		x = self.expenderFc3(x)
 		return x
+	
+	def classifier(self, x):
+		x = self.classFc1(x)
+		return x
 
 	def encode(self, x):
 		if params.data_use_position:
 			x = self.positional_encoder(x)
 		return self.encoder(x)
+	
+	def expand(self, x):
+		return self.expender(x)
 
 	def classify(self, x):
 		return self.expender(x)
@@ -139,6 +153,8 @@ class Transformer3(nn.Module):
 		x = self.encode(x)
 		if self.use_extender:
 			x = self.expender(x)
+		if self.classification_task:
+			x = self.classify(x)
 		return x
 	
 
