@@ -166,8 +166,8 @@ class ClassCNN1(nn.Module):
             x = self.dropout(x)
             if i < params.class_layers_nb - 1:
                 x = F.relu(x)
-    
-        x = self.softmax(x)
+        if params.loss != "CrossentropyLoss":
+            x = self.softmax(x)
         return x
 
     def expander(self, x) :

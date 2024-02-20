@@ -109,10 +109,10 @@ class ViT(nn.Module):
 		self.pos_embedding = nn.Parameter(torch.randn(1, count_patches, self.embedding_size))
 	
 		# MLP
-		self.fc1 = nn.Linear((self.embedding_size * self.window_nb), self.latent_dimention*2)
+		#self.fc1 = nn.Linear((self.embedding_size * self.window_nb), self.latent_dimention*2)
 
-		self.fc2 = nn.Linear(self.latent_dimention*2, self.latent_dimention)
-		self.fc3 = nn.Linear(self.latent_dimention, self.num_dev) #(self.embedding_size * self.window_nb)
+		#self.fc2 = nn.Linear(self.latent_dimention*2, self.latent_dimention)
+		self.class_fc = nn.Linear(self.embedding_size, self.num_dev)
 		self.softmax = nn.Softmax(dim=1)
 
 		if self.data_type == "complex":
@@ -132,12 +132,12 @@ class ViT(nn.Module):
 		#batch_size = x.shape[0]
 		x = self.patch_embedding(x)
 
-		# x = x.transpose(1, 2)# First, expand the class token across the batch size
-		#cls_token = self.cls_token.expand(batch_size, -1, -1) # "-1" means infer the dimension
-		# Prepend the class token to the patch embedding
+		# x = x.transpose(1, 2)# expand the class token across the batch size
+		#cls_token = self.cls_token.expand(batch_size, -1, -1) # "-1" to infer the dimension
+		# add class token to the patch embedding
 		#x = torch.cat((cls_token, x), dim=1)
 
-		# Add the positional embedding to patch embedding with class token
+		# Add the positional embedding to patch embedding (and the cls token if used)
 		x = self.pos_embedding + x
 		
 
@@ -148,15 +148,15 @@ class ViT(nn.Module):
 		x = self.preprocess(x)
 
 		x = self.transformer_encoder(x)
-		#x = x.mean(dim = 1)
+		x = x.mean(dim = 1)
 		# x = self.norm(x)
 
-		x = self.flatten(x)		
+		#x = self.flatten(x)		
 
-		x = F.relu(self.fc1(x))
-		x = self.dropout(x)
-		x = self.fc2(x)
-		x = F.normalize(x, p=2, dim=1)
+		#x = F.relu(self.fc1(x))
+		#x = self.dropout(x)
+		#x = self.fc2(x)
+		#x = F.normalize(x, p=2, dim=1)
 		
 		return x
 	
@@ -167,8 +167,9 @@ class ViT(nn.Module):
 		# Pass 0th index of x through MLP head
     	#x = self.mlp_head(x[:, 0]) # for cls token
 		#x = self.mlp_head(x)
-		x = self.fc3(x)
-		x = self.softmax(x)
+		x = self.class_fc(x)
+		if params.loss != "CrossentropyLoss":
+			x = self.softmax(x)
 		return x		
 	
 	def forward(self, x):
