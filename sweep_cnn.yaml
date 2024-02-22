@@ -1,0 +1,50 @@
+method: random
+metric:
+  goal: maximize
+  name: Trapz
+parameters:
+  batch_size:
+    distribution: q_log_uniform_values
+    max: 1024
+    min: 16
+  class_hidden_size:
+    distribution: q_log_uniform_values
+    max: 512
+    min: 16
+  conv_features1_nb:
+    distribution: q_log_uniform_values
+    max: 512
+    min: 16
+  conv_features2_nb:
+    distribution: q_log_uniform_values
+    max: 512
+    min: 16
+  conv_kernel1_size:
+    distribution: int_uniform
+    max: 16
+    min: 2
+  conv_kernel2_size:
+    distribution: int_uniform
+    max: 16
+    min: 2
+  conv_layers_nb:
+    distribution: int_uniform
+    max: 5
+    min: 1
+  latent_dimention:
+    distribution: q_log_uniform_values
+    max: 512
+    min: 16
+  pooling_kernel_size:
+    distribution: int_uniform
+    max: 8
+    min: 1
+  pooling_stride_size:
+    distribution: int_uniform
+    max: 2
+    min: 1
+  stride_size:
+    distribution: int_uniform
+    max: 2
+    min: 1
+program: src/main.py

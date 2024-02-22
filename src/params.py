@@ -9,11 +9,11 @@ import torch
 ##########
 #   Data
 ##########
-datafile = "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10.2.2_data.npy"
-labelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10.2.2_labels.npy"
+datafile = "data/Messung9/messung9.raw_data.npy"
+labelfile = "data/Messung9/messung9.raw_labels.npy"
 
-testfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_data.npy"
-testlabelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung8/messung8.2_labels.npy"
+testfile = ""
+testlabelfile = ""
 
 # TODO reunite properly following input types in the dataloader
 data_type = "not_complex"
@@ -31,9 +31,9 @@ validation_pos = [5]
 validation_dev = []      # Not used yet ?
 data_test_rate = 0.05    # Random ratio of data to run tests on (O(n**2))
 
-num_pos = 49    #21
+num_pos = 48    #21
 num_dev = 9    #13
-signal_length = 200
+signal_length = 250
 additional_samples = 0  # For concatenation of additional data point
 same_positions = True   # If the concatenation should be done diagonal to positions or not
 
@@ -43,8 +43,8 @@ same_positions = True   # If the concatenation should be done diagonal to positi
 ############
 batch_size = 32
 steps_per_epoch = 100   # Provide data independant granularity of the training process
-nb_epochs = 10000
-test_interval = 100
+nb_epochs = 1000
+test_interval = 25
 
 
 ############
@@ -55,13 +55,13 @@ sheduler = "combi"    #"warmup" plateau "combi" for the combination of both
 warmup_steps = 15
 learning_rate = 1e-3
 lr_limit = 1e-4
-patience = 200
+patience = 50
 
 
 ###########
 #   Loss
 ###########
-loss = "VicregLoss"  #"VicregLoss" #"AdversarialLoss" #"CrossentropyLoss" #"TripletLoss"
+loss = "CrossentropyLoss"  #"VicregLoss" #"AdversarialLoss" #"CrossentropyLoss" #"TripletLoss"
 triplet_mmargin = 1
 lambda_triplet = 1
 lambda_class = 1
@@ -73,7 +73,7 @@ lambda_cov = 4          #4
 ############
 #   Model
 ############
-model_name = "Transformer3" #"Transformer3" #"advCNN1" #"Transformer3" "ConvMixer"
+model_name = "ClassCNN1" #"Transformer3" #"advCNN1" #"Transformer3" "ConvMixer" "ClassCNN1" "ViT"
 latent_dimention = 256
 expender_out = 256
 use_extender = True
