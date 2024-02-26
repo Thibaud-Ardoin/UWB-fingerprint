@@ -107,17 +107,19 @@ class ClassCNN1(nn.Module):
         self.clsFcs = nn.ModuleList(self.clsFcs)
 
         # Expender
-        exp_layer_sizes = [params.latent_dimention]
-        exp_layer_sizes = exp_layer_sizes + [int(params.expender_hidden_size) for _ in range(params.expender_layers_nb -1 )]
-        exp_layer_sizes.append(params.expender_out)
-        self.expFcs = []
-        for i in range(params.expender_layers_nb):
-            self.expFcs.append( nn.Linear(exp_layer_sizes[i], exp_layer_sizes[i+1]))
-        self.expFcs = nn.ModuleList(self.expFcs)
+        if not (params.loss == "CrossentropyLoss") or params.use_extender :
+            exp_layer_sizes = [params.latent_dimention]
+            exp_layer_sizes = exp_layer_sizes + [int(params.expender_hidden_size) for _ in range(params.expender_layers_nb -1 )]
+            exp_layer_sizes.append(params.expender_out)
+            self.expFcs = []
+            for i in range(params.expender_layers_nb):
+                self.expFcs.append( nn.Linear(exp_layer_sizes[i], exp_layer_sizes[i+1]))
+            self.expFcs = nn.ModuleList(self.expFcs)
 
         # # POSITIONAL ENCODE
-        self.fc_p1 = nn.Linear(4, 128)
-        self.fc_p2 = nn.Linear(128, 1)
+        if False:   # Not used for now, so not defined
+            self.fc_p1 = nn.Linear(4, 128)
+            self.fc_p2 = nn.Linear(128, 1)
 
 
     def positional_encoder(self, x):
