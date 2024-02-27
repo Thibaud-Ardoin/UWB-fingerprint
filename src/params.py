@@ -27,7 +27,7 @@ augmentations = ["addSomeNoise"] #fourrier, logDistortionNorm
 noise_amount = 0
 
 data_limit = -1
-validation_pos = [5]
+validation_pos = [4, 5]
 validation_dev = []      # Not used yet ?
 data_test_rate = 0.05    # Random ratio of data to run tests on (O(n**2))
 
@@ -98,6 +98,9 @@ stride_size = 1
 padding_size = 1
 tail_fc_layers_nb = 2
 feature_norm = "layer" #layer #none
+pooling_kernel_size = 4
+pooling_stride_size = 2
+
 
 # Transformers
 trans_embedding_size = 10 #actually becomming the multiplier of the nb of heads
@@ -120,7 +123,7 @@ window_size = 16
 ##############
 #   System   #
 ##############
-save_model = False   # On test section
+save_model = True   # On test section
 use_gpu = True
 device = "cuda" if torch.cuda.is_available() and use_gpu else "cpu"
 verbose = True

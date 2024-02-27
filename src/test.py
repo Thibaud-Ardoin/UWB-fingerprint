@@ -185,7 +185,7 @@ def reid_evaluation(embeddings, labels, logger):
         plt.show()
 
 def evaluate_Kmeans(test_set, test_labels, logger):
-    num_test_dev = max(test_labels)
+    num_test_dev = max(test_labels)+1
 
     data_size = len(test_set)
     kmeans = KMeans(n_clusters=num_test_dev, random_state=0, n_init="auto").fit(test_set)
@@ -218,7 +218,7 @@ def accuracy_test(model, encoded_test, labels_test, logger):
                 "F1 score on test data": np.mean(fscore)})
     if params.verbose:
         print("Accuracy for dev classification on test data %", val_acc)
-        print("F1 score on test data: ", fscore)
+        print("F1 score on test data: ", np.mean(fscore))
         print(classification_report(labels.cpu(), predicted.cpu()))
         print(confusion_matrix(labels.cpu(), predicted.cpu()))
 
