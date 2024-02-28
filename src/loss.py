@@ -459,7 +459,11 @@ class CrossentropyLoss(Loss):
         # if params.additional_samples > 0:
         #     x, y = concatenate_samples(x, params.additional_samples, y)
             
-        dev_pred = self.my_model(x)
+        if params.arcface:
+            dev_pred = self.my_model(x, y[:,0])
+        else:
+            dev_pred = self.my_model(x)
+
         devLoss = self.ce_loss(dev_pred.double(), y[:,0])
 
         devAcc = accuracy(y[:,0], dev_pred)

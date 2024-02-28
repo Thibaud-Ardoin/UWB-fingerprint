@@ -11,6 +11,7 @@ import torch.nn.functional as F
 
 import params
 import models
+from models.arcface import ArcFace
 
 class EmbeddingPatches(nn.Module):
     """Turns a 1d or 2d input into a 1D learnable vector embedding.
@@ -123,6 +124,8 @@ class ViT(nn.Module):
 	                                      size_of_patch=self.window_size,
 	                                      embedding_size=self.embedding_size)
 
+		self.arcface = ArcFace(self.embedding_size, self.num_dev, params.scale, params.margin)
+
 	def preprocess(self, x):
 		x = x[:, None, :]
 		if self.data_type == "complex":
@@ -149,6 +152,7 @@ class ViT(nn.Module):
 
 		x = self.transformer_encoder(x)
 		x = x.mean(dim = 1)
+		x = F.normalize(x, p=2, dim=1)
 		# x = self.norm(x)
 
 		#x = self.flatten(x)		
@@ -163,18 +167,21 @@ class ViT(nn.Module):
 	def expand(self, x):
 		return x
 	
-	def classify(self, x):
+	def classify(self, x, label=None):
 		# Pass 0th index of x through MLP head
     	#x = self.mlp_head(x[:, 0]) # for cls token
 		#x = self.mlp_head(x)
-		x = self.class_fc(x)
+		if params.arcface == True:
+			x = self.arcface(x, label)
+		else:
+			x = self.class_fc(x)
 		if params.loss != "CrossentropyLoss":
 			x = self.softmax(x)
 		return x		
 	
-	def forward(self, x):
+	def forward(self, x, label=None):
 		x = self.encode(x)
-		x = self.classify(x)
+		x = self.classify(x, label)
 		return x
 
 

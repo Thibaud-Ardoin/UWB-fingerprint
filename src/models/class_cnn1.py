@@ -10,6 +10,7 @@ import torch.nn.functional as F
 
 import params
 
+from models.arcface import ArcFace
 
 #  LIL Encoding NETWORK
 class ClassCNN1(nn.Module):
@@ -68,6 +69,8 @@ class ClassCNN1(nn.Module):
 
         if params.feature_norm == "batch":
             self.norm = nn.BatchNorm1d(feature_sizes[params.conv_layers_nb+1])
+            if params.input_type == "spectrogram":
+                self.norm = nn.BatchNorm2d(feature_sizes[params.conv_layers_nb+1])
         elif params.feature_norm == "layer":
             if params.input_type == "spectrogram":
                 self.norm = nn.LayerNorm([out_size, out_size2])
@@ -106,6 +109,7 @@ class ClassCNN1(nn.Module):
             self.clsFcs.append( nn.Linear(cls_layer_sizes[i], cls_layer_sizes[i+1]) )
         self.clsFcs = nn.ModuleList(self.clsFcs)
 
+        self.arcface = ArcFace(params.latent_dimention, params.num_dev, params.scale, params.margin)
         # Expender
         exp_layer_sizes = [params.latent_dimention]
         exp_layer_sizes = exp_layer_sizes + [int(params.expender_hidden_size) for _ in range(params.expender_layers_nb -1 )]
@@ -160,12 +164,15 @@ class ClassCNN1(nn.Module):
         x = F.normalize(x, p=2, dim=1)        
         return x
     
-    def classifier(self, x) :
-        for i in range(params.class_layers_nb):
-            x = self.clsFcs[i](x)
-            x = self.dropout(x)
-            if i < params.class_layers_nb - 1:
-                x = F.relu(x)
+    def classifier(self, x, label=None):
+        if params.arcface == True:
+            x = self.arcface(x, label)
+        else:
+            for i in range(params.class_layers_nb):
+                x = self.clsFcs[i](x)
+                x = self.dropout(x)
+                if i < params.class_layers_nb - 1:
+                    x = F.relu(x)
         if params.loss != "CrossentropyLoss":
             x = self.softmax(x)
         return x
@@ -181,8 +188,8 @@ class ClassCNN1(nn.Module):
             x = self.softmax(x)
         return x
 
-    def classify(self, x):
-        return self.classifier(x)
+    def classify(self, x, label=None):
+        return self.classifier(x, label)
 
     def encode(self, x):
         if params.data_use_position:
@@ -192,12 +199,12 @@ class ClassCNN1(nn.Module):
     def expand(self, x):
         return self.expander(x)
 
-    def forward(self, x):
+    def forward(self, x, label=None):
         x = self.encode(x)
         if params.loss=="vicreg":
             x = self.expander(x)
         else:
-            x = self.classify(x)
+            x = self.classify(x, label)
         return x
 
 

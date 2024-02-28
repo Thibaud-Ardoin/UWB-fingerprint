@@ -1,14 +1,17 @@
 data_spliting: "pos_split"
-loss: "CrossentropyLoss" 
+loss: "CrossentropyLoss"
+arcface: true # if true, loss needs to be "CrossentropyLoss"
+margin: 0.1
+scale: 16
 model_name: "ViT"
-batch_size: 256
+batch_size: 512
 input_type: "spectrogram"
 data_type: "not complex"
 additional_samples: 0 # how many samples to add
 same_positions: false # if true, the same positions are used for all additional samples
 spectrogram_window_size: 32
 data_limit: -1 
-data_test_rate: 0.1
+data_test_rate: 0.01
 datafile: "data/Messung9/messung9.raw_data.npy"
 device: "cuda"
 dropout_value: 0
