@@ -17,6 +17,7 @@ from torchviz import make_dot
 
 import params
 
+from sklearn.decomposition import PCA
 
 
 class Logger():
@@ -176,40 +177,34 @@ class Logger():
         if params.use_wandb:
             num_classes = max(labels)
             X = np.array(data)
-            dimentions = [[2*i, i*2+1] for i in range(1)] #len(X[0])//2)]
+
+            #PCA
+            pca = PCA(n_components=3)
+            embeddings_3d = pca.fit_transform(data)
+
             colors_base = cm.rainbow(np.linspace(0, 1, num_classes+1))
             plt.rcParams["figure.figsize"] = (20,20)
-            # colors = [colors_base[l] for l in labels]
-            # print(colors_base)
-            # print(np.arange(0, params.num_dev+1))
-            # print(np.arange(0, num_classes+1)- 0.5)
-            cmap, norm = matplotlib.colors.from_levels_and_colors(np.arange(0, num_classes+2)- 0.5, colors_base)
 
-            # print(cmap.colors)
-            # print(norm)
-            
-            for i in range(len(dimentions)):
-                fig, ax = plt.subplots()
-                scatter = ax.scatter(X[:, dimentions[i][0]], X[:, dimentions[i][1]], c=labels, norm=norm, cmap=cmap, marker=".", linewidths=0.5, s=20)
-                handles, lab = scatter.legend_elements(prop="colors", num=num_classes+1, alpha=0.8)
-                legend1 = ax.legend(handles, lab,
-                        loc="lower left", title="Device id")
-                ax.add_artist(legend1)
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+
+            scatter = ax.scatter(embeddings_3d[:, 0], embeddings_3d[:, 1], embeddings_3d[:, 2], c=labels, cmap='rainbow', marker=".", linewidths=0.5, s=20)
+            handles, lab = scatter.legend_elements(prop="colors", num=num_classes+1, alpha=0.8)
+            legend1 = ax.legend(handles, lab, loc="lower left", title="Device id")
+            ax.add_artist(legend1)
      
-                ax.set_title("dimentions " + str(i*2) + "and " + str(i*2+1))
-                # .legend(loc='upper left',prop = {'size':7},bbox_to_anchor=(1,1))
-                # plt.tight_layout(pad=5)
-                plot_img = "data/plot_"+str(i)+".png"
-                fig.savefig(plot_img)
-                # wandb.log({
-                #     title + str(i) + "_ep" + str(self.test_step): wandb.Image(plot_img),
-                #     "epoch": self.epoch
-                # })
-                wandb.log({
-                    title + str(i) + "_ep" + str(self.test_step): plt,
-                    "epoch": self.epoch
-                })
-                plt.close()
+            ax.set_title(title)
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y')
+            ax.set_zlabel('Z')
+
+            plot_img = "data/plot_3d.png"
+            fig.savefig(plot_img)
+            wandb.log({
+                title + "_ep" + str(self.test_step): wandb.Image(plot_img),
+                "epoch": self.epoch
+            })
+            plt.close()
 
     def finish(self):
         if params.use_wandb:
