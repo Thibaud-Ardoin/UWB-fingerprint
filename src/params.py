@@ -17,8 +17,8 @@ testlabelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10.raw.
 
 # TODO reunite properly following input types in the dataloader
 data_type = "not_complex"
-input_type = "none" #rfft"
-
+input_type = "spectrogram" #rfft"
+spectrogram_window_size=32
 data_use_position = False       # If you want to add the angular information as input of the model too
 
 data_spliting = "pos_split"  #"all_split", "file_test", "random"
@@ -32,7 +32,7 @@ validation_dev = []      # Not used yet ?
 data_test_rate = 0.05    # Random ratio of data to run tests on (O(n**2))
 
 num_pos = 48    #21
-num_dev = 9    #13
+num_dev = 13    #13
 signal_length = 250
 additional_samples = 0  # For concatenation of additional data point
 same_positions = True   # If the concatenation should be done diagonal to positions or not
@@ -52,7 +52,7 @@ test_interval = 25
 ############
 optimizer = "Adam"
 sheduler = "combi"    #"warmup" plateau "combi" for the combination of both
-warmup_steps = 15
+warmup_steps = 50
 learning_rate = 1e-3
 lr_limit = 1e-4
 patience = 50
@@ -104,7 +104,7 @@ pooling_stride_size = 2
 
 # Transformers
 trans_embedding_size = 10 #actually becomming the multiplier of the nb of heads
-trans_head_nb = 1
+trans_head_nb = 5
 trans_layer_nb = 4
 trans_hidden_nb= 128
 
@@ -130,7 +130,7 @@ verbose = True
 plotting = False
 use_wandb = True
 saving_path = "./data/"
-saved_model_suffix = "model_test10"
+saved_model_suffix = "model_trans_accurate"
 
 
 ###########################

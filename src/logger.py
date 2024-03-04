@@ -129,13 +129,16 @@ class Logger():
         )
 
     def log_model(self, model):
-        if not params.model_name.startswith("adv"): 
-            if params.data_use_position:
-                x = torch.rand(params.batch_size, 4, params.signal_length)
-            else :
-                x = torch.rand(params.batch_size, params.signal_length)
-            y = model(x.to(params.device))
-            make_dot(y, params=dict(list(model.named_parameters()))).render("data/torchviz_test", format="jpg")
+        nb_params = sum(p.numel() for p in model.parameters())
+        self.log({"Number Parameters": nb_params})
+        if False :
+            if not params.model_name.startswith("adv"): 
+                if params.data_use_position:
+                    x = torch.rand(params.batch_size, 4, params.signal_length)
+                else :
+                    x = torch.rand(params.batch_size, params.signal_length)
+                y = model(x.to(params.device))
+                make_dot(y, params=dict(list(model.named_parameters()))).render("data/torchviz_test", format="jpg")
 
         
     def log(self, info, name=None):

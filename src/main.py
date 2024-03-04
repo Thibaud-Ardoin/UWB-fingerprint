@@ -34,7 +34,7 @@ def main():
     print("DataLoaders creation time: ", t3-t2)
 
     model = load_model()
-    # logger.log_model(model)
+    logger.log_model(model)
     t4 = time.time()
     print("Model creation time: ", t4-t3)
 

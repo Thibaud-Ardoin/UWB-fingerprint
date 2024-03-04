@@ -70,7 +70,8 @@ class Trainer:
 
             # loop over the whole TrainLoader about 1 time
             for i in range(params.steps_per_epoch):
-                print("Batch: ", i, "of", params.steps_per_epoch, end='\r')
+                if i%10==0:
+                    print("Batch: ", i, "of", params.steps_per_epoch, end='\r')
                 # Compile loss 
                 # TODO: Most of them are crunshable -> same action = same code
                 self.Loss.forwardpass_data()

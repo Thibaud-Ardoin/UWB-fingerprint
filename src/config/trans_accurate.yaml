@@ -1,8 +1,12 @@
 data_spliting: "pos_split"
 loss: "CrossentropyLoss"
-model_name: "ClassCNN1"
-input_type: "none"
-batch_size: 1024
+model_name: "ViT"
+
+input_type: "spectrogram"
+data_type: "not complex"
+spectrogram_window_size: 32
+
+batch_size: 256
 conv_features1_nb: 10
 conv_features2_nb: 10
 conv_kernel1_size: 15
@@ -17,15 +21,14 @@ pooling_stride_size: 2
 
 data_limit: 500000
 data_test_rate: 0.01
-datafile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2.3_data.npy"
+datafile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.raw.3_data.npy"
 device: "cuda"
 dropout_value: 0
 expender_out: 138
 feature_norm: "none"
 flat_data: true
-labelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2.3_labels.npy"
-latent_dimention: 32
-learning_rate: 0.001
+labelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.raw.3_labels.npy"
+learning_rate: 0.0001
 lr_limit: 0.0001
 nb_epochs: 10000
 noise_amount: 0
@@ -37,7 +40,8 @@ patience: 50
 plotting: false
 set_parameters: "params.set_parameters"
 sheduler: "plateau"
-signal_length: 200
+warmup_steps: 50
+signal_length: 250
 split_train_ratio: 0.8
 test_interval: 25
 use_extender: false
@@ -47,6 +51,14 @@ use_wandb: true
 validation_dev: 0
 validation_pos: [5]
 verbose: true
-warmup_steps: 50
-window_size: 16
-saved_model_suffix: "model_cnn_accurate_11dev_46pos"
+window_size: 8
+
+split_train_ratio: 0.8
+test_interval: 25
+trans_embedding_size: 32
+latent_dimention: 128
+trans_head_nb: 12
+trans_layer_nb: 3
+trans_hidden_nb: 64
+saved_model_suffix: "model_trans_accurate_11dev_46pos"
+

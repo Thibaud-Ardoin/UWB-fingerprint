@@ -21,7 +21,7 @@ def normdata(x):
     return x
 
 
-def encode_data(mymodel, dataloader, encode_even_less=False):
+def encode_data(mymodel, dataloader, encode_even_less=False, bidimentional_label=False):
     mymodel.eval()
     def loop_on_loader(loader):
         loader.dataset.testset = True
@@ -33,7 +33,10 @@ def encode_data(mymodel, dataloader, encode_even_less=False):
             # Compute encoded version of the data by our embedding model
             encs = encs + mymodel.encode(batchX).tolist()
             # Gather device labels accordingly (eventually randomly enumerated)
-            labs = labs + batchY[:, 0].tolist()
+            if bidimentional_label:
+                labs = labs + batchY.tolist()
+            else :
+                labs = labs + batchY[:, 0].tolist()
             count += batchX.shape[0]
             if count > amt2encode:
                 break

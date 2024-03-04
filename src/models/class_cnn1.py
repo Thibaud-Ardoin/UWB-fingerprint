@@ -13,14 +13,15 @@ import params
 
 #  LIL Encoding NETWORK
 class ClassCNN1(nn.Module):
-
+    # TODO: Change name of variable with class atribute to make them independant to the parameter file after creation.
+    
     def __init__(self, expender_multiplier=1, dropout_value=0):
         super(ClassCNN1, self).__init__()
         self.embedding_size = params.expender_out
         self.expender_multiplier = expender_multiplier
         self.dropout_value = params.dropout_value
         self.dropout = nn.Dropout(self.dropout_value)
-        
+
         # Fur conv encoder
         self.convs = []
         
@@ -57,6 +58,7 @@ class ClassCNN1(nn.Module):
                     stride=params.stride_size, 
                     padding=params.padding_size))
                 out_size = math.floor(((math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)) - params.pooling_kernel_size) / params.pooling_stride_size +1)
+                print(out_size)
                 # without maxpool
                 #out_size = math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)
         self.convs = nn.ModuleList(self.convs)
@@ -89,6 +91,9 @@ class ClassCNN1(nn.Module):
         if params.tail_fc_layers_nb>1:
              dim_size[1] = dim_size[1]*2
         # 14*64
+        print(feature_sizes, feature_sizes[params.conv_layers_nb+1], out_size)
+             
+        print(dim_size)
         for i in range(params.tail_fc_layers_nb):
             self.fcs.append( nn.Linear(dim_size[i], dim_size[i+1]) )
 

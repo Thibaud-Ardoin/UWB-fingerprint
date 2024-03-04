@@ -47,7 +47,7 @@ class EmbeddingPatches(nn.Module):
     def forward(self, x):
 
         input_size = x.shape[-1]
-        assert input_size % self.size_of_patch == 0, "The input must be divisible by the size of the patch!"
+        assert input_size % self.size_of_patch == 0, "The input must be divisible by the size of the patch! input_size:{:5f} self.size_of_patch:{:5f}".format(input_size, self.size_of_patch)
 
         x = self.patch(x)
         if params.input_type == "spectrogram":
