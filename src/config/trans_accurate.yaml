@@ -1,6 +1,14 @@
-data_spliting: "pos_split"
+# Heavy Vision Transformer network (2Mio parameters) that manages to generalise classification and clustering in unseen positions and with unseen devices
+data_spliting: "file_split" #"pos_split"
 loss: "CrossentropyLoss"
 model_name: "ViT"
+
+testfile: "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10.raw.2_data.npy"
+testlabelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10.raw.2_labels.npy"
+
+arcface: true # if true, loss needs to be "CrossentropyLoss"
+arcface_margin: 0.1
+arcface_scale: 16
 
 input_type: "spectrogram"
 data_type: "not complex"
@@ -20,7 +28,7 @@ pooling_kernel_size: 2
 pooling_stride_size: 2
 
 data_limit: 500000
-data_test_rate: 0.01
+data_test_rate: 0.05
 datafile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.raw.3_data.npy"
 device: "cuda"
 dropout_value: 0
@@ -55,7 +63,7 @@ window_size: 8
 
 split_train_ratio: 0.8
 test_interval: 25
-trans_embedding_size: 32
+trans_embedding_size: 64
 latent_dimention: 128
 trans_head_nb: 12
 trans_layer_nb: 3

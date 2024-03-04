@@ -124,7 +124,7 @@ class ViT(nn.Module):
 	                                      size_of_patch=self.window_size,
 	                                      embedding_size=self.embedding_size)
 
-		self.arcface = ArcFace(self.embedding_size, self.num_dev, params.scale, params.margin)
+		self.arcface = ArcFace(self.embedding_size, self.num_dev, params.arcface_scale, params.arcface_margin)
 
 	def preprocess(self, x):
 		x = x[:, None, :]

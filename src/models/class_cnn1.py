@@ -114,7 +114,7 @@ class ClassCNN1(nn.Module):
             self.clsFcs.append( nn.Linear(cls_layer_sizes[i], cls_layer_sizes[i+1]) )
         self.clsFcs = nn.ModuleList(self.clsFcs)
 
-        self.arcface = ArcFace(params.latent_dimention, params.num_dev, params.scale, params.margin)
+        self.arcface = ArcFace(params.latent_dimention, params.num_dev, params.arcface_scale, params.arcface_margin)
         # Expender
         if not (params.loss == "CrossentropyLoss") or params.use_extender :
             exp_layer_sizes = [params.latent_dimention]

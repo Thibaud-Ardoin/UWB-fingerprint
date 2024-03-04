@@ -1,3 +1,4 @@
+# Light CNN classification network (10k parameters) that manages to classify homogene dataset with 100% accuracy
 data_spliting: "pos_split"
 loss: "CrossentropyLoss"
 model_name: "ClassCNN1"

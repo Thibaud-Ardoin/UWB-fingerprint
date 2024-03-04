@@ -80,6 +80,11 @@ use_extender = True
 dropout_value = 0
 # embed_size = 8 #TODO no the right numba
 
+# Arccos/Arcface
+arcface = True
+arcface_margin = 0.1
+arcface_scale = 16
+
 # Expender
 expender_layers_nb = 1
 expender_hidden_size = 256
@@ -130,7 +135,7 @@ verbose = True
 plotting = False
 use_wandb = True
 saving_path = "./data/"
-saved_model_suffix = "model_trans_accurate"
+saved_model_suffix = "some_testing"
 
 
 ###########################

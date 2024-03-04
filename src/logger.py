@@ -202,9 +202,10 @@ class Logger():
             ax.set_zlabel('Z')
 
             plot_img = "data/plot_3d.png"
+            plt.tight_layout()
             fig.savefig(plot_img)
             wandb.log({
-                title + "_ep" + str(self.test_step): wandb.Image(plot_img),
+                title + "_ep" + str(self.test_step): wandb.Image(plot_img), #plt
                 "epoch": self.epoch
             })
             plt.close()
