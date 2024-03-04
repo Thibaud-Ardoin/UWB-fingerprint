@@ -10,3 +10,4 @@ torchaudio==2.2.0
 torchvision==0.16.0
 torchviz==0.0.2
 wandb==0.15.12
+xgboost==2.0.3
