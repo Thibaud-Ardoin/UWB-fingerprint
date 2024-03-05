@@ -217,13 +217,17 @@ def accuracy_test(model, encoded_test, labels_test, logger):
     val_acc = 100 * correct_val / target_count
     precision, recall, fscore, support = precision_recall_fscore_support(labels.cpu(), predicted.cpu())
 
+    conf_mx = confusion_matrix(labels.cpu(), predicted.cpu())
+
     logger.log({"Accuracy for dev classification on test data %": val_acc,
                 "F1 score on test data": np.mean(fscore)})
+    logger.log_confusion(conf_mx, title="Test confusion matrix")
+
     if params.verbose:
         print("Accuracy for dev classification on test data %", val_acc)
         print("F1 score on test data: ", np.mean(fscore))
         print(classification_report(labels.cpu(), predicted.cpu()))
-        print(confusion_matrix(labels.cpu(), predicted.cpu()))
+        print(conf_mx)
 
         
 
@@ -253,7 +257,7 @@ def testing_model(training_loaders, validation_loader, model, logger):
     print("[Test]: time for reid on test data", reid_time - scatter_time)
 
     mask2 = np.full(len(labels_train), False)
-    mask2[:int(len(labels_train))] = True #*params.data_test_rate*params.data_test_rate)] = True
+    mask2[:int(len(labels_train)*params.data_test_rate)] = True #*params.data_test_rate*params.data_test_rate)] = True
     np.random.shuffle(mask2)
     reid_evaluation_test2train_NN(np.array(encoded_test)[mask], np.array(encoded_train)[mask2], np.array(labels_test)[mask], np.array(labels_train)[mask2], logger)
     reid2_time = time.time()

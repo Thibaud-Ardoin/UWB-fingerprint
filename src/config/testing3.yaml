@@ -1,66 +1,76 @@
-# Archieved good results, with a Trapz > 90% and a train2test NN of 47% at peak and kmeans clustering > 90%
-# No collaps to small numbers, thanks to higher weighting of lambda std (?)
-data_spliting: "pos_split"
-loss: "VicregLoss" 
-model_name: "Transformer3"
-batch_size: 32
-class_hidden_size: 256
-class_layers_nb: 1
-conv_features1_nb: 32
-conv_features2_nb: 30
-conv_kernel1_size: 2
-conv_kernel2_size: 2
-pooling_kernel_size: 3
-pooling_stride_size: 1
+# Heavy Vision Transformer network (2Mio parameters) that manages to generalise classification and clustering in unseen positions and with unseen devices
+data_spliting: "pos_split" #"pos_split"
+loss: "CrossentropyLoss"
+model_name: "ViT"
+saved_model_suffix: "testing_some_vit"
+
+testfile: "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10.raw.2_data.npy"
+testlabelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10.raw.2_labels.npy"
+datafile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.raw.3_data.npy"
+labelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.raw.3_labels.npy"
+
+arcface: true # if true, loss needs to be "CrossentropyLoss"
+arcface_margin: 0.1
+arcface_scale: 16
+
+input_type: "spectrogram"
+data_type: "not complex"
+spectrogram_window_size: 32
+augmentations: ["addSomeNoise", "random_shift"]
+
+
+split_train_ratio: 0.8
+test_interval: 1
+trans_embedding_size: 64
+latent_dimention: 128
+trans_head_nb: 12
+trans_layer_nb: 3
+trans_hidden_nb: 64
+
+batch_size: 256
+conv_features1_nb: 10
+conv_features2_nb: 10
+conv_kernel1_size: 15
+conv_kernel2_size: 6
+stride_size: 1
 conv_layers_nb: 3
-data_limit: -1
-additional_samples: 0 
-same_positions: True
+class_layers_nb: 2
+class_hidden_size: 64
+tail_fc_layers_nb: 1
+pooling_kernel_size: 2
+pooling_stride_size: 2
+
+additional_samples: 0  # For concatenation of additional data point
+same_positions: True   # If the concatenation should be done diagonal to positions or not
+window_size: 7
+
+data_limit: 500000
 data_test_rate: 0.05
-datafile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2.2_data.npy"
 device: "cuda"
 dropout_value: 0
-expender_out: 256
-expender_layers_nb: 1
-expender_hidden_size: 256
-feature_norm: "layer"
-flat_data: false
-labelfile: "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.2.2_labels.npy"
-latent_dimention: 200
-learning_rate: 0.001
+expender_out: 138
+feature_norm: "none"
+flat_data: true
+learning_rate: 0.0001
 lr_limit: 0.0001
-lambda_triplet: 1
-lambda_class: 10
-lambda_distance: 11    #14
-lambda_std: 6        #1.2
-lambda_cov: 4 
 nb_epochs: 10000
 noise_amount: 0
-num_dev: 9
+num_dev: 13
 num_pos: 48
-optimizer: "Adam"
-padding_size: 0
-patience: 250
+optimizer: "AdamW"
+padding_size: 1
+patience: 50
 plotting: false
 set_parameters: "params.set_parameters"
 sheduler: "plateau"
-signal_length: 200
+warmup_steps: 50
+signal_length: 250
 split_train_ratio: 0.8
-stride_size: 1
-tail_fc_layers_nb: 2
-test_interval: 250
-trans_embedding_size: 10
-trans_head_nb: 1
-trans_layer_nb: 4
-trans_hidden_nb: 256
+test_interval: 25
 use_extender: false
 save_model: true
 use_gpu: true
 use_wandb: true
 validation_dev: 0
-validation_pos: [5]
+validation_pos: [4, 5]
 verbose: true
-warmup_steps: 50
-window_size: 16
-data_type: "not complex"
-data_use_position: false

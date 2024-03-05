@@ -76,6 +76,24 @@ def apply_hann_window(x):
     hann_window = torch.hann_window(len(x))
     return x * hann_window
 
+def random_shift(x, clean_test=False):
+    # Fill with 50 random time_steps additionally randomly around the current
+    filling_size = 80
+    x = torch.view_as_real(x)
+    x = x - torch.mean(x)
+    if clean_test or np.random.rand() < 0.1:
+        # Alligned and zeros
+        a = filling_size//2
+        xx = torch.zeros((filling_size + len(x), 2))
+        xx[a:(len(x) + a)] = x
+    else :
+        # Random shift with random padding
+        xx = torch.rand((filling_size + len(x), 2)) * torch.mean(torch.abs(x))
+        a = int(np.random.rand()*filling_size)
+        xx[a:(len(x) + a)] = x
+
+    return torch.view_as_complex(xx)
+
 
 #################################################
 #   Dataset definition for the training process
@@ -97,6 +115,8 @@ class MyDataset(torch.utils.data.Dataset):
         # If not a testset, we add the desired augmentations
         if not self.testset:
             self.transform_list += self.augmentations
+        elif self.testset and "random_shift" in params.augmentations:
+            self.transform_list += [lambda x: random_shift(x, clean_test=True)]
 
         if params.data_type != "complex":
             self.transform_list += [] #lambda x: x.to(torch.float32) lambda x: torch.cat((x, torch.zeros(6, dtype=x.dtype)), dim=0)
@@ -252,7 +272,7 @@ class DataGatherer():
         if params.data_spliting == "random":
             return self.random_split()
         
-        elif params.data_spliting == "file_test":
+        elif params.data_spliting == "file_test" or params.data_spliting == "file_split":
             return self.file_split()
         else :
             return self.positional_split(return_array)
@@ -271,7 +291,7 @@ class DataGatherer():
         z = list(zip(self.test_data[sub_set_indices], self.test_label[sub_set_indices]))
 
         test_set = MyDataset(z, testset=True)
-        test_loader = torch.utils.data.DataLoader(test_set, batch_size=params.batch_size, shuffle=True)
+        test_loader = MyDataLoader(test_set)
 
         return training_loader, test_loader
 

@@ -196,6 +196,9 @@ def implied_values():
     if loss=="VicregLoss":
         globals()["batch_size"] = globals()["batch_size"]//globals()["num_dev"]
 
+    if "random_shift" in globals()["augmentations"]:
+        globals()["signal_length"] = globals()["signal_length"] + 80
+
     # Input of model is a concatenation of signal lengthes
     globals()["signal_length"] = globals()["signal_length"] * (globals()["additional_samples"]+1)
 

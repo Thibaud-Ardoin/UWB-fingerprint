@@ -17,6 +17,7 @@ from torchviz import make_dot
 
 import params
 
+from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.decomposition import PCA
 
 
@@ -174,6 +175,16 @@ class Logger():
                 title + "_ep" + str(self.test_step): wandb.plot.line(table, column_names[0], column_names[1], title=title + str(self.test_step)),
                 "epoch": self.epoch
             })
+
+    def log_confusion(self, conf_mx, title="Some confusion matrix"):
+        disp = ConfusionMatrixDisplay(confusion_matrix=conf_mx,
+                                display_labels=range(len(conf_mx)))
+        disp.plot()
+        plt.show()
+        wandb.log({
+            title + "_ep" + str(self.test_step): plt,
+            "epoch": self.epoch
+        }, step=self.epoch)
 
 
     def log_scatter(self, data, labels, title="Some Scatter"):
