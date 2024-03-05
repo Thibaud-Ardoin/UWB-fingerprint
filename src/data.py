@@ -19,6 +19,22 @@ from custom_batchsampler import CustomBatchSampler
 ############################
 #   Processing functions
 ############################
+def center_data_gradient(d):
+    target_position = 40
+
+    # Compute the derivative of the absolute value of the signal
+    derivative = np.gradient(np.abs(d)) 
+
+    # Find the index where the derivative is highest
+    max_derivative_idx = np.argmax(derivative) 
+
+    # Calculate the needed shift
+    shift_amount = target_position - max_derivative_idx
+
+    # Shift the sample
+    shifted_sample = np.roll(d, shift_amount)
+
+    return shifted_sample
 
 def addSomeNoise(x):
     if params.noise_amount > 0:
@@ -41,9 +57,15 @@ def normdata(x):
     x = (x - x.min())/(x.max() - x.min())
     return x
 
+def normalize_tensor(x):
+    min_val = x.min()
+    max_val = x.max()
+    range_val = max_val - min_val
+    x = (x - min_val) / range_val
+    return x
+
 def fourier(x):
     x = torch.fft.fft(x)
-    x = torch.abs(x)
     return x
 
 def spectrogram(x):
@@ -106,7 +128,8 @@ class MyDataset(torch.utils.data.Dataset):
         self.testset = testset
         self.data = data
         self.transform_list = [
-            lambda x: torch.from_numpy(x)
+            lambda x: center_data_gradient(x),
+            lambda x: torch.from_numpy(x)    
         ]
         self.augmentations = [
             eval(function_name) for function_name in params.augmentations
@@ -118,10 +141,13 @@ class MyDataset(torch.utils.data.Dataset):
         elif self.testset and "random_shift" in params.augmentations:
             self.transform_list += [lambda x: random_shift(x, clean_test=True)]
 
-        if params.data_type != "complex":
-            self.transform_list += [] #lambda x: x.to(torch.float32) lambda x: torch.cat((x, torch.zeros(6, dtype=x.dtype)), dim=0)
-        else:
-            self.transform_list += [] #torch.view_as_real, lambda x: x.to(torch.float32)
+        # 0 padding for the ViT model
+        if params.model_name == "ViT":
+            if params.input_type != "spectrogram":
+                self.transform_list += [lambda x: torch.cat((x, torch.zeros(6, dtype=x.dtype)), dim=0)]
+            else:
+                if params.additional_samples > 0:
+                    self.transform_list += [lambda x: torch.cat((x, torch.zeros(5, dtype=x.dtype)), dim=0)]
 
         self.transforms = transforms.Compose(
             self.transform_list
@@ -163,13 +189,13 @@ class MyDataLoader(torch.utils.data.DataLoader):
         if params.input_type == "spectrogram":
             self.post_concat_transform_list += [lambda x: spectrogram(x)]
         elif params.input_type == "fft":
-            self.post_concat_transform_list += [lambda x: fourier(x), lambda x: normdata(x)]
+            self.post_concat_transform_list += [lambda x: fourier(x)]
         if params.data_type == "complex":
             self.post_concat_transform_list += [torch.view_as_real]
         else:
-            self.post_concat_transform_list += [lambda x: abs(x)]
+            self.post_concat_transform_list += [lambda x: torch.abs(x)]
 
-        self.post_concat_transform_list += [lambda x: x.to(torch.float32)]
+        self.post_concat_transform_list += [lambda x: normalize_tensor(x), lambda x: x.to(torch.float32)]
 
         self.post_concat_transforms = transforms.Compose(
             self.post_concat_transform_list

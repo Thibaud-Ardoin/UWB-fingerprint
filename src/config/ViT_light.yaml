@@ -39,7 +39,7 @@ plotting: false
 set_parameters: "params.set_parameters"
 sheduler: "combi"
 warmup_steps: 20
-signal_length: 250
+signal_length: 256
 split_train_ratio: 0.8
 test_interval: 10
 trans_embedding_size: 32
@@ -52,5 +52,5 @@ use_wandb: true
 validation_dev: 0
 validation_pos: [5]
 verbose: true
-window_size: 8 #16
+window_size: 8 #16 for raw
 data_use_position: false
