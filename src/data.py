@@ -145,9 +145,9 @@ class MyDataset(torch.utils.data.Dataset):
         if params.model_name == "ViT":
             if params.input_type != "spectrogram":
                 self.transform_list += [lambda x: torch.cat((x, torch.zeros(6, dtype=x.dtype)), dim=0)]
-            else:
-                if params.additional_samples > 0:
-                    self.transform_list += [lambda x: torch.cat((x, torch.zeros(5, dtype=x.dtype)), dim=0)]
+            
+        if params.input_type == "spectrogram" and params.additional_samples > 0:
+            self.transform_list += [lambda x: torch.cat((x, torch.zeros(5, dtype=x.dtype)), dim=0)]
 
         self.transforms = transforms.Compose(
             self.transform_list
