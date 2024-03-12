@@ -19,12 +19,14 @@ testlabelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10.raw.
 data_type = "not_complex"
 input_type = "spectrogram" #rfft"
 spectrogram_window_size=32
+spectrogram_hop_size = 8
 data_use_position = False       # If you want to add the angular information as input of the model too
 
 data_spliting = "pos_split"  #"all_split", "file_test", "random"
 split_train_ratio = 0.80
 augmentations = ["addSomeNoise"] #fourrier, logDistortionNorm
 noise_amount = 0
+shift_added_size = 50
 
 data_limit = -1
 validation_pos = [4, 5]
@@ -100,7 +102,7 @@ conv_kernel1_size = 15
 conv_features2_nb = 30
 conv_kernel2_size = 5
 stride_size = 1
-padding_size = 1
+cnn_padding_size = 1
 tail_fc_layers_nb = 2
 feature_norm = "layer" #layer #none
 pooling_kernel_size = 4
@@ -112,6 +114,7 @@ trans_embedding_size = 10 #actually becomming the multiplier of the nb of heads
 trans_head_nb = 5
 trans_layer_nb = 4
 trans_hidden_nb= 128
+trans_padding_size = 0
 
 # ConvMixer
 convm_embedding_size = 128     # 128
@@ -196,8 +199,8 @@ def implied_values():
     if loss=="VicregLoss":
         globals()["batch_size"] = globals()["batch_size"]//globals()["num_dev"]
 
-    if "random_shift" in globals()["augmentations"]:
-        globals()["signal_length"] = globals()["signal_length"] + 80
+    if "random_shift" in globals()["augmentations"] or "random_insertions" in globals()["augmentations"] or "random_shift_insert" in globals()["augmentations"]:
+        globals()["signal_length"] = globals()["signal_length"] +  globals()["shift_added_size"]
 
     # Input of model is a concatenation of signal lengthes
     globals()["signal_length"] = globals()["signal_length"] * (globals()["additional_samples"]+1)

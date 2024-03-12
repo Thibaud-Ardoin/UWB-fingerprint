@@ -43,11 +43,11 @@ class ClassCNN1(nn.Module):
                     feature_sizes[i+1], 
                     kernel_size=kernel_sizes[i], 
                     stride=params.stride_size, 
-                    padding=params.padding_size))
-                out_size = math.floor(((math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)) - params.pooling_kernel_size) / params.pooling_stride_size +1)
-                out_size2 = math.floor(((math.ceil((out_size2 + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)) - params.pooling_kernel_size) / params.pooling_stride_size +1)
+                    padding=params.cnn_padding_size))
+                out_size = math.floor(((math.ceil((out_size + 2*params.cnn_padding_size - (kernel_sizes[i] - 1))/params.stride_size)) - params.pooling_kernel_size) / params.pooling_stride_size +1)
+                out_size2 = math.floor(((math.ceil((out_size2 + 2*params.cnn_padding_size - (kernel_sizes[i] - 1))/params.stride_size)) - params.pooling_kernel_size) / params.pooling_stride_size +1)
                 # without maxpool
-                #out_size = math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)
+                #out_size = math.ceil((out_size + 2*params.cnn_padding_size - (kernel_sizes[i] - 1))/params.stride_size)
         else:
             out_size = params.signal_length
             for i in range(params.conv_layers_nb):
@@ -57,8 +57,8 @@ class ClassCNN1(nn.Module):
                     feature_sizes[i+1], 
                     kernel_size=kernel_sizes[i], 
                     stride=params.stride_size, 
-                    padding=params.padding_size))
-                out_size = math.floor(((math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)) - params.pooling_kernel_size) / params.pooling_stride_size +1)
+                    padding=params.cnn_padding_size))
+                out_size = math.floor(((math.ceil((out_size + 2*params.cnn_padding_size - (kernel_sizes[i] - 1))/params.stride_size)) - params.pooling_kernel_size) / params.pooling_stride_size +1)
                 print(out_size)
                 # without maxpool
                 #out_size = math.ceil((out_size + 2*params.padding_size - (kernel_sizes[i] - 1))/params.stride_size)

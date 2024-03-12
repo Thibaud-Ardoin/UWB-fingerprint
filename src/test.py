@@ -221,7 +221,7 @@ def accuracy_test(model, encoded_test, labels_test, logger):
 
     logger.log({"Accuracy for dev classification on test data %": val_acc,
                 "F1 score on test data": np.mean(fscore)})
-    logger.log_confusion(conf_mx, title="Test confusion matrix")
+    logger.log_confusion(labels.cpu(), predicted.cpu(), score=int(np.mean(fscore)), title="Test confusion matrix")
 
     if params.verbose:
         print("Accuracy for dev classification on test data %", val_acc)

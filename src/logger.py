@@ -176,15 +176,14 @@ class Logger():
                 "epoch": self.epoch
             })
 
-    def log_confusion(self, conf_mx, title="Some confusion matrix"):
-        disp = ConfusionMatrixDisplay(confusion_matrix=conf_mx,
-                                display_labels=range(len(conf_mx)))
-        disp.plot()
-        plt.show()
+    def log_confusion(self, ground_truth, predicted, score=0, title="Some confusion matrix"):
         wandb.log({
-            title + "_ep" + str(self.test_step): plt,
+            title + "_ep" + str(self.test_step): wandb.plot.confusion_matrix(
+                probs=None,
+                y_true=ground_truth.numpy(), 
+                preds=predicted.numpy()),
             "epoch": self.epoch
-        }, step=self.epoch)
+        })
 
 
     def log_scatter(self, data, labels, title="Some Scatter"):

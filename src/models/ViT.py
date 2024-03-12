@@ -14,50 +14,60 @@ import models
 from models.arcface import ArcFace
 
 class EmbeddingPatches(nn.Module):
-    """Turns a 1d or 2d input into a 1D learnable vector embedding.
-    
-    Args:
-        input_channels (int): Number of channels for the input.
-        size_of_patch (int): Size of patches to convert the input.
-        embedding_size (int): Size of embedding output.
-    """ 
-    def __init__(self, 
-                 input_channels:int=1,
-                 size_of_patch:int=params.window_size,
-                 embedding_size:int=params.trans_embedding_size):
-        super().__init__()
-        
-        self.size_of_patch = size_of_patch
-        
-        if params.input_type == "spectrogram":
+	"""Turns a 1d or 2d input into a 1D learnable vector embedding.
 
-            self.patch = nn.Conv2d(in_channels=input_channels,
+	Args:
+		input_channels (int): Number of channels for the input.
+		size_of_patch (int): Size of patches to convert the input.
+		embedding_size (int): Size of embedding output.
+	""" 
+	def __init__(self, 
+					input_channels:int=1,
+					size_of_patch:int=params.window_size,
+					embedding_size:int=params.trans_embedding_size):
+		super().__init__()
+		
+		self.size_of_patch = size_of_patch
+		
+		if params.input_type == "spectrogram":
+
+			self.patch = nn.Conv2d(in_channels=input_channels,
 										out_channels=embedding_size,
 										kernel_size=size_of_patch,
 										stride=size_of_patch,
-										padding=0)
-        else:
-            self.patch = nn.Conv1d(in_channels=input_channels,
+										padding="valid",
+										padding_mode="zeros")
+		else:
+			self.patch = nn.Conv1d(in_channels=input_channels,
 									out_channels=embedding_size,
 									kernel_size=size_of_patch,
 									stride=size_of_patch,
 									padding=0)
-    
-        self.flatten = nn.Flatten(start_dim=2, end_dim=3)
-    
-    def forward(self, x):
 
-        input_size = x.shape[-1]
-        assert input_size % self.size_of_patch == 0, "The input must be divisible by the size of the patch! input_size:{:5f} self.size_of_patch:{:5f}".format(input_size, self.size_of_patch)
+		self.flatten = nn.Flatten(start_dim=2, end_dim=3)
 
-        x = self.patch(x)
-        if params.input_type == "spectrogram":
-            
-            flat_x = self.flatten(x) 
+	def forward(self, x):
 
-            return flat_x.permute(0, 2, 1)
-        else:
-            return x.permute(0, 2, 1)
+		input_size = x.shape[-1]
+
+		# Zero Padding the input
+		extra_needed = (self.size_of_patch - (input_size%self.size_of_patch))%self.size_of_patch
+		if extra_needed > 0:
+			pre_pad_size = math.ceil(extra_needed/2)
+			pre_pad = torch.zeros(x.shape[:-1]+(pre_pad_size,), dtype=x.dtype).to(params.device)
+			post_pad_size = math.floor(extra_needed/2)
+			post_pad = torch.zeros(x.shape[:-1]+(post_pad_size, ), dtype=x.dtype).to(params.device)
+
+			x = torch.cat((x, pre_pad), dim=-1)
+			x = torch.cat((post_pad, x), dim=-1)
+
+		assert x.shape[-1] % self.size_of_patch == 0, "The input must be divisible by the size of the patch! input_size:{:5f} self.size_of_patch:{:5f}".format(input_size, self.size_of_patch)
+
+		x = self.patch(x)
+		if params.input_type == "spectrogram":
+			x = self.flatten(x) 
+			
+		return x.permute(0, 2, 1)
 
 
 
@@ -86,10 +96,10 @@ class ViT(nn.Module):
 
 		self.flatten = nn.Flatten()
 	
-		if self.input_type == "spectrogram":
-			self.window_nb = math.ceil((params.spectrogram_window_size*(params.spectrogram_window_size*(params.additional_samples+1)))/(self.window_size**2)) # adjust parameters
-		else:
-			self.window_nb = math.ceil(self.signal_length/self.window_size)
+		# if self.input_type == "spectrogram":
+		# 	self.window_nb = math.ceil((params.spectrogram_window_size*(params.spectrogram_window_size*(params.additional_samples+1)))/(self.window_size**2)) # adjust parameters
+		# else:
+		# 	self.window_nb = math.ceil(self.signal_length/self.window_size)
 	
 		encoder_layers = nn.TransformerEncoderLayer(self.embedding_size, self.trans_head_nb, self.trans_hidden_nb, self.dropout_value, batch_first=True)
 		self.transformer_encoder = nn.TransformerEncoder(encoder_layers, self.trans_layer_nb)
@@ -101,13 +111,9 @@ class ViT(nn.Module):
 					out_features=self.num_dev)
 		)
 
-		# CLS Token
-		self.cls_token = nn.Parameter(torch.randn(1, 1, self.embedding_size),
-										requires_grad=True)
-	
-		# Pos embedding
-		count_patches = self.window_nb
-		self.pos_embedding = nn.Parameter(torch.randn(1, count_patches, self.embedding_size))
+		# # CLS Token
+		# self.cls_token = nn.Parameter(torch.randn(1, 1, self.embedding_size),
+		# 								requires_grad=True)
 	
 		# MLP
 		#self.fc1 = nn.Linear((self.embedding_size * self.window_nb), self.latent_dimention*2)
@@ -120,6 +126,26 @@ class ViT(nn.Module):
 			channels = 2
 		else:
 			channels = 1
+		
+		# Calculation of final input size after padding and patching
+		if self.input_type == "spectrogram":
+			temporal_size = math.ceil(params.signal_length/(params.spectrogram_hop_size))
+			padding_size = (self.window_size - (temporal_size % self.window_size)) % self.window_size
+			temporal_size = temporal_size + padding_size
+
+			frequency_size = params.spectrogram_window_size
+			padding_size = (self.window_size - (frequency_size % self.window_size)) % self.window_size
+			frequency_size = frequency_size + padding_size
+			self.input_size = (frequency_size//self.window_size) * (temporal_size//self.window_size)
+
+		else :
+			data_size = params.signal_length*(params.additional_samples+1)
+			padding_size = (self.window_size - (data_size % self.window_size)) % self.window_size
+			self.input_size = (data_size + padding_size)//self.window_size
+	
+		# Pos embedding
+		self.pos_embedding = nn.Parameter(torch.randn(1, self.input_size, self.embedding_size))
+
 		self.patch_embedding = EmbeddingPatches(input_channels=channels,
 	                                      size_of_patch=self.window_size,
 	                                      embedding_size=self.embedding_size)
@@ -128,6 +154,7 @@ class ViT(nn.Module):
 
 	def preprocess(self, x):
 		x = x[:, None, :]
+
 		if self.data_type == "complex":
 			# Reshape the input to have 2 channels
 			x = x.view(x.shape[0], -1, x.shape[2])
@@ -142,7 +169,6 @@ class ViT(nn.Module):
 
 		# Add the positional embedding to patch embedding (and the cls token if used)
 		x = self.pos_embedding + x
-		
 
 		return x
 

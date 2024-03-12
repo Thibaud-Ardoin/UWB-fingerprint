@@ -16,7 +16,8 @@ arcface_scale: 16
 input_type: "spectrogram"
 data_type: "not complex"
 spectrogram_window_size: 32
-augmentations: ["addSomeNoise", "random_shift"]
+spectrogram_hop_size: 8
+augmentations: ["addSomeNoise"] #random_shifting random_shift_insert
 
 
 split_train_ratio: 0.8
@@ -26,6 +27,8 @@ latent_dimention: 128
 trans_head_nb: 12
 trans_layer_nb: 3
 trans_hidden_nb: 64
+window_size: 8
+
 
 batch_size: 256
 conv_features1_nb: 10
@@ -40,9 +43,8 @@ tail_fc_layers_nb: 1
 pooling_kernel_size: 2
 pooling_stride_size: 2
 
-additional_samples: 0  # For concatenation of additional data point
+additional_samples: 2  # For concatenation of additional data point
 same_positions: True   # If the concatenation should be done diagonal to positions or not
-window_size: 7
 
 data_limit: 500000
 data_test_rate: 0.05

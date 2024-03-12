@@ -69,7 +69,7 @@ def fourier(x):
     return x
 
 def spectrogram(x):
-    spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=8, power=1, normalized=True, onesided=False).to(params.device)
+    spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=1, normalized=True, onesided=False).to(params.device)
     x = spectrogram(x)
     return x
 
@@ -98,23 +98,49 @@ def apply_hann_window(x):
     hann_window = torch.hann_window(len(x))
     return x * hann_window
 
-def random_shift(x, clean_test=False):
-    # Fill with 50 random time_steps additionally randomly around the current
-    filling_size = 80
+def random_shift_insert(x, clean_test=False):
+    choice = np.random.rand()
+    filling_size = params.shift_added_size
     x = torch.view_as_real(x)
     x = x - torch.mean(x)
-    if clean_test or np.random.rand() < 0.1:
+    if clean_test or choice < 0.1:
         # Alligned and zeros
         a = filling_size//2
         xx = torch.zeros((filling_size + len(x), 2))
         xx[a:(len(x) + a)] = x
-    else :
-        # Random shift with random padding
-        xx = torch.rand((filling_size + len(x), 2)) * torch.mean(torch.abs(x))
-        a = int(np.random.rand()*filling_size)
-        xx[a:(len(x) + a)] = x
-
+    elif choice < 0.6:
+        xx = random_shift(x, filling_size=filling_size)
+    else:
+        xx = random_insertions(x, nb_added=filling_size)
     return torch.view_as_complex(xx)
+
+
+def random_shift(x, filling_size=params.shift_added_size, weight=1, clean_test=False):
+    # Fill with 50 (?shift_added_size) random time_steps additionally randomly around the current
+    # Random shift with random padding
+    xx = torch.rand((filling_size + len(x), 2)) * weight
+    a = int(np.random.rand()*filling_size)
+    xx[a:(len(x) + a)] = x
+    return xx
+
+def random_insertions(x, nb_added=params.shift_added_size, weight=1, clean_test=False):
+    # Insert "shift_added_size" random values in the data to expand it randomly    
+    incertions = torch.rand((nb_added, 2)) * weight
+    idi = torch.randperm(len(x)-2)[:nb_added]
+    idi = idi + 1
+    idi = torch.cat((idi, torch.tensor([0, len(x)])), 0)
+    idi = torch.sort(idi).values
+    x_list = [torch.cat([x[idi[i]:idi[i+1]], incertions[i].unsqueeze(0)]) for i in range(nb_added)]
+    x_list.append(x[idi[nb_added]:idi[nb_added+1]])
+    xx = torch.cat(x_list)
+    return xx
+
+def normalise_amplitude(x):
+    x = torch.view_as_real(x)
+    x[:, 0] = x[:, 0]/torch.sqrt(torch.sum(torch.square(x[:, 0]))/len(x[:, 0]))
+    x[:, 1] = x[:, 1]/torch.sqrt(torch.sum(torch.square(x[:, 1]))/len(x[:, 1]))
+    return torch.view_as_complex(x)
+
 
 
 #################################################
@@ -129,7 +155,8 @@ class MyDataset(torch.utils.data.Dataset):
         self.data = data
         self.transform_list = [
             lambda x: center_data_gradient(x),
-            lambda x: torch.from_numpy(x)    
+            lambda x: torch.from_numpy(x),
+            lambda x: normalise_amplitude(x)
         ]
         self.augmentations = [
             eval(function_name) for function_name in params.augmentations
@@ -140,14 +167,19 @@ class MyDataset(torch.utils.data.Dataset):
             self.transform_list += self.augmentations
         elif self.testset and "random_shift" in params.augmentations:
             self.transform_list += [lambda x: random_shift(x, clean_test=True)]
+        elif self.testset and "random_insertions" in params.augmentations:
+            self.transform_list += [lambda x: random_insertions(x, clean_test=True)]
+        elif self.testset and "random_shift_insert" in params.augmentations:
+            self.transform_list += [lambda x: random_shift_insert(x, clean_test=True)]
 
-        # 0 padding for the ViT model
-        if params.model_name == "ViT":
-            if params.input_type != "spectrogram":
-                self.transform_list += [lambda x: torch.cat((x, torch.zeros(6, dtype=x.dtype)), dim=0)]
-            else:
-                if params.additional_samples > 0:
-                    self.transform_list += [lambda x: torch.cat((x, torch.zeros(5, dtype=x.dtype)), dim=0)]
+
+        # # 0 padding for the ViT model
+        # if params.model_name == "ViT":
+        #     if params.input_type != "spectrogram":
+        #         self.transform_list += [lambda x: torch.cat((x, torch.zeros(params.padding_size, dtype=x.dtype)), dim=0)]
+        #     else:
+        #         if params.additional_samples > 0:
+        #             self.transform_list += [lambda x: torch.cat((x, torch.zeros(5, dtype=x.dtype)), dim=0)]
 
         self.transforms = transforms.Compose(
             self.transform_list
