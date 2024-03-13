@@ -169,7 +169,6 @@ class ViT(nn.Module):
 
 		# Add the positional embedding to patch embedding (and the cls token if used)
 		x = self.pos_embedding + x
-
 		return x
 
 
@@ -177,6 +176,7 @@ class ViT(nn.Module):
 		x = self.preprocess(x)
 
 		x = self.transformer_encoder(x)
+
 		x = x.mean(dim = 1)
 		x = F.normalize(x, p=2, dim=1)
 		# x = self.norm(x)

@@ -43,7 +43,7 @@ tail_fc_layers_nb: 1
 pooling_kernel_size: 2
 pooling_stride_size: 2
 
-additional_samples: 2  # For concatenation of additional data point
+additional_samples: 9  # For concatenation of additional data point
 same_positions: True   # If the concatenation should be done diagonal to positions or not
 
 data_limit: 500000
