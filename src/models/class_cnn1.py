@@ -147,7 +147,12 @@ class ClassCNN1(nn.Module):
         x = x[:, None, :]
         if params.data_type == "complex":
             # Reshape the input to have 2 channels
-            x = x.view(x.shape[0], -1, x.shape[2])
+
+            if params.input_type == "spectrogram":
+                x = x.squeeze(1)
+                x = x.permute(0, 3, 1, 2)
+            else:
+                x = x.view(x.shape[0], -1, x.shape[2])
 
         # Conv layers
         for i in range(params.conv_layers_nb):
