@@ -70,10 +70,10 @@ def fourier(x):
 
 def spectrogram(x):
     if params.data_type == "complex":
-        spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=None, normalized=True, onesided=False, pad=28).to(params.device)
+        spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=None, normalized=True, onesided=False, pad=28)
         x = spectrogram(x)
     else:
-        spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=1, normalized=True, onesided=False).to(params.device)
+        spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=1, normalized=True, onesided=False)
         x = spectrogram(x)
 
     return x
@@ -198,8 +198,8 @@ class MyDataset(torch.utils.data.Dataset):
             print(len(self.data), index)
             print(self.data[index])
             x, y = self.data[index-1]
-        x = self.transforms(x).to(params.device)
-        y = torch.from_numpy(y).to(params.device)
+        x = self.transforms(x)
+        y = torch.from_numpy(y)
         if params.data_use_position:
             x = add_angular(x, y)
 
@@ -220,7 +220,7 @@ class MyDataLoader(torch.utils.data.DataLoader):
         self.nb_concatenated = additional_samples + 1
 
         balanced_batch_sampler = CustomBatchSampler(data_set, additional_samples=additional_samples, same_positions=same_positions, batch_size=batch_size*self.nb_concatenated)
-        super(MyDataLoader, self).__init__(dataset=data_set, batch_sampler=balanced_batch_sampler)
+        super(MyDataLoader, self).__init__(dataset=data_set, batch_sampler=balanced_batch_sampler, num_workers=params.num_workers)
 
         self.post_concat_transform_list = []
         if params.input_type == "spectrogram":
@@ -242,23 +242,23 @@ class MyDataLoader(torch.utils.data.DataLoader):
         # Concatenate every params.additional_samples samples
         number_used_sample = (self.nb_concatenated)*(len(samples)//(self.nb_concatenated))
         x = [torch.cat(torch.unbind(samples[i:i+self.nb_concatenated]), dim=0) for i in range(0, number_used_sample, self.nb_concatenated)]
-        x = torch.stack(x).to(params.device)
+        x = torch.stack(x)
 
         if labels is not None:
             # ! Select only 1st label of each group of concatenated signals
             y = [labels[i] for i in range(0, number_used_sample, self.nb_concatenated)]
-            y = torch.stack(y).to(params.device)
+            y = torch.stack(y)
             return x, y
         return x
 
 
     def __iter__(self):
         for x, y in super(MyDataLoader, self).__iter__():
-            x, y = self.concatenate_samples(x, y)
             x = self.post_concat_transforms(x)
+            x, y = self.concatenate_samples(x, y)
 
-            yield x, y
-        # folded_labels = y.reshape(y.shape[0]//self.nb_concatenated, self.nb_concatenated, 2)
+            # Push all batch on GPU at once, for speed increase
+            yield x.to(params.device), y.to(params.device)
 
 
 

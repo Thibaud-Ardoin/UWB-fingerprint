@@ -131,6 +131,7 @@ window_size = 16
 ##############
 #   System   #
 ##############
+num_workers = 16
 save_model = True   # On test section
 use_gpu = True
 device = "cuda" if torch.cuda.is_available() and use_gpu else "cpu"

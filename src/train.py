@@ -14,6 +14,7 @@ from optimizer import Optimizer, AdvOptimizer
 import params
 from test import testing_model
 from loss import Loss, load_loss
+import time
 
 class Trainer:
     def __init__(self, trainDataloader, valDataloader, model, logger):
@@ -63,6 +64,7 @@ class Trainer:
         for epoch in range(0, params.nb_epochs):
             # initialize tracker variables and set our model to trainable
             print("[INFO] epoch: {}...".format(epoch + 1))
+            start_epoch_time = time.time()
 
             self.my_model.train()
             # Reset memorry about the last epoch loop
@@ -105,10 +107,11 @@ class Trainer:
             # Log all loss information as needed
             self.logger.log_loss(self.Loss, self.optimizer)
 
-
-            trainTemplate = "TRAIN - epoch: {} train loss: {:.6f} learning rate: {:.6f}"
+            epoch_time = time.time() - start_epoch_time
+            trainTemplate = "TRAIN - epoch: {} train loss: {:.6f} learning rate: {:.6f} time: {:.1f}"
             print(trainTemplate.format(epoch + 1, (self.Loss.trainLoss / self.Loss.samples),
-                (self.optimizer.get_lr())))
+                (self.optimizer.get_lr()),
+                epoch_time ))
 
             # Optimizer
             self.optimizer.epoch_routine(self.Loss.trainLoss / self.Loss.samples)
