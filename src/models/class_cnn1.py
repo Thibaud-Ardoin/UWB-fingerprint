@@ -159,8 +159,7 @@ class ClassCNN1(nn.Module):
             x = self.convs[i](x)
             x = self.max_pool(x)
             x = self.dropout(x)
-            if i < params.conv_layers_nb -1:
-                x = F.relu(x)
+            x = F.relu(x)
 
         x = self.norm(x)
         x = self.flatten(x)

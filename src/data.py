@@ -70,7 +70,7 @@ def fourier(x):
 
 def spectrogram(x):
     if params.data_type == "complex":
-        spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=None, normalized=True, onesided=False).to(params.device)
+        spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=None, normalized=True, onesided=False, pad=28).to(params.device)
         x = spectrogram(x)
     else:
         spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=1, normalized=True, onesided=False).to(params.device)
@@ -161,7 +161,7 @@ class MyDataset(torch.utils.data.Dataset):
         self.transform_list = [
             lambda x: center_data_gradient(x),
             lambda x: torch.from_numpy(x),
-            lambda x: normalise_amplitude(x)
+            #lambda x: normalise_amplitude(x)
         ]
         self.augmentations = [
             eval(function_name) for function_name in params.augmentations
@@ -178,13 +178,13 @@ class MyDataset(torch.utils.data.Dataset):
             self.transform_list += [lambda x: random_shift_insert(x, clean_test=True)]
 
 
-        # # 0 padding for the ViT model
-        # if params.model_name == "ViT":
-        #     if params.input_type != "spectrogram":
-        #         self.transform_list += [lambda x: torch.cat((x, torch.zeros(params.padding_size, dtype=x.dtype)), dim=0)]
-        #     else:
-        #         if params.additional_samples > 0:
-        #             self.transform_list += [lambda x: torch.cat((x, torch.zeros(5, dtype=x.dtype)), dim=0)]
+        # 0 padding for the ViT model
+        if params.model_name == "ViT":
+            if params.input_type != "spectrogram":
+                self.transform_list += [lambda x: torch.cat((x, torch.zeros(6, dtype=x.dtype)), dim=0)]
+            #else:
+            #    if params.additional_samples > 0:
+            #        self.transform_list += [lambda x: torch.cat((x, torch.zeros(5, dtype=x.dtype)), dim=0)]
 
         self.transforms = transforms.Compose(
             self.transform_list
@@ -232,7 +232,7 @@ class MyDataLoader(torch.utils.data.DataLoader):
         else:
             self.post_concat_transform_list += [lambda x: torch.abs(x)]
 
-        self.post_concat_transform_list += [lambda x: normalize_tensor(x), lambda x: x.to(torch.float32)] # lambda x: normdata(x)
+        self.post_concat_transform_list += [lambda x: normdata(x), lambda x: x.to(torch.float32)] # lambda x: normalize_tensor(x)
 
         self.post_concat_transforms = transforms.Compose(
             self.post_concat_transform_list
