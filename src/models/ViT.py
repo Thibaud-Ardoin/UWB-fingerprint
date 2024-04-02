@@ -46,6 +46,18 @@ class EmbeddingPatches(nn.Module):
 
 		self.flatten = nn.Flatten(start_dim=2, end_dim=3)
 
+		if params.feature_norm == "batch":
+			self.norm = nn.BatchNorm1d(embedding_size)
+			if params.input_type == "spectrogram":
+				self.norm = nn.BatchNorm2d(embedding_size)
+		#elif params.feature_norm == "layer":
+		#	if params.input_type == "spectrogram":
+		#		self.norm = nn.LayerNorm([out_size, out_size2])
+		#	else: 
+		#		self.norm = nn.LayerNorm(out_size)
+		else:
+			self.norm = nn.Identity()
+
 	def forward(self, x):
 
 		input_size = x.shape[-1]
@@ -64,6 +76,7 @@ class EmbeddingPatches(nn.Module):
 		assert x.shape[-1] % self.size_of_patch == 0, "The input must be divisible by the size of the patch! input_size:{:5f} self.size_of_patch:{:5f}".format(input_size, self.size_of_patch)
 
 		x = self.patch(x)
+		x = self.norm(x)
 		if params.input_type == "spectrogram":
 			x = self.flatten(x) 
 			
@@ -157,7 +170,11 @@ class ViT(nn.Module):
 
 		if self.data_type == "complex":
 			# Reshape the input to have 2 channels
-			x = x.view(x.shape[0], -1, x.shape[2])
+			if params.input_type == "spectrogram":
+				x = x.squeeze(1)
+				x = x.permute(0, 3, 1, 2)
+			else:
+				x = x.view(x.shape[0], -1, x.shape[2])
 		# Get some dimensions from x
 		#batch_size = x.shape[0]
 		x = self.patch_embedding(x)

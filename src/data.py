@@ -69,8 +69,13 @@ def fourier(x):
     return x
 
 def spectrogram(x):
-    spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=1, normalized=True, onesided=False).to(params.device)
-    x = spectrogram(x)
+    if params.data_type == "complex":
+        spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=None, normalized=True, onesided=False).to(params.device)
+        x = spectrogram(x)
+    else:
+        spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=1, normalized=True, onesided=False).to(params.device)
+        x = spectrogram(x)
+
     return x
 
 def rfft(x):
@@ -227,7 +232,7 @@ class MyDataLoader(torch.utils.data.DataLoader):
         else:
             self.post_concat_transform_list += [lambda x: torch.abs(x)]
 
-        self.post_concat_transform_list += [lambda x: normalize_tensor(x), lambda x: x.to(torch.float32)]
+        self.post_concat_transform_list += [lambda x: normalize_tensor(x), lambda x: x.to(torch.float32)] # lambda x: normdata(x)
 
         self.post_concat_transforms = transforms.Compose(
             self.post_concat_transform_list
