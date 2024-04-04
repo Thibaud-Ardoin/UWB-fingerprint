@@ -220,7 +220,7 @@ class MyDataLoader(torch.utils.data.DataLoader):
         self.nb_concatenated = additional_samples + 1
 
         balanced_batch_sampler = CustomBatchSampler(data_set, additional_samples=additional_samples, same_positions=same_positions, batch_size=batch_size*self.nb_concatenated)
-        super(MyDataLoader, self).__init__(dataset=data_set, batch_sampler=balanced_batch_sampler, num_workers=params.num_workers)
+        super(MyDataLoader, self).__init__(dataset=data_set, batch_sampler=balanced_batch_sampler) #num_workers=params.num_workers)
 
         self.post_concat_transform_list = []
         if params.input_type == "spectrogram":

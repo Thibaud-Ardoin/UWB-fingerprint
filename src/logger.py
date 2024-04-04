@@ -9,6 +9,8 @@ import random
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib
+import os
+import csv
 
 import plotly
 import torch
@@ -38,7 +40,7 @@ class Logger():
 
     def save_model(self, model):
         if params.save_model:
-            torch.save(model, params.saving_path + "model_" + params.saved_model_suffix + "_" + str(self.epoch) + ".pth")
+            torch.save(model, params.saving_path + "/models/model_" + params.saved_model_suffix + "_" + str(self.epoch) + ".pth")
 
     def log_loss(self, loss, optim):
         # TODO setup an automated logging taht logs all the loss.memory content
@@ -122,13 +124,33 @@ class Logger():
 
 
     def setupWB(self):
-        wandb.init(
+        self.run = wandb.init(
             # set the wandb project where this run will be logged
             project="Fingerprint1",
             
             # track hyperparameters and run metadata
             config=params.__get_dict__()
         )
+        print(self.run.id)
+
+        self.log_folder = "data/runs/" + str(self.run.id)
+        if not os.path.exists(self.log_folder):
+            os.makedirs(self.log_folder)
+        else:
+            raise ValueError('The random ID of that wand log has alreaddy been attributed.. It is: ' + str(self.run.id))
+        with open(self.log_folder + "/log_metrics.csv", "w") as file:
+            filewriter = csv.writer(file, delimiter=',',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            filewriter.writerow(['Run Name', str(self.run.id)])
+            file.close()
+
+    def log_metric2csv(self, to_log_list):
+            with open(self.log_folder + "/log_metrics.csv", "a") as file:
+                filewriter = csv.writer(file, delimiter=',',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                for l in to_log_list:
+                    filewriter.writerow(l)
+
 
     def log_model(self, model):
         nb_params = sum(p.numel() for p in model.parameters())
@@ -146,8 +168,13 @@ class Logger():
     def log(self, info, name=None):
         if params.use_wandb:
             if type(info)==dict:
+                # Dump in CSV the dictionary of information
+                list2csv = list(map(lambda x: list(x) + [str(self.epoch)], info.items()))
+                self.log_metric2csv(list2csv)
+
                 info["epoch"]= self.epoch
                 wandb.log(info)
+            
             else :
                 if name is not None and type(name)==str:
                     wandb.log({name: info, "epoch": self.epoch})
