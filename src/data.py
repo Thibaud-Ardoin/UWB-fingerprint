@@ -253,9 +253,9 @@ class MyDataLoader(torch.utils.data.DataLoader):
 
 
     def __iter__(self):
-        for x, y in super(MyDataLoader, self).__iter__():
-            x = self.post_concat_transforms(x)
+        for x, y in super(MyDataLoader, self).__iter__(): 
             x, y = self.concatenate_samples(x, y)
+            x = self.post_concat_transforms(x)
 
             # Push all batch on GPU at once, for speed increase
             yield x.to(params.device), y.to(params.device)
