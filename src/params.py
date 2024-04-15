@@ -18,6 +18,7 @@ testlabelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10.raw.
 # TODO reunite properly following input types in the dataloader
 data_type = "not_complex"
 input_type = "spectrogram" #rfft"
+spectrogram_type = "cwt" #fourier
 spectrogram_window_size=32
 spectrogram_hop_size = 8
 data_use_position = False       # If you want to add the angular information as input of the model too

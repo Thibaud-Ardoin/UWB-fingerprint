@@ -9,6 +9,7 @@ import itertools
 
 import params
 
+import pywt
 import torch
 import torchvision.transforms as transforms
 import torchaudio
@@ -77,6 +78,17 @@ def spectrogram(x):
         x = spectrogram(x)
 
     return x
+
+
+def cwt(x):
+    wavelet = "cmor2.5-2.5"
+    widths = np.geomspace(1, 1024//4, num=100)
+    cwtmatr, freqs = pywt.cwt(x, widths, wavelet)
+    # absolute take absolute value of complex result
+    
+    # cwtmatr = np.abs(cwtmatr[:-1, :-1])
+    return cwtmatr
+
 
 def rfft(x):
     return normdata(torch.fft.rfft(x))[:-1]
@@ -161,11 +173,14 @@ class MyDataset(torch.utils.data.Dataset):
         self.transform_list = [
             lambda x: center_data_gradient(x),
             lambda x: torch.from_numpy(x),
-            #lambda x: normalise_amplitude(x)
+            lambda x: normalise_amplitude(x)
         ]
         self.augmentations = [
             eval(function_name) for function_name in params.augmentations
         ] 
+        if params.spectrogram_type =="cwt":
+            self.transform_list.insert(0,eval("cwt"))
+
 
         # If not a testset, we add the desired augmentations
         if not self.testset:
@@ -224,7 +239,9 @@ class MyDataLoader(torch.utils.data.DataLoader):
 
         self.post_concat_transform_list = []
         if params.input_type == "spectrogram":
-            self.post_concat_transform_list += [lambda x: spectrogram(x)]
+            if params.spectrogram_type=="fourier":
+                self.post_concat_transform_list += [lambda x: spectrogram(x)]
+            # self.post_concat_transform_list += [lambda x: continuous_wavlet_transform(x)]
         elif params.input_type == "fft":
             self.post_concat_transform_list += [lambda x: fourier(x)]
         if params.data_type == "complex":

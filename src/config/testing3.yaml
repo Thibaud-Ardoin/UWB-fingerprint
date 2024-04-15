@@ -19,6 +19,7 @@ arcface_scale: 16
 # arcface_scale: 64 # 32
 
 input_type: "spectrogram"
+spectrogram_type: "cwt" #fourier
 data_type: "complex"
 spectrogram_window_size: 32
 spectrogram_hop_size: 8

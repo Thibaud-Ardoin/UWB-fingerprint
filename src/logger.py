@@ -40,7 +40,7 @@ class Logger():
 
     def save_model(self, model):
         if params.save_model:
-            torch.save(model, params.saving_path + "/models/model_" + params.saved_model_suffix + "_" + str(self.epoch) + ".pth")
+            torch.save(model, self.log_folder + "/model_" + params.saved_model_suffix + "_" + str(self.epoch) + ".pth")
 
     def log_loss(self, loss, optim):
         # TODO setup an automated logging taht logs all the loss.memory content

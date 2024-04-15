@@ -4,6 +4,7 @@ if __name__ == "__main__":
 
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
@@ -59,6 +60,10 @@ class EmbeddingPatches(nn.Module):
 			self.norm = nn.Identity()
 
 	def forward(self, x):
+
+		# plt.imshow(x[0, 0].detach().cpu())
+		# plt.show()
+		# dfhd
 
 		input_size = x.shape[-1]
 
@@ -141,14 +146,28 @@ class ViT(nn.Module):
 		
 		# Calculation of final input size after padding and patching
 		if self.input_type == "spectrogram":
-			temporal_size = math.ceil(params.signal_length/(params.spectrogram_hop_size))
-			padding_size = (self.window_size - (temporal_size % self.window_size)) % self.window_size
-			temporal_size = temporal_size + padding_size
+			if params.spectrogram_type == "cwt":	# In case of continuous wavlet transform
+				temporal_size = params.signal_length
+				padding_size = (self.window_size - (temporal_size % self.window_size)) % self.window_size
+				temporal_size = temporal_size + padding_size
 
-			frequency_size = params.spectrogram_window_size
-			padding_size = (self.window_size - (frequency_size % self.window_size)) % self.window_size
-			frequency_size = frequency_size + padding_size
-			self.input_size = (frequency_size//self.window_size) * (temporal_size//self.window_size)
+				frequency_size = 96
+				padding_size = (self.window_size - (frequency_size % self.window_size)) % self.window_size
+				frequency_size = frequency_size + padding_size
+				self.input_size = (frequency_size // self.window_size) * (temporal_size// self.window_size)
+				print("self.input_size", self.input_size)
+				print("temporal_size", temporal_size)
+				print("frequency_size", frequency_size)
+
+			else :
+				temporal_size = math.ceil(params.signal_length/(params.spectrogram_hop_size))
+				padding_size = (self.window_size - (temporal_size % self.window_size)) % self.window_size
+				temporal_size = temporal_size + padding_size
+
+				frequency_size = params.spectrogram_window_size
+				padding_size = (self.window_size - (frequency_size % self.window_size)) % self.window_size
+				frequency_size = frequency_size + padding_size
+				self.input_size = (frequency_size//self.window_size) * (temporal_size//self.window_size)
 
 		else :
 			data_size = params.signal_length*(params.additional_samples+1)
@@ -157,6 +176,8 @@ class ViT(nn.Module):
 	
 		# Pos embedding
 		self.pos_embedding = nn.Parameter(torch.randn(1, self.input_size, self.embedding_size))
+		print("self.input_size, self.embedding_size", self.input_size, self.embedding_size)
+		print("params.signal_length  self.window_size 100 self.window_size", params.signal_length,  self.window_size, (params.signal_length // self.window_size), (100// self.window_size))
 
 		self.patch_embedding = EmbeddingPatches(input_channels=channels,
 	                                      size_of_patch=self.window_size,
@@ -190,6 +211,7 @@ class ViT(nn.Module):
 		#x = torch.cat((cls_token, x), dim=1)
 
 		# Add the positional embedding to patch embedding (and the cls token if used)
+
 		x = self.pos_embedding + x
 
 		return x
