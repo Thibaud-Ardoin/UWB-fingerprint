@@ -143,6 +143,13 @@ class Logger():
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
             filewriter.writerow(['Run Name', str(self.run.id)])
             file.close()
+        with open(self.log_folder + "/config.csv", "w") as file:
+            w = csv.writer(file)
+            w.writerow(self.run.config.as_dict().keys())
+            w.writerow(self.run.config.as_dict().values())
+            file.close()
+
+
 
     def log_metric2csv(self, to_log_list):
             with open(self.log_folder + "/log_metrics.csv", "a") as file:

@@ -70,7 +70,7 @@ def fourier(x):
 
 def spectrogram(x):
     if params.data_type == "complex":
-        spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=None, normalized=True, onesided=False, pad=28)
+        spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=None, normalized=True, onesided=False) #pad=28
         x = spectrogram(x)
     else:
         spectrogram = torchaudio.transforms.Spectrogram(n_fft=params.spectrogram_window_size, hop_length=params.spectrogram_hop_size, power=1, normalized=True, onesided=False)
@@ -179,9 +179,9 @@ class MyDataset(torch.utils.data.Dataset):
 
 
         # 0 padding for the ViT model
-        if params.model_name == "ViT":
-            if params.input_type != "spectrogram":
-                self.transform_list += [lambda x: torch.cat((x, torch.zeros(6, dtype=x.dtype)), dim=0)]
+        # if params.model_name == "ViT":
+        #     if params.input_type != "spectrogram":
+        #         self.transform_list += [lambda x: torch.cat((x, torch.zeros(6, dtype=x.dtype)), dim=0)]
             #else:
             #    if params.additional_samples > 0:
             #        self.transform_list += [lambda x: torch.cat((x, torch.zeros(5, dtype=x.dtype)), dim=0)]

@@ -16,7 +16,7 @@ input_type: "spectrogram"
 
 data_type: "complex"
 
-additional_samples: 9 # how many samples to add
+additional_samples: 0 # how many samples to add
 
 same_positions: false # if true, the same positions are used for all additional samples
 
