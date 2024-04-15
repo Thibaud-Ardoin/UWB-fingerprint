@@ -4,3 +4,4 @@ wandb/
 *__pycache__*
 src/__pycache*
 data/
+multi-run-script.sh

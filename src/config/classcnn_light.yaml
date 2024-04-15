@@ -20,13 +20,13 @@ pooling_kernel_size: 2
 pooling_stride_size: 2
 data_limit: 500000
 data_test_rate: 0.01
-datafile: "data/Messung9/messung9.raw_data.npy"
+datafile: "data/Messung_9/messung9.raw_data.npy"
 device: "cuda"
 dropout_value: 0
 expender_out: 138
 feature_norm: "none"
 flat_data: true
-labelfile: "data/Messung9/messung9.raw_labels.npy"
+labelfile: "data/Messung_9/messung9.raw_labels.npy"
 latent_dimention: 128
 learning_rate: 0.001
 lr_limit: 0.0001

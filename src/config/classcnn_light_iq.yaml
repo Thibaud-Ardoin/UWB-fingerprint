@@ -50,7 +50,7 @@ data_limit: 500000
 
 data_test_rate: 0.1
 
-datafile: "data/Messung9/messung9.raw.3_data.npy"
+datafile: "data/Messung_9/messung9.raw.3_data.npy"
 
 device: "cuda"
 
@@ -62,7 +62,7 @@ feature_norm: "batch"
 
 flat_data: true
 
-labelfile: "data/Messung9/messung9.raw.3_labels.npy"
+labelfile: "data/Messung_9/messung9.raw.3_labels.npy"
 
 latent_dimention: 128
 
