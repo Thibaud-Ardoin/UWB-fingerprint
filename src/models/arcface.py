@@ -23,8 +23,6 @@ class ArcFace(nn.Module):
         nn.init.xavier_uniform_(self.weight)
         self.cos_m = math.cos(m)
         self.sin_m = math.sin(m)
-        self.th = math.cos(math.pi - m)
-        self.mm = math.sin(math.pi - m) * m
 
     def forward(self, input, label=None):
         cosine = self.calculate_cos(input)
@@ -40,7 +38,6 @@ class ArcFace(nn.Module):
         return cosine * self.cos_m - sine * self.sin_m
 
     def calculate_out(self, cosine, phi, label):
-        phi = torch.where(cosine > self.th, phi, cosine - self.mm)
         if label is not None:
             one_hot = torch.zeros_like(cosine)
             one_hot.scatter_(1, label.view(-1, 1).long(), 1)
