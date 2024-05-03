@@ -5,3 +5,4 @@ wandb/
 src/__pycache*
 data/
 multi-run-script.sh
+*.tex

@@ -173,11 +173,8 @@ class MyDataset(torch.utils.data.Dataset):
         self.transform_list = [
             lambda x: center_data_gradient(x),
             lambda x: torch.from_numpy(x),
-            lambda x: normalise_amplitude(x)
-        ]
-        self.augmentations = [
-            eval(function_name) for function_name in params.augmentations
-        ] 
+            lambda x: normalise_amplitude(x)]
+        self.augmentations = [eval(function_name) for function_name in params.augmentations]
         if params.spectrogram_type =="cwt":
             self.transform_list.insert(0,eval("cwt"))
 
@@ -442,12 +439,21 @@ class DataGatherer():
         """
 
         # Gather the indexes for the diferent poses and the different devices
-        z = list(zip(self.data, self.labels))
+        z = list(map(list, zip(self.data, self.labels)))
         if params.verbose:
             print(" \t * Current total loaded raw data reach size:", len(z))
             print(" \t   Note that some might be removed according to the used Devices for example.")
         pos_ids = [np.where(self.labels[:,1] == i) for i in range(params.num_pos)]
-        dev_ids = [np.where(self.labels[:,0] == i) for i in range(params.num_dev)]
+        if params.num_dev == 10: 
+            # If a restricted number of devices are used to train, rather remove the first ids, then need to rename in order to have a working training pipeline 
+            dev_ids = [np.where(self.labels[:,0] == i+3) for i in range(params.num_dev)]
+            print("Renaming labels...")
+            for new_label, ids in enumerate([dev_ids[7], dev_ids[8], dev_ids[9]]):
+                for i in ids[0] :
+                    z[i][1] = np.array([new_label, z[i][1][1]])
+            print("Renaming done!")
+        else :
+            dev_ids = [np.where(self.labels[:,0] == i) for i in range(params.num_dev)]
 
         # Hard coded test to have a proper visual of the used labels
         if False: 
