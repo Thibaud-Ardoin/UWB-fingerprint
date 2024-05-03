@@ -9,11 +9,11 @@ import torch
 ##########
 #   Data
 ##########
-datafile = "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.raw.3_data.npy"
-labelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_9/messung9.raw.3_labels.npy"
+datafile = "/data/Messung_9/messung9.raw.3_data.npy"
+labelfile = "/data/Messung_9/messung9.raw.3_labels.npy"
 
-testfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10.raw.2_data.npy"
-testlabelfile = "/srv/public/Thibaud/datasets/ultrasec/Messung_10/messung10.raw.2_labels.npy"
+testfile = "/data/Messung_10/messung10.raw.2_data.npy"
+testlabelfile = "/data/Messung_10/messung10.raw.2_labels.npy"
 
 # TODO reunite properly following input types in the dataloader
 data_type = "not_complex"
