@@ -3,6 +3,7 @@ wandb/
 *.png
 *__pycache__*
 src/__pycache*
-data/
+data/*
+!pre-trained-models
 multi-run-script.sh
 *.tex

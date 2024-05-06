@@ -1,0 +1,801 @@
+Run Name,m01lp790
+Number Parameters,16978,0
+Dev class loss,1.8283473060203763,0
+Dev class accuracy,46.50452061997074,0
+Encoder loss,1.8296857740335686,0
+learning rate,0.0001,0
+Positive clustering at error rate 0.1%,8.609110791059903,1
+Positive clustering at error rate 1%,29.30722248893156,1
+Positive clustering at error rate 10%,66.87523337067263,1
+Trapz,0.8996440623106415,1
+NN classification on test data,98.3154296875,1
+max_Trapz,0.8996440623106415,1
+NN test2train,59.4482421875,1
+NN test2train 10th mean,58.07861328125,1
+Kmeans cluster score %,64.892578125,1
+Accuracy for dev classification on test data %,54.345703125,1
+F1 score on test data,0.49462549833593056,1
+Dev class loss,1.2663507343252056,1
+Dev class accuracy,66.00005143562545,1
+Encoder loss,1.267277784643159,1
+learning rate,0.0001,1
+Positive clustering at error rate 0.1%,12.703141820897537,2
+Positive clustering at error rate 1%,36.238792689079304,2
+Positive clustering at error rate 10%,77.50963653288736,2
+Trapz,0.9245210996321981,2
+NN classification on test data,98.92578125,2
+max_Trapz,0.9245210996321981,2
+epoch,1,2
+NN test2train,63.720703125,2
+NN test2train 10th mean,63.46923828125,2
+Kmeans cluster score %,75.0732421875,2
+Accuracy for dev classification on test data %,65.6982421875,2
+F1 score on test data,0.627666554248142,2
+Dev class loss,0.9398395774096039,2
+Dev class accuracy,73.26961983357718,2
+Encoder loss,0.9405276005263002,2
+learning rate,0.0001,2
+Positive clustering at error rate 0.1%,15.256931511161243,3
+Positive clustering at error rate 1%,39.9864910946148,3
+Positive clustering at error rate 10%,80.47228707079715,3
+Trapz,0.9260956657912627,3
+NN classification on test data,98.828125,3
+max_Trapz,0.9260956657912627,3
+epoch,2,3
+NN test2train,66.5771484375,3
+NN test2train 10th mean,66.259765625,3
+Kmeans cluster score %,76.7822265625,3
+Accuracy for dev classification on test data %,68.408203125,3
+F1 score on test data,0.6468999867526462,3
+Dev class loss,0.7349103174392482,3
+Dev class accuracy,78.06542040051207,3
+Encoder loss,0.7354483191357625,3
+learning rate,0.0001,3
+Positive clustering at error rate 0.1%,17.861801774010974,4
+Positive clustering at error rate 1%,43.54836179785268,4
+Positive clustering at error rate 10%,81.66920681893637,4
+Trapz,0.9325590339683447,4
+NN classification on test data,99.0478515625,4
+max_Trapz,0.9325590339683447,4
+epoch,3,4
+NN test2train,69.5556640625,4
+NN test2train 10th mean,68.45703125,4
+Kmeans cluster score %,78.515625,4
+Accuracy for dev classification on test data %,70.41015625,4
+F1 score on test data,0.6725054150418002,4
+Dev class loss,0.5968677013709669,4
+Dev class accuracy,81.93323655815655,4
+Encoder loss,0.5973046469795846,4
+learning rate,0.0001,4
+Positive clustering at error rate 0.1%,17.6383922859894,5
+Positive clustering at error rate 1%,43.42484293881179,5
+Positive clustering at error rate 10%,81.51101953416965,5
+Trapz,0.9347436748651643,5
+NN classification on test data,99.072265625,5
+max_Trapz,0.9347436748651643,5
+epoch,4,5
+NN test2train,68.9697265625,5
+NN test2train 10th mean,68.8916015625,5
+Kmeans cluster score %,69.8486328125,5
+Accuracy for dev classification on test data %,72.998046875,5
+F1 score on test data,0.7163273344085688,5
+Dev class loss,0.49754327038698115,5
+Dev class accuracy,84.89064214520849,5
+Encoder loss,0.49790750411347234,5
+learning rate,0.0001,5
+Positive clustering at error rate 0.1%,23.53906298015386,6
+Positive clustering at error rate 1%,50.65320966573943,6
+Positive clustering at error rate 10%,82.46367865665141,6
+Trapz,0.9376645807570441,6
+NN classification on test data,99.3408203125,6
+max_Trapz,0.9376645807570441,6
+epoch,5,6
+NN test2train,71.6064453125,6
+NN test2train 10th mean,70.82275390625,6
+Kmeans cluster score %,77.4658203125,6
+Accuracy for dev classification on test data %,74.853515625,6
+F1 score on test data,0.725243232255177,6
+Dev class loss,0.4214852023715189,6
+Dev class accuracy,87.21824707388441,6
+Encoder loss,0.42179375669243513,6
+learning rate,0.0001,6
+Positive clustering at error rate 0.1%,16.82397196310714,7
+Positive clustering at error rate 1%,45.64848430794414,7
+Positive clustering at error rate 10%,83.36857181830582,7
+Trapz,0.9358742870377865,7
+NN classification on test data,99.4140625,7
+max_Trapz,0.9376645807570441,7
+epoch,6,7
+NN test2train,70.849609375,7
+NN test2train 10th mean,70.69091796875,7
+Kmeans cluster score %,77.1728515625,7
+Accuracy for dev classification on test data %,74.3408203125,7
+F1 score on test data,0.7321722883109518,7
+Dev class loss,0.3663362870700484,7
+Dev class accuracy,88.83146831565472,7
+Encoder loss,0.3666044688321788,7
+learning rate,0.0001,7
+Positive clustering at error rate 0.1%,17.54054297874147,8
+Positive clustering at error rate 1%,46.66303159592872,8
+Positive clustering at error rate 10%,83.27363326646926,8
+Trapz,0.9265065637485297,8
+NN classification on test data,98.9013671875,8
+max_Trapz,0.9376645807570441,8
+epoch,7,8
+NN test2train,71.0693359375,8
+NN test2train 10th mean,71.55029296875,8
+Kmeans cluster score %,77.4658203125,8
+Accuracy for dev classification on test data %,74.755859375,8
+F1 score on test data,0.7341145233163139,8
+Dev class loss,0.3220480638244547,8
+Dev class accuracy,90.14064786027798,8
+Encoder loss,0.32228382375404835,8
+learning rate,0.0001,8
+Positive clustering at error rate 0.1%,19.850442503539238,9
+Positive clustering at error rate 1%,45.94431072527345,9
+Positive clustering at error rate 10%,81.33773947521743,9
+Trapz,0.9323050066639672,9
+NN classification on test data,99.12109375,9
+max_Trapz,0.9376645807570441,9
+epoch,8,9
+NN test2train,72.802734375,9
+NN test2train 10th mean,72.7978515625,9
+Kmeans cluster score %,78.0517578125,9
+Accuracy for dev classification on test data %,76.904296875,9
+F1 score on test data,0.750738449853764,9
+Dev class loss,0.28917042191801645,9
+Dev class accuracy,91.04105705925384,9
+Encoder loss,0.2893821132957012,9
+learning rate,0.0001,9
+Positive clustering at error rate 0.1%,24.995165461255006,10
+Positive clustering at error rate 1%,49.98179546100161,10
+Positive clustering at error rate 10%,83.54443041131589,10
+Trapz,0.936776648902207,10
+NN classification on test data,99.0478515625,10
+max_Trapz,0.9376645807570441,10
+epoch,9,10
+NN test2train,72.7294921875,10
+NN test2train 10th mean,72.18505859375,10
+Kmeans cluster score %,77.63671875,10
+Accuracy for dev classification on test data %,75.7080078125,10
+F1 score on test data,0.7361595738319098,10
+Dev class loss,0.2618183648813449,10
+Dev class accuracy,91.85231117410387,10
+Encoder loss,0.2620100327912144,10
+learning rate,0.0001,10
+Positive clustering at error rate 0.1%,23.959771544806582,11
+Positive clustering at error rate 1%,49.21875213595763,11
+Positive clustering at error rate 10%,83.14924226475759,11
+Trapz,0.9351938201923548,11
+NN classification on test data,99.2919921875,11
+max_Trapz,0.9376645807570441,11
+epoch,10,11
+NN test2train,71.4599609375,11
+NN test2train 10th mean,71.826171875,11
+Kmeans cluster score %,80.6640625,11
+Accuracy for dev classification on test data %,75.9521484375,11
+F1 score on test data,0.7442624357715454,11
+Dev class loss,0.23996221099854867,11
+Dev class accuracy,92.49782827359181,11
+Encoder loss,0.240137878795766,11
+learning rate,0.0001,11
+Positive clustering at error rate 0.1%,24.27074224236161,12
+Positive clustering at error rate 1%,49.25179532024273,12
+Positive clustering at error rate 10%,82.80480695338792,12
+Trapz,0.9368915866509073,12
+NN classification on test data,99.0234375,12
+max_Trapz,0.9376645807570441,12
+epoch,11,12
+NN test2train,71.8994140625,12
+NN test2train 10th mean,71.66015625,12
+Kmeans cluster score %,67.7734375,12
+Accuracy for dev classification on test data %,75.4638671875,12
+F1 score on test data,0.7406127079166915,12
+Dev class loss,0.22199883114086938,12
+Dev class accuracy,93.04704645208486,12
+Encoder loss,0.2221613485867997,12
+learning rate,0.0001,12
+Positive clustering at error rate 0.1%,19.939980168502064,13
+Positive clustering at error rate 1%,44.73565663928344,13
+Positive clustering at error rate 10%,84.05114162447548,13
+Trapz,0.9359924986776029,13
+NN classification on test data,99.2431640625,13
+max_Trapz,0.9376645807570441,13
+epoch,12,13
+NN test2train,72.5830078125,13
+NN test2train 10th mean,71.77490234375,13
+Kmeans cluster score %,71.8505859375,13
+Accuracy for dev classification on test data %,73.046875,13
+F1 score on test data,0.7206826083941362,13
+Dev class loss,0.2071080117082037,13
+Dev class accuracy,93.4601030998537,13
+Encoder loss,0.20725962811501797,13
+learning rate,0.0001,13
+Positive clustering at error rate 0.1%,24.41092684980642,14
+Positive clustering at error rate 1%,48.57098903293628,14
+Positive clustering at error rate 10%,83.0262186638454,14
+Trapz,0.9383353880547192,14
+NN classification on test data,99.2919921875,14
+max_Trapz,0.9383353880547192,14
+epoch,13,14
+NN test2train,71.5576171875,14
+NN test2train 10th mean,70.7958984375,14
+Kmeans cluster score %,77.4169921875,14
+Accuracy for dev classification on test data %,73.5107421875,14
+F1 score on test data,0.7315884464692476,14
+Dev class loss,0.19423224214378437,14
+Dev class accuracy,93.84372713972202,14
+Encoder loss,0.1943744326577991,14
+learning rate,0.0001,14
+Positive clustering at error rate 0.1%,24.157961143248187,15
+Positive clustering at error rate 1%,49.063332014584645,15
+Positive clustering at error rate 10%,83.37147011964971,15
+Trapz,0.9360019978339963,15
+NN classification on test data,99.21875,15
+max_Trapz,0.9383353880547192,15
+epoch,14,15
+NN test2train,71.97265625,15
+NN test2train 10th mean,71.84814453125,15
+Kmeans cluster score %,78.7353515625,15
+Accuracy for dev classification on test data %,73.8525390625,15
+F1 score on test data,0.7227466512513685,15
+Dev class loss,0.1826992462445736,15
+Dev class accuracy,94.216349670812,15
+Encoder loss,0.18283299386261498,15
+learning rate,0.0001,15
+Positive clustering at error rate 0.1%,24.302050323380183,16
+Positive clustering at error rate 1%,49.017152184535654,16
+Positive clustering at error rate 10%,82.79777242995613,16
+Trapz,0.9328487232177582,16
+NN classification on test data,99.1943359375,16
+max_Trapz,0.9383353880547192,16
+epoch,15,16
+NN test2train,69.921875,16
+NN test2train 10th mean,69.9169921875,16
+Kmeans cluster score %,72.8759765625,16
+Accuracy for dev classification on test data %,73.0712890625,16
+F1 score on test data,0.7145066131946493,16
+Dev class loss,0.17268821001730914,16
+Dev class accuracy,94.54882383869788,16
+Encoder loss,0.1728146289119046,16
+learning rate,0.0001,16
+Positive clustering at error rate 0.1%,23.94411645194445,17
+Positive clustering at error rate 1%,48.74858246156379,17
+Positive clustering at error rate 10%,82.89459356816002,17
+Trapz,0.9346610190955651,17
+NN classification on test data,99.0966796875,17
+max_Trapz,0.9383353880547192,17
+epoch,16,17
+NN test2train,71.533203125,17
+NN test2train 10th mean,71.30126953125,17
+Kmeans cluster score %,80.0537109375,17
+Accuracy for dev classification on test data %,72.8515625,17
+F1 score on test data,0.7162132215008825,17
+Dev class loss,0.16382873047999869,17
+Dev class accuracy,94.81028826810534,17
+Encoder loss,0.16394866366483052,17
+learning rate,0.0001,17
+Positive clustering at error rate 0.1%,24.21883585721833,18
+Positive clustering at error rate 1%,44.97418738935797,18
+Positive clustering at error rate 10%,81.45027282320711,18
+Trapz,0.9350918838953752,18
+NN classification on test data,99.365234375,18
+max_Trapz,0.9383353880547192,18
+epoch,17,18
+NN test2train,71.630859375,18
+NN test2train 10th mean,70.80810546875,18
+Kmeans cluster score %,75.68359375,18
+Accuracy for dev classification on test data %,72.119140625,18
+F1 score on test data,0.7119621451500858,18
+Dev class loss,0.15504319275945647,18
+Dev class accuracy,95.0914696872714,18
+Encoder loss,0.15515669436469776,18
+learning rate,0.0001,18
+Positive clustering at error rate 0.1%,25.318918221132126,19
+Positive clustering at error rate 1%,50.64287097398825,19
+Positive clustering at error rate 10%,83.22545665784547,19
+Trapz,0.934526962808105,19
+NN classification on test data,99.12109375,19
+max_Trapz,0.9383353880547192,19
+epoch,18,19
+NN test2train,71.8505859375,19
+NN test2train 10th mean,71.61376953125,19
+Kmeans cluster score %,75.6591796875,19
+Accuracy for dev classification on test data %,74.853515625,19
+F1 score on test data,0.7183703797274472,19
+Dev class loss,0.14810055640625713,19
+Dev class accuracy,95.31035684893928,19
+Encoder loss,0.14820897555443113,19
+learning rate,0.0001,19
+Positive clustering at error rate 0.1%,24.404387638104396,20
+Positive clustering at error rate 1%,50.546737539562194,20
+Positive clustering at error rate 10%,83.95994378074491,20
+Trapz,0.9357235037338906,20
+NN classification on test data,99.31640625,20
+max_Trapz,0.9383353880547192,20
+epoch,19,20
+NN test2train,71.4111328125,20
+NN test2train 10th mean,70.88134765625,20
+Kmeans cluster score %,72.8759765625,20
+Accuracy for dev classification on test data %,73.8525390625,20
+F1 score on test data,0.7117479542341825,20
+Dev class loss,0.1408250620450501,20
+Dev class accuracy,95.54696072604243,20
+Encoder loss,0.14092815506265255,20
+learning rate,0.0001,20
+Positive clustering at error rate 0.1%,19.887051336937965,21
+Positive clustering at error rate 1%,44.82983705160121,21
+Positive clustering at error rate 10%,79.90285463607486,21
+Trapz,0.9320223647442535,21
+NN classification on test data,99.2431640625,21
+max_Trapz,0.9383353880547192,21
+epoch,20,21
+NN test2train,71.2646484375,21
+NN test2train 10th mean,71.162109375,21
+Kmeans cluster score %,79.8095703125,21
+Accuracy for dev classification on test data %,72.4853515625,21
+F1 score on test data,0.7132470486402672,21
+Dev class loss,0.1358371689736758,21
+Dev class accuracy,95.67254937820044,21
+Encoder loss,0.1359366105322217,21
+learning rate,0.0001,21
+Positive clustering at error rate 0.1%,24.63445844486518,22
+Positive clustering at error rate 1%,50.37004635372462,22
+Positive clustering at error rate 10%,84.56081478096233,22
+Trapz,0.9371620996560583,22
+NN classification on test data,99.2919921875,22
+max_Trapz,0.9383353880547192,22
+epoch,21,22
+NN test2train,71.6796875,22
+NN test2train 10th mean,71.38916015625,22
+Kmeans cluster score %,79.78515625,22
+Accuracy for dev classification on test data %,73.779296875,22
+F1 score on test data,0.7251398679320127,22
+Dev class loss,0.12914460449666856,22
+Dev class accuracy,95.91729722933431,22
+Encoder loss,0.12923914666687125,22
+learning rate,0.0001,22
+Positive clustering at error rate 0.1%,21.56533351138412,23
+Positive clustering at error rate 1%,47.482806970688394,23
+Positive clustering at error rate 10%,80.86973359150697,23
+Trapz,0.9342141281794132,23
+NN classification on test data,99.0966796875,23
+max_Trapz,0.9383353880547192,23
+epoch,22,23
+NN test2train,71.09375,23
+NN test2train 10th mean,70.849609375,23
+Kmeans cluster score %,78.955078125,23
+Accuracy for dev classification on test data %,72.6318359375,23
+F1 score on test data,0.7148418770489808,23
+Dev class loss,0.12471238237162699,23
+Dev class accuracy,96.03888533284565,23
+Encoder loss,0.12480367986970264,23
+learning rate,0.0001,23
+Positive clustering at error rate 0.1%,23.362859563183676,24
+Positive clustering at error rate 1%,48.23434548582794,24
+Positive clustering at error rate 10%,82.25150875789895,24
+Trapz,0.9292475686495779,24
+NN classification on test data,99.0966796875,24
+max_Trapz,0.9383353880547192,24
+epoch,23,24
+NN test2train,71.38671875,24
+NN test2train 10th mean,71.4111328125,24
+Kmeans cluster score %,74.51171875,24
+Accuracy for dev classification on test data %,75.537109375,24
+F1 score on test data,0.7392340494158962,24
+Dev class loss,0.11930004693743813,24
+Dev class accuracy,96.20676549926847,24
+Encoder loss,0.11938738225730443,24
+learning rate,0.0001,24
+Positive clustering at error rate 0.1%,28.636786448323637,25
+Positive clustering at error rate 1%,50.287886776309165,25
+Positive clustering at error rate 10%,84.87904307246687,25
+Trapz,0.9416340133021165,25
+NN classification on test data,99.169921875,25
+max_Trapz,0.9416340133021165,25
+epoch,24,25
+NN test2train,72.509765625,25
+NN test2train 10th mean,71.91650390625,25
+Kmeans cluster score %,75.9521484375,25
+Accuracy for dev classification on test data %,74.609375,25
+F1 score on test data,0.7274809364063778,25
+Dev class loss,0.11609871311132851,25
+Dev class accuracy,96.30020688551573,25
+Encoder loss,0.1161837048485989,25
+learning rate,0.0001,25
+Positive clustering at error rate 0.1%,23.725723482062,26
+Positive clustering at error rate 1%,45.19767784632463,26
+Positive clustering at error rate 10%,80.84568460245335,26
+Trapz,0.9314808239786513,26
+NN classification on test data,99.2431640625,26
+max_Trapz,0.9416340133021165,26
+epoch,25,26
+NN test2train,71.6552734375,26
+NN test2train 10th mean,71.48193359375,26
+Kmeans cluster score %,69.3115234375,26
+Accuracy for dev classification on test data %,72.8515625,26
+F1 score on test data,0.7146116026734832,26
+Dev class loss,0.11171473483916257,26
+Dev class accuracy,96.44636978785663,26
+Encoder loss,0.11179651722191447,26
+learning rate,0.0001,26
+Positive clustering at error rate 0.1%,24.999174216529674,27
+Positive clustering at error rate 1%,47.20323654270226,27
+Positive clustering at error rate 10%,82.55377171645371,27
+Trapz,0.9346302832735045,27
+NN classification on test data,99.365234375,27
+max_Trapz,0.9416340133021165,27
+epoch,26,27
+NN test2train,72.8515625,27
+NN test2train 10th mean,72.61474609375,27
+Kmeans cluster score %,77.1240234375,27
+Accuracy for dev classification on test data %,74.90234375,27
+F1 score on test data,0.7300722695025836,27
+Dev class loss,0.10826910620287039,27
+Dev class accuracy,96.57052967264082,27
+Encoder loss,0.10834836616348736,27
+learning rate,0.0001,27
+Positive clustering at error rate 0.1%,24.278188072200546,28
+Positive clustering at error rate 1%,50.38848571325604,28
+Positive clustering at error rate 10%,80.74095924804222,28
+Trapz,0.9354451826062122,28
+NN classification on test data,99.3408203125,28
+max_Trapz,0.9416340133021165,28
+epoch,27,28
+NN test2train,71.630859375,28
+NN test2train 10th mean,71.71142578125,28
+Kmeans cluster score %,74.0234375,28
+Accuracy for dev classification on test data %,74.9755859375,28
+F1 score on test data,0.7357521102760212,28
+Dev class loss,0.1043827755406752,28
+Dev class accuracy,96.66239941477689,28
+Encoder loss,0.10445919045688347,28
+learning rate,0.0001,28
+Positive clustering at error rate 0.1%,21.990352186510624,29
+Positive clustering at error rate 1%,47.849513735738746,29
+Positive clustering at error rate 10%,83.37624406695625,29
+Trapz,0.934215713161968,29
+NN classification on test data,99.3408203125,29
+max_Trapz,0.9416340133021165,29
+epoch,28,29
+NN test2train,72.75390625,29
+NN test2train 10th mean,72.31689453125,29
+Kmeans cluster score %,79.2724609375,29
+Accuracy for dev classification on test data %,75.0732421875,29
+F1 score on test data,0.7425073170112771,29
+Dev class loss,0.10176685403360203,29
+Dev class accuracy,96.75069723847842,29
+Encoder loss,0.10184135392674534,29
+learning rate,0.0001,29
+Positive clustering at error rate 0.1%,24.278166639782743,30
+Positive clustering at error rate 1%,50.591666688702674,30
+Positive clustering at error rate 10%,78.83750386731859,30
+Trapz,0.9276805765190643,30
+NN classification on test data,99.21875,30
+max_Trapz,0.9416340133021165,30
+epoch,29,30
+NN test2train,71.19140625,30
+NN test2train 10th mean,71.03271484375,30
+Kmeans cluster score %,78.2958984375,30
+Accuracy for dev classification on test data %,73.5107421875,30
+F1 score on test data,0.7171144295844039,30
+Dev class loss,0.09829600540240227,30
+Dev class accuracy,96.88057219275787,30
+Encoder loss,0.0983679644107496,30
+learning rate,0.0001,30
+Positive clustering at error rate 0.1%,22.602544013885623,31
+Positive clustering at error rate 1%,49.47164730946144,31
+Positive clustering at error rate 10%,79.93974214315426,31
+Trapz,0.9304129267061537,31
+NN classification on test data,99.365234375,31
+max_Trapz,0.9416340133021165,31
+epoch,30,31
+NN test2train,71.142578125,31
+NN test2train 10th mean,71.14501953125,31
+Kmeans cluster score %,75.48828125,31
+Accuracy for dev classification on test data %,74.1943359375,31
+F1 score on test data,0.7230692225051837,31
+Dev class loss,0.09553628064986387,31
+Dev class accuracy,96.96029741221653,31
+Encoder loss,0.0956062193619062,31
+learning rate,0.0001,31
+Positive clustering at error rate 0.1%,25.07106556388296,32
+Positive clustering at error rate 1%,50.78237678909524,32
+Positive clustering at error rate 10%,82.01870781301628,32
+Trapz,0.9273669889680768,32
+NN classification on test data,99.12109375,32
+max_Trapz,0.9416340133021165,32
+epoch,31,32
+NN test2train,70.5078125,32
+NN test2train 10th mean,70.44189453125,32
+Kmeans cluster score %,77.9541015625,32
+Accuracy for dev classification on test data %,73.5107421875,32
+F1 score on test data,0.7180881771767477,32
+Dev class loss,0.09336405394464616,32
+Dev class accuracy,97.01744810716899,32
+Encoder loss,0.09343240244680186,32
+learning rate,0.0001,32
+Positive clustering at error rate 0.1%,21.441578208910617,33
+Positive clustering at error rate 1%,46.16760931976901,33
+Positive clustering at error rate 10%,79.13260927348489,33
+Trapz,0.9275047856613193,33
+NN classification on test data,99.21875,33
+max_Trapz,0.9416340133021165,33
+epoch,32,33
+NN test2train,71.0693359375,33
+NN test2train 10th mean,70.751953125,33
+Kmeans cluster score %,71.728515625,33
+Accuracy for dev classification on test data %,70.849609375,33
+F1 score on test data,0.7034520150857537,33
+Dev class loss,0.09075077302653141,33
+Dev class accuracy,97.09288702450621,33
+Encoder loss,0.09081720843870296,33
+learning rate,0.0001,33
+Positive clustering at error rate 0.1%,23.378736892727947,34
+Positive clustering at error rate 1%,43.98663001789484,34
+Positive clustering at error rate 10%,78.27577182286899,34
+Trapz,0.9214303895420786,34
+NN classification on test data,99.1943359375,34
+max_Trapz,0.9416340133021165,34
+epoch,33,34
+NN test2train,71.484375,34
+NN test2train 10th mean,71.21337890625,34
+Kmeans cluster score %,74.5849609375,34
+Accuracy for dev classification on test data %,73.1689453125,34
+F1 score on test data,0.7254492515493414,34
+Dev class loss,0.08794730152805344,34
+Dev class accuracy,97.20747416788588,34
+Encoder loss,0.08801168461848384,34
+learning rate,0.0001,34
+Positive clustering at error rate 0.1%,19.69306775265345,35
+Positive clustering at error rate 1%,47.44982089780731,35
+Positive clustering at error rate 10%,78.08686942859849,35
+Trapz,0.9231482370795673,35
+NN classification on test data,99.2919921875,35
+max_Trapz,0.9416340133021165,35
+epoch,34,35
+NN test2train,71.5576171875,35
+NN test2train 10th mean,70.86181640625,35
+Kmeans cluster score %,77.6123046875,35
+Accuracy for dev classification on test data %,72.412109375,35
+F1 score on test data,0.7011811193662036,35
+Dev class loss,0.08548274467781422,35
+Dev class accuracy,97.28205582479883,35
+Encoder loss,0.08554532355385956,35
+learning rate,0.0001,35
+Positive clustering at error rate 0.1%,23.954219413436235,36
+Positive clustering at error rate 1%,52.437015599262374,36
+Positive clustering at error rate 10%,82.27524790161374,36
+Trapz,0.9254838817849973,36
+NN classification on test data,99.609375,36
+max_Trapz,0.9416340133021165,36
+epoch,35,36
+NN test2train,71.9482421875,36
+NN test2train 10th mean,71.7138671875,36
+Kmeans cluster score %,79.58984375,36
+Accuracy for dev classification on test data %,73.6572265625,36
+F1 score on test data,0.7132998634591272,36
+Dev class loss,0.08346733568587601,36
+Dev class accuracy,97.34835063094367,36
+Encoder loss,0.08352843915270326,36
+learning rate,0.0001,36
+Positive clustering at error rate 0.1%,23.834461867660004,37
+Positive clustering at error rate 1%,50.663845003864964,37
+Positive clustering at error rate 10%,83.68645536458178,37
+Trapz,0.9319945748403787,37
+NN classification on test data,99.462890625,37
+max_Trapz,0.9416340133021165,37
+epoch,36,37
+NN test2train,70.8984375,37
+NN test2train 10th mean,70.5615234375,37
+Kmeans cluster score %,74.365234375,37
+Accuracy for dev classification on test data %,72.6806640625,37
+F1 score on test data,0.7108258562543631,37
+Dev class loss,0.08140769354381196,37
+Dev class accuracy,97.4147883138259,37
+Encoder loss,0.08146728921990554,37
+learning rate,0.0001,37
+Positive clustering at error rate 0.1%,24.876387950848596,38
+Positive clustering at error rate 1%,46.29917221891063,38
+Positive clustering at error rate 10%,80.0321437587315,38
+Trapz,0.9260300406660751,38
+NN classification on test data,99.365234375,38
+max_Trapz,0.9416340133021165,38
+epoch,37,38
+NN test2train,71.5087890625,38
+NN test2train 10th mean,71.43798828125,38
+Kmeans cluster score %,72.2412109375,38
+Accuracy for dev classification on test data %,72.5341796875,38
+F1 score on test data,0.7030769355454457,38
+Dev class loss,0.07850173954837428,38
+Dev class accuracy,97.50665805596196,38
+Encoder loss,0.07855920787893679,38
+learning rate,0.0001,38
+Positive clustering at error rate 0.1%,22.272633342678475,39
+Positive clustering at error rate 1%,48.15525572126731,39
+Positive clustering at error rate 10%,78.84444023254926,39
+Trapz,0.9193538592476249,39
+NN classification on test data,99.31640625,39
+max_Trapz,0.9416340133021165,39
+epoch,38,39
+NN test2train,71.435546875,39
+NN test2train 10th mean,70.7861328125,39
+Kmeans cluster score %,69.775390625,39
+Accuracy for dev classification on test data %,72.6806640625,39
+F1 score on test data,0.707294242452889,39
+Dev class loss,0.07670128631187453,39
+Dev class accuracy,97.57838217812728,39
+Encoder loss,0.07675743659467962,39
+learning rate,0.0001,39
+Positive clustering at error rate 0.1%,24.742772634692408,40
+Positive clustering at error rate 1%,51.41652675954044,40
+Positive clustering at error rate 10%,79.19326656386345,40
+Trapz,0.925892629831351,40
+NN classification on test data,99.31640625,40
+max_Trapz,0.9416340133021165,40
+epoch,39,40
+NN test2train,71.1669921875,40
+NN test2train 10th mean,70.96435546875,40
+Kmeans cluster score %,74.3408203125,40
+Accuracy for dev classification on test data %,72.265625,40
+F1 score on test data,0.7013270188652914,40
+Dev class loss,0.0744810908784795,40
+Dev class accuracy,97.65124931419166,40
+Encoder loss,0.07453561583519874,40
+learning rate,0.0001,40
+Positive clustering at error rate 0.1%,24.22774149100367,41
+Positive clustering at error rate 1%,50.207484391939886,41
+Positive clustering at error rate 10%,80.43718590281078,41
+Trapz,0.9289232777554507,41
+NN classification on test data,99.072265625,41
+max_Trapz,0.9416340133021165,41
+epoch,40,41
+NN test2train,73.193359375,41
+NN test2train 10th mean,72.1923828125,41
+Kmeans cluster score %,74.462890625,41
+Accuracy for dev classification on test data %,73.8037109375,41
+F1 score on test data,0.7264300462262224,41
+Dev class loss,0.07225568431378039,41
+Dev class accuracy,97.72983151975129,41
+Encoder loss,0.0723085801295299,41
+learning rate,0.0001,41
+Positive clustering at error rate 0.1%,25.788047391503564,42
+Positive clustering at error rate 1%,46.79086208025136,42
+Positive clustering at error rate 10%,79.64181449237415,42
+Trapz,0.9235744066215397,42
+NN classification on test data,99.3896484375,42
+max_Trapz,0.9416340133021165,42
+epoch,41,42
+NN test2train,72.36328125,42
+NN test2train 10th mean,71.74072265625,42
+Kmeans cluster score %,74.5361328125,42
+Accuracy for dev classification on test data %,72.3876953125,42
+F1 score on test data,0.7034620672609205,42
+Dev class loss,0.07071598081117829,42
+Dev class accuracy,97.77640933613753,42
+Encoder loss,0.07076774946477365,42
+learning rate,0.0001,42
+Positive clustering at error rate 0.1%,20.429957179061432,43
+Positive clustering at error rate 1%,51.65872316969057,43
+Positive clustering at error rate 10%,79.30693268978683,43
+Trapz,0.9267335999504832,43
+NN classification on test data,99.462890625,43
+max_Trapz,0.9416340133021165,43
+epoch,42,43
+NN test2train,72.4365234375,43
+NN test2train 10th mean,72.4853515625,43
+Kmeans cluster score %,75.5126953125,43
+Accuracy for dev classification on test data %,73.6328125,43
+F1 score on test data,0.7211214559645647,43
+Dev class loss,0.06844501993525354,43
+Dev class accuracy,97.85870633686906,43
+Encoder loss,0.0684951260991886,43
+learning rate,0.0001,43
+Positive clustering at error rate 0.1%,22.746946793968416,44
+Positive clustering at error rate 1%,50.87438426901528,44
+Positive clustering at error rate 10%,81.70416357093565,44
+Trapz,0.9294626506045466,44
+NN classification on test data,99.462890625,44
+max_Trapz,0.9416340133021165,44
+epoch,43,44
+NN test2train,73.14453125,44
+NN test2train 10th mean,72.76611328125,44
+Kmeans cluster score %,78.0517578125,44
+Accuracy for dev classification on test data %,74.4140625,44
+F1 score on test data,0.7335336658039153,44
+Dev class loss,0.06575836517868182,44
+Dev class accuracy,97.94628977688369,44
+Encoder loss,0.06580650453825619,44
+learning rate,0.0001,44
+Positive clustering at error rate 0.1%,20.153658395450744,45
+Positive clustering at error rate 1%,41.79537288857794,45
+Positive clustering at error rate 10%,80.8935701247258,45
+Trapz,0.9270207307518277,45
+NN classification on test data,99.4140625,45
+max_Trapz,0.9416340133021165,45
+epoch,44,45
+NN test2train,68.6767578125,45
+NN test2train 10th mean,68.8916015625,45
+Kmeans cluster score %,72.36328125,45
+Accuracy for dev classification on test data %,68.603515625,45
+F1 score on test data,0.6775048621113371,45
+Dev class loss,0.06413433379429037,45
+Dev class accuracy,97.9954393745428,45
+Encoder loss,0.0641812842582686,45
+learning rate,0.0001,45
+Positive clustering at error rate 0.1%,21.36922065474823,46
+Positive clustering at error rate 1%,47.712024840194225,46
+Positive clustering at error rate 10%,82.49093707837282,46
+Trapz,0.9327745928094714,46
+NN classification on test data,99.4140625,46
+max_Trapz,0.9416340133021165,46
+epoch,45,46
+NN test2train,71.8994140625,46
+NN test2train 10th mean,71.94091796875,46
+Kmeans cluster score %,76.318359375,46
+Accuracy for dev classification on test data %,73.2177734375,46
+F1 score on test data,0.7035198160478231,46
+Dev class loss,0.06267355857710628,46
+Dev class accuracy,98.03058705193855,46
+Encoder loss,0.06271943965951995,46
+learning rate,0.0001,46
+Positive clustering at error rate 0.1%,23.590237789936737,47
+Positive clustering at error rate 1%,48.30172800569188,47
+Positive clustering at error rate 10%,77.42681395466143,47
+Trapz,0.9231287185586575,47
+NN classification on test data,99.51171875,47
+max_Trapz,0.9416340133021165,47
+epoch,46,47
+NN test2train,69.82421875,47
+NN test2train 10th mean,69.912109375,47
+Kmeans cluster score %,76.1474609375,47
+Accuracy for dev classification on test data %,71.3623046875,47
+F1 score on test data,0.7137027657485625,47
+Dev class loss,0.06081727496391135,47
+Dev class accuracy,98.0930241861741,47
+Encoder loss,0.06086179712713541,47
+learning rate,0.0001,47
+Positive clustering at error rate 0.1%,22.662157851423547,48
+Positive clustering at error rate 1%,49.00280661686061,48
+Positive clustering at error rate 10%,78.67105217305058,48
+Trapz,0.9206381025277743,48
+NN classification on test data,99.5849609375,48
+max_Trapz,0.9416340133021165,48
+epoch,47,48
+NN test2train,71.8505859375,48
+NN test2train 10th mean,71.484375,48
+Kmeans cluster score %,75.7568359375,48
+Accuracy for dev classification on test data %,73.681640625,48
+F1 score on test data,0.7201768352071765,48
+Dev class loss,0.05912253032018605,48
+Dev class accuracy,98.14503131858083,48
+Encoder loss,0.059165811821152506,48
+learning rate,0.0001,48
+Positive clustering at error rate 0.1%,24.779628469825024,49
+Positive clustering at error rate 1%,51.78440513374526,49
+Positive clustering at error rate 10%,81.13398028173904,49
+Trapz,0.9313759084630057,49
+NN classification on test data,99.609375,49
+max_Trapz,0.9416340133021165,49
+epoch,48,49
+NN test2train,71.97265625,49
+NN test2train 10th mean,71.84326171875,49
+Kmeans cluster score %,79.2236328125,49
+Accuracy for dev classification on test data %,72.265625,49
+F1 score on test data,0.7079722745488223,49
+Dev class loss,0.05785281961667755,49
+Dev class accuracy,98.17917885881492,49
+Encoder loss,0.05789517160761224,49
+learning rate,0.0001,49
+Positive clustering at error rate 0.1%,21.41337951926173,50
+Positive clustering at error rate 1%,47.06392925814073,50
+Positive clustering at error rate 10%,81.90122059655647,50
+Trapz,0.9315998899443904,50
+NN classification on test data,99.4384765625,50
+max_Trapz,0.9416340133021165,50
+epoch,49,50
+NN test2train,71.9970703125,50
+NN test2train 10th mean,71.75048828125,50
+Kmeans cluster score %,74.0966796875,50
+Accuracy for dev classification on test data %,73.095703125,50
+F1 score on test data,0.712361120809633,50
