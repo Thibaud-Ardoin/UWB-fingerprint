@@ -1,5 +1,0 @@
-loss: "vicreg"
-model_name: "Transformer3"
-latent_dimention: 32
-expender_out: 32
-batch_size: 32
