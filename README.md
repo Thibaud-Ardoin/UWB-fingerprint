@@ -54,7 +54,7 @@ One can use this evaluation [Notebook](src/model_explorer.ipynb) to run tests di
 </tr>
   <tr>
     <td> ViT </td>
-    <td><a ref="data/pre-trained-models/ViT_scenario3/model.pth">weights</a></td>
+    <td><a href="data/pre-trained-models/ViT_scenario3/model.pth">weights</a></td>
     <td><a href="data/pre-trained-models/ViT_scenario3/config.yaml">config file</a></td>
     <td align="center"> 3 </td>
     <td> 34.9% </td>
