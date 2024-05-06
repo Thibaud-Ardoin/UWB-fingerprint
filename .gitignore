@@ -5,5 +5,6 @@ wandb/
 src/__pycache*
 data/*
 !pre-trained-models
+!images
 multi-run-script.sh
 *.tex
