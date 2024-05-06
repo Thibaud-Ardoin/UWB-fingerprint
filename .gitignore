@@ -1,5 +1,8 @@
 wandb/
 *wandb/
+src/config/
+data_explorer.ipynb
+result_compiler.ipynb
 *.png
 *__pycache__*
 src/__pycache*

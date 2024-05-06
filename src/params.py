@@ -15,7 +15,6 @@ labelfile = "/data/Messung_9/messung9.raw.3_labels.npy"
 testfile = "/data/Messung_10/messung10.raw.2_data.npy"
 testlabelfile = "/data/Messung_10/messung10.raw.2_labels.npy"
 
-# TODO reunite properly following input types in the dataloader
 data_type = "not_complex"
 input_type = "spectrogram" #rfft"
 spectrogram_type = "fourier" #fourier
@@ -31,7 +30,7 @@ shift_added_size = 50
 
 data_limit = -1
 validation_pos = [4, 5]
-validation_dev = []      # Not used yet ?
+validation_dev = []     
 data_test_rate = 0.05    # Random ratio of data to run tests on (O(n**2))
 
 num_pos = 48    #21
@@ -81,7 +80,6 @@ latent_dimention = 256
 expender_out = 256
 use_extender = True
 dropout_value = 0
-# embed_size = 8 #TODO no the right numba
 
 # Arccos/Arcface
 arcface = True

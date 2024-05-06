@@ -8,33 +8,6 @@ import pytorch_warmup as warmup
 
 import params
 
-
-# class MyScheduler(LRScheduler):
-# 	def __init__(self, optimizer):
-# 		print(optimizer)
-# 		self.optimizer = optimizer
-# 		super().__init__(optimizer)
-
-# 	def get_lr(self):
-# 		print("current_step", self.last_epoch)
-# 		training_steps = 1000
-# 		return 1
-# 		if self.last_epoch < params.warmup_steps:  # current_step / warmup_steps * base_lr
-# 			return float(self.last_epoch / params.warmup_steps)
-# 		else:                                 # (num_training_steps - current_step) / (num_training_steps - warmup_steps) * base_lr
-# 			return max(0.0, float(training_steps - self.last_epoch) / float(max(1, training_steps - params.warmup_steps)))
-
-# def mywarmup(current_step):
-# 	print("current_step", current_step)
-# 	training_steps = 1000
-# 	return 1
-# 	if current_step < params.warmup_steps:  # current_step / warmup_steps * base_lr
-# 		return float(current_step / params.warmup_steps)
-# 	else:                                 # (num_training_steps - current_step) / (num_training_steps - warmup_steps) * base_lr
-# 		return max(0.0, float(training_steps - current_step) / float(max(1, training_steps - params.warmup_steps)))
-
-
-
 class Combi_scheduler():
 	def __init__(self):
 		self.warmup_steps = params.warmup_steps
@@ -78,12 +51,6 @@ class Optimizer():
 		elif params.sheduler == "combi":
 			self.scheduler = torch.optim.lr_scheduler.LambdaLR(self.optim, Combi_scheduler())
 
-			# schedulers = [
-			# 	ExponentialLR(self.optim, gamma=1-1e-3), 
-			# 	ReduceLROnPlateau(self.optim, 'min', patience=params.patience)
-			# ]
-			# self.scheduler = SequentialLR(self.optim, schedulers=schedulers, milestones=[100])
-
 
 	def step(self):
 		self.optim.step()
@@ -99,8 +66,6 @@ class Optimizer():
 			self.scheduler.step(loss)
 		elif params.sheduler == "combi":
 			self.scheduler.step(loss)
-			# for i in range(len(self.scheduler)):
-			# 	self.scheduler[i].step(loss)
 		else :
 			with self.warmup_scheduler.dampening():
 				self.lr_scheduler.step()

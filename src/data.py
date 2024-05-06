@@ -189,15 +189,6 @@ class MyDataset(torch.utils.data.Dataset):
         elif self.testset and "random_shift_insert" in params.augmentations:
             self.transform_list += [lambda x: random_shift_insert(x, clean_test=True)]
 
-
-        # 0 padding for the ViT model
-        # if params.model_name == "ViT":
-        #     if params.input_type != "spectrogram":
-        #         self.transform_list += [lambda x: torch.cat((x, torch.zeros(6, dtype=x.dtype)), dim=0)]
-            #else:
-            #    if params.additional_samples > 0:
-            #        self.transform_list += [lambda x: torch.cat((x, torch.zeros(5, dtype=x.dtype)), dim=0)]
-
         self.transforms = transforms.Compose(
             self.transform_list
         )

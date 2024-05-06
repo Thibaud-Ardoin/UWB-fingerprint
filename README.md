@@ -14,7 +14,7 @@ This repository provides a PyTorch implementation and pretrained models for Radi
 ## Training
 To train a model on a desired configuration. For exemple a light weighted Vision Transformer model: 
 
-``python src/main.py --config=src/config/ViT.yaml``
+``python src/main.py --config=data/pre-trained-models/ViT_scenario2/config.yaml``
 
 
 ## Evaluation

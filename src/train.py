@@ -75,7 +75,6 @@ class Trainer:
                 if i%10==0:
                     print("Batch: ", i, "of", params.steps_per_epoch, end='\r')
                 # Compile loss 
-                # TODO: Most of them are crunshable -> same action = same code
                 self.Loss.forwardpass_data()
                 if params.loss=="CrossentropyLoss":
                     self.optimizer.zero_grad()
@@ -122,7 +121,6 @@ class Trainer:
             # From time to time let's see wehat that models output on validation data
             if (epoch+1)%params.test_interval==0:
                 testing_model(self.trainDataloader, self.valDataloader, self.my_model, self.logger)
-
 
         #end
 
