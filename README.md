@@ -21,7 +21,7 @@ To train a model on a desired configuration. For exemple a light weighted Vision
 
 ## Evaluation
 
-One can use this evaluation [Notebook](src/model_explorer.ipynb) to run tests different models in different scenarios.
+For evaluation, use this [Notebook](src/model_explorer.ipynb) to run tests of models in different scenarios.
 
 
 ### Models
