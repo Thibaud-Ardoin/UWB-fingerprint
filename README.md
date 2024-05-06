@@ -4,7 +4,7 @@ This repository provides a PyTorch implementation and pretrained models for Radi
 ---
 
 <p align="center">
-  <img src="Pipeline_rff.jpg?raw=true" width="90%">
+  <img src="data/images/Pipeline_rff.jpg?raw=true" width="90%">
 </p>
 
 
@@ -102,12 +102,12 @@ One can use this evaluation [Notebook](src/model_explorer.ipynb) to run tests di
 ### Data splitting Scenarios
 
 <p align="center">
-  <img src="Scenarios3.jpg?raw=true" width="90%">
+  <img src="data/images/Scenarios3.jpg?raw=true" width="90%">
 </p>
 
 
 ## Code Organisation
 
 <p align="center">
-  <img src="map.jpg?raw=true" width="90%">
+  <img src="data/images/map.jpg?raw=true" width="90%">
 </p>
