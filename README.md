@@ -113,3 +113,20 @@ For evaluation, use this [Notebook](src/model_explorer.ipynb) to run tests of mo
 <p align="center">
   <img src="data/images/map.jpg?raw=true" width="90%">
 </p>
+
+
+## Citation
+
+If you use this code or dataset in your research, please cite us :)
+
+```bibtex
+@misc{https://doi.org/10.48550/arxiv.2501.04401,
+  doi = {10.48550/ARXIV.2501.04401},
+  url = {https://arxiv.org/abs/2501.04401},
+  author = {Ardoin,  Thibaud and Pauli,  Niklas and Groß,  Benedikt and Kholghi,  Mahsa and Reaz,  Khan and Wunder,  Gerhard},
+  keywords = {Machine Learning (cs.LG),  Information Theory (cs.IT),  Networking and Internet Architecture (cs.NI),  FOS: Computer and information sciences,  FOS: Computer and information sciences},
+  title = {Tracking UWB Devices Through Radio Frequency Fingerprinting Is Possible},
+  publisher = {arXiv},
+  year = {2025},
+  copyright = {Creative Commons Attribution 4.0 International}
+}
