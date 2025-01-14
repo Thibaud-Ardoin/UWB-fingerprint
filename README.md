@@ -1,5 +1,5 @@
 # Exploring UWB Devices Fingerprinting with Deep Learning-Based Authentication
-This repository provides a PyTorch implementation and pretrained models for Radio frequency Fingerprinting (RFF) of Ultra-wideband (UWB) devices as described in the paper <a href="#">Exploring UWB Devices Fingerprinting with Deep Learning-Based Authentication</a>.
+This repository provides a PyTorch implementation and pretrained models for Radio frequency Fingerprinting (RFF) of Ultra-wideband (UWB) devices as described in the paper <a href="https://arxiv.org/abs/2501.04401">Tracking UWB Devices Through Radio Frequency Fingerprinting Is Possible</a>.
 
 The dataset **RUFF** (Rotating UWB For Fingerprint) attached to this work can be downloaded [here](https://zenodo.org/records/11083153).
 
